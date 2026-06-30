@@ -1,0 +1,72 @@
+<style>
+    * {
+        user-select: none;
+    }
+    body {
+        background-color: black;
+        color: white;
+        font-family: monospace;
+        margin-right: 0;
+    }
+    div {
+        cursor: default;
+    }
+
+    .button {
+        margin-bottom: 1px;
+        display: block;
+        cursor: pointer;
+    }
+    .button:hover {
+        background-color: white;
+        color: black;
+    }
+
+    .hidden {
+        display: none;
+    }
+</style>
+<head>
+    <title>Hey.</title>
+    <meta content="Space 2313" property="og:title" />
+    <meta content="https://rus1130.github.io/space2313" property="og:url" />
+    <meta property="og:description" content="space stories :)">
+</head>
+<body>
+    Space 2213<br><br>
+    <div class="button" onclick="location.href = './introduction'">▌Introduction</div>
+    <div class="button" onclick="location.href = './first-contact'">▌First Contact</div>
+    <div class="button" onclick="location.href = 'https://rus1130.github.io/projects/index.html?bypass=true'">▌< Return to main page</div>
+</body>
+<script id="script">
+    (() => {
+        let clicks = 0;
+        const divs = {};
+
+        Array.from(document.body.children).forEach((div, i) => {
+            if(!div.classList.contains('button')) return;
+            div.setAttribute('data-i', i);
+            if(div.classList.contains("hidden")) {
+                divs[i] = div;
+                div.remove();
+            }
+        });
+        
+        document.body.addEventListener('click', () => {
+            clicks++;
+            if(clicks >= 50) {
+                Object.values(divs).forEach(div => {
+                    document.body.insertBefore(div, document.body.children[div.getAttribute('data-i')]);
+                    div.classList.remove('hidden');
+                });
+            }
+        });
+
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_COMMENT, null, false);
+        const nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        nodes.forEach(n => n.remove());
+
+        document.getElementById('script').remove();
+    })();
+</script>
