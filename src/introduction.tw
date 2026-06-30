@@ -1,10 +1,10 @@
 {{# written 29 june, 2026 #}}
 {{#timecalc
-    char: 100
-    newline: 500
+    char: 50
+    newline: 100
     custom: {
         ",": 350
-        ".": 600
+        ".": 700
     }
 #}}
 In 2129, researchers discovered a relatively inexpensive method of mass\-producing oganesson. Previously extraordinarily rare, this discovery drastically reduced the cost of synthesis. Oganesson proved to be a remarkably effective fuel source, exhibiting both conventional and anomalous properties. This breakthrough dramatically reduced the cost of spaceflight, making large\-scale expansion beyond Earth economically viable. With this discovery, a permanent space age began in 2139.[linebreak]
