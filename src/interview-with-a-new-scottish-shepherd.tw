@@ -1,0 +1,80 @@
+{{# written 1 july, 2026 #}}
+{{#timecalc
+    char: 100
+    newline: 500
+    custom: {
+        ",": 350
+        ".": 600
+    }
+#}}
+[sleep 1000]
+Interviewer: My name is Alyssa (lastname), and today i’ll be interviewing..[linebreak]
+
+S: (first name) (middle name) (last name)[linebreak]
+
+I: For the record, today’s date is July 10th, 2323.[sleep 800][linebreak]
+
+I: So, can you tell me about yourself? What brought you to Mars?[linebreak]
+
+S: I was born here.[sleep 1500][linebreak]
+
+(pause)[sleep 2000][linebreak]
+
+I: I\-[sleep 800] I mean—[linebreak]
+
+S: (chuckles)[sleep 450] I know what y’ mean, I’m just pulling yer leg. So, er, well, I was born here, ‘nd so was me father, ‘nd his father, too. Not me great\-granddad though, he was born back on Earth. He had a bit of a rough goin’ up in Old Scotland so he figured he’d try his luck helpin’ with the terraformin’ cus they were goin’ round askin’ fer workers ‘nd the like. Both me great\-grandfather and grandfather were ‘formers—granda was one of the last t’ die, y’ know, all the others kicked the bucket long before ‘im from Red Lung and so forth—but me father wasn’t, though. He did watch his father work, ‘nd he wanted t’ do that work too—he’d tell me stories, y’ see—but Mars finished before he was of age t’ start workin’.[linebreak]
+
+I: What was it like back then, in your grandfather’s stories? [linebreak]
+
+S: Well, he’d tell me ‘bout times where he ‘nd ‘is mates would mess around with equipment ‘nd such, most of the time they’d all have a good laugh. But there was this one time where a kid called Rory—cheery lad, me dad would say—he was havin’ a wee too much fun he was, ‘nd he took a step in the path, ‘nd he got cleaved right in half by a material ferry. After the shock wore off they buried ‘im—well, the half they could find—in the ground right there where he died, they did.[linebreak]
+
+I: ..Oh... wow... um.. what was his job? What kind of work did he do?[linebreak]
+
+S: Well, I was told he was a scrubber, usin’ machines t’ rid the bad gas from the air. Well, early on he was on pump duty—everyone was, when they first join up, sort of the job they gave the newest—he’d sit next t’an ‘vator ‘nd wait fer rock ice t’ come by, separate it from whatever junk was on there, melt it down with ‘n og reactor, ‘nd pump the water t’ wherever he was told t’ at the beginnin’ of the day.[linebreak]
+
+I: That sounds.. bleak... um. What were the hours like for workers?[linebreak]
+
+S: They were shite, he’d say. Ye’d wake up at the crack of dawn, like 0500 mars time er somethin’ along the lines of that, and ye’d get a 15 minute break at noon, and ye’d be workin’ till ye saw the blue of the horizon.[linebreak]
+
+I: (getting uncomfortable, trying to find a nugget of joy): The pay?[linebreak]
+
+S: Shite too, he’d say. Ye’d be workin’ fer the whole day ‘nd make a few bucks. They we’re trapped on the planet, ye see, due to contracts ‘nd whatnot, ‘nd even if the contract ran out, they wouldn’t even be able to afford a ticket home. Though most of the men that signed up didn’t have much back on Earth anyway.[linebreak]
+
+I: So... what where the benefits of being a terraformer, then?[linebreak]
+
+S: For a man? Oh, nothing. Ye were just doin’ it for the betterment of human kind, he said they’d say. He’d say there wouldn’t be much thought about the benefits, because they’d not be lookin t’ go home, they’d think they’d be useless over there, so why not be guaranteed useful, ye know?[linebreak]
+
+I: Wow... um. What about after work? What did they do when they weren’t working— in their free time? What was life like in the towns?[linebreak]
+
+S: Oh, lass, there were no towns. When they weren’t workin’ on the surface, it was all underground concrete prisons, he’d call ‘em. Nothing t’ do in yer free time besides talk to yer lads ‘nd wait for dinner to be served in the dining house—sleep too, ye could do that, can’t get enough of sleep, I suppose[sleep 300]—Although, when I got older, he’d told me that in the later years of the formin’ there were many lassies of a certain kind runnin’ ‘round, hopin’ to become with child so they were guaranteed citizenship when it was all said ‘nd done.[linebreak]
+
+{I: Oh,[sleep 800] (nervous laugh, followed by papers ruffling)[sleep 900] I— I see. um... what about you? Do you have a family?[linebreak]
+
+S: Oh, yes I’ve got a family. I’ve got a wife, two kids, ‘nd a third on the way.[linebreak]
+
+I: And what do you do for work?[linebreak]
+
+S:  Oh, well, I’m a shepard. I herd my sheep, some goats, a few cows. I mostly sell their produce down in Sacra when I go there once every week or so. Sometimes I slaughter a sheep or two when the population gets too high, not too often though. Sometimes wolves come down from the mountains ‘nd try to kill me livestock, so I got t’ shoot t’ protect ‘em.[linebreak]
+
+I: So, whats the community like now? Has it changed since the terraforming days?[linebreak]
+
+S: Oh, well I wouldn’t know, since I wasn’t ‘round those days, but I’d assume—[linebreak]
+
+[speed 70](A boom could be heard in the distance)[sleep 1200][linebreak]
+
+I: [sleep 400]What [sleep 250]was that?[sleep 550][linebreak]
+
+S: Ah, shite.[sleep 500] Another Watchman’s gone down.[sleep 550][linebreak]
+
+I: [sleep 500]What?[sleep 550][linebreak]
+
+[speed 50]
+S: Good thing those don’t have a drive in them, or else we’d be in trouble.[sleep 550][linebreak]
+
+[speed 40](a gust of wind overloads the microphone, followed by the shearing of metal)[sleep 650][linebreak]
+
+I: Oh my [sleep 200]god![sleep 400][linebreak]
+
+S: [speed 70]Sorry lassie, gotta run.[sleep 600][linebreak]
+
+[sleep 700][function]
