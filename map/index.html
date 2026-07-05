@@ -1,0 +1,93 @@
+<style>
+    button:focus, input:focus, select:focus, textarea:focus, [contenteditable]:focus {
+        outline:none;
+    }
+</style>
+<head>
+    <meta property="og:title" content="Map of Mars">
+    <meta property="og:description" content="Space 2313: Map of Mars">
+    <meta property="og:url" content="rus1130.github.io/space2213/map/">
+    <script src="src/two.js"></script>
+    <script src="index.js"></script>
+</head>
+<body>
+    
+    
+</body>
+<script>
+    const sources = {
+        base: "src/baseMap.png",
+        cities: {
+            nivea: {
+                district1: "src/cities/nivea/1.png",
+                district2: "src/cities/nivea/2.png",
+                district3: "src/cities/nivea/3.png",
+                district4: "src/cities/nivea/4.png",
+            },
+            new_scotland: {
+
+            }
+        },
+        borders: {
+            nivea: {
+                district1: "src/borders/nivea/1.png",
+                district2: "src/borders/nivea/2.png",
+                district3: "src/borders/nivea/3.png",
+                district4: "src/borders/nivea/4.png",
+            }
+        }
+    };
+
+    const WIDTH = 2048;
+    const HEIGHT = 1024;
+    const CITY_SCALE = 1.5;
+    const CITY_DEBUG = false;
+
+    const two = new Two({
+        width: WIDTH,
+        height: HEIGHT
+    }).appendTo(document.body);
+
+
+
+    const OVERLAYS = new Map();
+
+
+    const base = two.makeRectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT);
+    base.fill = new Two.Texture(sources.base);
+    base.noStroke();
+
+
+    two.update();
+    two.play();
+
+    //nivea
+    addCities(sources.cities.nivea.district1, [
+        {name: "Spirin", type: "capital", pos: "r", x: 2},
+        {name: "Jury",   type: "default", pos: "r", y: 3},
+        {name: "Spit",   type: "default", pos: "r", y: -3},
+        {name: "Khua",   type: "default", pos: "r", y: -3},
+    ])
+
+    addCities(sources.cities.nivea.district2, [
+        {name: "Borderline", type: "default", pos: "r", y: 5},
+        {name: "Akatol",     type: "default", pos: "l", y: -1},
+        {name: "Whiteice",   type: "subcapital", pos: "r", y: -5},
+    ])
+
+    addCities(sources.cities.nivea.district3, [
+        {name: "Shipport", type: "subcapital", pos: "r"},
+        {name: "Acida", type: "default", pos: "l", contrast: true, x: 10, y: -5},
+    ])
+
+    addCities(sources.cities.nivea.district4, [
+        {name: "Ironhull", type: "subcapital", pos: "r", x: 1},
+        {name: "Telaroute", type: "default", pos: "l", x: 0, y: 4},
+    ])
+
+    addOverlay(sources.borders.nivea.district1);
+    addOverlay(sources.borders.nivea.district2);
+    addOverlay(sources.borders.nivea.district3);
+    addOverlay(sources.borders.nivea.district4);
+        
+</script>
