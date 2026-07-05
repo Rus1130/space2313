@@ -52,7 +52,10 @@ function getImageData(path, callback) {
         canvas.height = img.height;
 
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        ctx.imageSmoothingEnabled = false;
         ctx.drawImage(img, 0, 0);
+
+        console.log(ctx)
 
         const result = {
             width: img.width,
@@ -123,10 +126,13 @@ function findBlocks(mask, width, height) {
             }
         }
 
+
         blocks.push(block);
     }
 
-    return blocks;
+    const sortedBlocks = blocks.sort((a, b) => a.length - b.length);
+
+    return sortedBlocks;
 }
 
 function addCities(path, cityLabels = []) {
@@ -179,7 +185,7 @@ function addCities(path, cityLabels = []) {
 
             if (labelObject) {
                 const size = labelObject.type === "capital" ? 24 : 
-                            labelObject.type === "subcapital" ? 16 : 14;
+                            labelObject.type === "subcapital" ? 16 : 12;
 
 
                 const position = labelObject.pos || "r";
@@ -197,18 +203,24 @@ function addCities(path, cityLabels = []) {
                 label.id = `${path}-city-label-${i}`;
                 label.alignment = alignment;
 
-                if (labelObject.type === "default") {
+                let type = labelObject.type || "default";
+
+                if (type === "default") {
                     if(contrast) label.fill = "rgb(170, 170, 255)";
                     else label.fill = "black";
-                } else if (labelObject.type === "capital") {
+                } else if (type === "capital") {
                     label.fill = "rgb(170, 170, 255)";
                     label.stroke = "black";
                     label.linewidth = 1;
-                } else if (labelObject.type === "subcapital") {
+                } else if (type === "subcapital") {
                     // label.fill = "rgb(170, 170, 255)";
                     // label.stroke = "black";
                     // label.linewidth = 1;
-                    label.fill = "black";
+                    if(contrast) {
+                        label.fill = "rgb(170, 170, 255)";
+                        label.stroke = "black";
+                        label.linewidth = 0.6;
+                    } else label.fill = "black";
                 }
             }
 

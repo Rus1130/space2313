@@ -15,9 +15,16 @@
     
 </body>
 <script>
+    function blankLabel(count){
+        return Array.from({length: count}, (_, i) => ({}));
+    }
+
     const sources = {
         base: "src/baseMap.png",
         cities: {
+            argyre: "src/cities/argyre.png",
+            uzboy: "src/cities/uzboy.png",
+            daedalia: "src/cities/daedalia.png",
             nivea: {
                 district1: "src/cities/nivea/1.png",
                 district2: "src/cities/nivea/2.png",
@@ -25,23 +32,34 @@
                 district4: "src/cities/nivea/4.png",
             },
             new_scotland: {
-
+                west: "src/cities/new_scotland/west.png",
+                yellow: "src/cities/new_scotland/yellow.png",
+                blue: "src/cities/new_scotland/blue.png",
+                red: "src/cities/new_scotland/red.png",
             }
         },
         borders: {
+            northern_union: "src/borders/northern_union.png",
+            meridia: "src/borders/meridia.png",
+            east_scotland: "src/borders/east_scotland.png",
             nivea: {
                 district1: "src/borders/nivea/1.png",
                 district2: "src/borders/nivea/2.png",
                 district3: "src/borders/nivea/3.png",
                 district4: "src/borders/nivea/4.png",
+            },
+            new_scotland: {
+                yellow: "src/borders/new_scotland/yellow.png",
+                blue: "src/borders/new_scotland/blue.png",
+                red: "src/borders/new_scotland/red.png",
             }
         }
     };
 
     const WIDTH = 2048;
     const HEIGHT = 1024;
-    const CITY_SCALE = 1.5;
-    const CITY_DEBUG = false;
+    const CITY_SCALE = 1.2;
+    const CITY_DEBUG = 0;
 
     const two = new Two({
         width: WIDTH,
@@ -61,33 +79,91 @@
     two.update();
     two.play();
 
-    //nivea
-    addCities(sources.cities.nivea.district1, [
-        {name: "Spirin", type: "capital", pos: "r", x: 2},
-        {name: "Jury",   type: "default", pos: "r", y: 3},
-        {name: "Spit",   type: "default", pos: "r", y: -3},
-        {name: "Khua",   type: "default", pos: "r", y: -3},
-    ])
+    // country borders
+    addOverlay(sources.borders.northern_union);
+    addOverlay(sources.borders.meridia);
+    addOverlay(sources.borders.east_scotland);
 
-    addCities(sources.cities.nivea.district2, [
-        {name: "Borderline", type: "default", pos: "r", y: 5},
-        {name: "Akatol",     type: "default", pos: "l", y: -1},
-        {name: "Whiteice",   type: "subcapital", pos: "r", y: -5},
-    ])
-
-    addCities(sources.cities.nivea.district3, [
-        {name: "Shipport", type: "subcapital", pos: "r"},
-        {name: "Acida", type: "default", pos: "l", contrast: true, x: 10, y: -5},
-    ])
-
-    addCities(sources.cities.nivea.district4, [
-        {name: "Ironhull", type: "subcapital", pos: "r", x: 1},
-        {name: "Telaroute", type: "default", pos: "l", x: 0, y: 4},
-    ])
-
+    // country subdivisions
     addOverlay(sources.borders.nivea.district1);
     addOverlay(sources.borders.nivea.district2);
     addOverlay(sources.borders.nivea.district3);
     addOverlay(sources.borders.nivea.district4);
+
+    addOverlay(sources.borders.new_scotland.yellow);
+    addOverlay(sources.borders.new_scotland.blue);
+    addOverlay(sources.borders.new_scotland.red);
+
+    //nivea
+    addCities(sources.cities.nivea.district1, [
+        {name: "Spit",   type: "default", pos: "r", y: 0},
+        {name: "Jury",   type: "default", pos: "r", y: 2, x: -2},
+        {name: "Khua",   type: "default", pos: "r", y: 3},
+        {name: "Spirin", type: "capital", pos: "r", x: 2},
+    ])
+
+    addCities(sources.cities.nivea.district2, [
+        {name: "Akatol",     type: "default", pos: "l"},
+        {name: "Borderline", type: "default", pos: "r", y: 4},
+        {name: "Whiteice",   type: "subcapital", pos: "r", y: -4, x: -4},
+    ])
+
+    addCities(sources.cities.nivea.district3, [
+        {name: "Acida", type: "default", pos: "l", contrast: true, x: 10, y: -4},
+        {name: "Shipport", type: "subcapital", pos: "l", y: -2},
+    ])
+
+    addCities(sources.cities.nivea.district4, [
+        {name: "Ironhull", type: "subcapital", pos: "r", x: 1},
+        {name: "Telaroute", type: "default", pos: "l", x: 2, y: 4},
+    ])
+
+    // new scotland
+    addCities(sources.cities.new_scotland.west, [
+        {name: "Olympia"},
+        {},
+        {name: "Patron"}
+
+    ])
+    addCities(sources.cities.new_scotland.yellow, [
+        {name: "Nilo", type: "subcapital", pos: "r", contrast: true},
+    ])
+    addCities(sources.cities.new_scotland.blue, [
+        {},
+        {name: "Temper", type: "subcapital", pos: "r", y: -5, x: -27, contrast: true},
+    ])
+    addCities(sources.cities.new_scotland.red, [
+        {name: "Sacra", contrast: true, type: "default", y: 2.7, x: -1},
+        {name: "Kassey", type: "capital", pos: "l", y: -4, x: 2}
+    ])
+
+    // argyre
+    addCities(sources.cities.argyre, [
+        {},
+        {name: "Arkhangelsk"},
+        {name: "Argyre City", contrast: true, pos: "l"},
+    ])
+
+    // uzboy
+    addCities(sources.cities.uzboy, [
+        ...blankLabel(3),
+        {name: "Bosos", contrast: true, y: 3, x: -1},
+        {name: "Dehi", pos: "l", y: -2, x: 1, contrast: true},
+    ])
+
+    // daedalia
+    addCities(sources.cities.daedalia, [
+        ...blankLabel(5),
+        {name: "Agan", y: 1.5, x: -1.2},
+        ...blankLabel(1),
+        {name: "Memnon", x: -0.4},
+        {name: "Pavonia", y: -3.5, x: -3},
+        {name: "Arsia", pos: "l", y: -1},
+        {name: "Ascra", y: 1}
+    ])
+
+
+
+
         
 </script>
