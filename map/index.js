@@ -1,3 +1,6 @@
+const OVERLAYS = new Map();
+const CITIES = new Map();
+
 function addOverlay(path) {
     const overlay = two.makeRectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT);
     overlay.fill = new Two.Texture(path);
@@ -6,7 +9,7 @@ function addOverlay(path) {
 }
 
 function removeOverlay(path) {
-    const overlay = OVERLAYS.get(path);
+    let overlay = OVERLAYS.get(path);
     if (overlay) {
         two.remove(overlay);
         OVERLAYS.delete(path);
@@ -54,8 +57,6 @@ function getImageData(path, callback) {
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
         ctx.imageSmoothingEnabled = false;
         ctx.drawImage(img, 0, 0);
-
-        console.log(ctx)
 
         const result = {
             width: img.width,
@@ -135,6 +136,24 @@ function findBlocks(mask, width, height) {
     return sortedBlocks;
 }
 
+function getTagsFromPath(path) {
+    const parts = path.split("/");
+    // remove first and last element
+    return parts.slice(1, -1);
+}
+
+function findCityByTags(tags) {
+    let matches = []
+
+    for (const [cityTags, city] of CITIES.entries()) {
+        if (tags.every(tag => cityTags.includes(tag))) {
+            matches.push(city._renderer.elem);
+        }
+    }
+
+    return matches;
+}
+
 function addCities(path, cityLabels = []) {
     getImageData(path, (imgData) => {
         const mask = findWhiteMask(imgData);
@@ -161,20 +180,30 @@ function addCities(path, cityLabels = []) {
                 city.fill = "white";
                 city.stroke = "black";
                 city.id = `${path}-capital-${i}`;
+                city.tags = getTagsFromPath(path).concat(["capital"]);
+
                 city.scale = CITY_SCALE;
+
+                CITIES.set(getTagsFromPath(path).concat(["capital"]), city);
 
             } else if (type === "subcapital") {
                 const city = two.makeStar(x, y, radius * 1.3, radius * 2.5, 3);
                 city.fill = "white";
                 city.stroke = "black";
-                city.id = `${path}-capital-${i}`;
+                city.id = `${path}-subcapital-${i}`;
+                city.tags = getTagsFromPath(path).concat(["subcapital"]);
                 city.scale = CITY_SCALE;
+
+                CITIES.set(getTagsFromPath(path).concat(["subcapital"]), city);
             } else {
                 const city = two.makeCircle(x, y, radius);
                 city.fill = "white";
                 city.stroke = "black";
                 city.id = `${path}-city-${i}`;
                 city.scale = CITY_SCALE;
+                city.tags = getTagsFromPath(path)
+
+                CITIES.set(getTagsFromPath(path), city);
             }
 
             if (CITY_DEBUG) {
