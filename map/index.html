@@ -36,6 +36,14 @@
                 yellow: "src/cities/new_scotland/yellow.png",
                 blue: "src/cities/new_scotland/blue.png",
                 red: "src/cities/new_scotland/red.png",
+            },
+            meridia: {
+                ambrosia: "src/cities/meridia/ambrosia.png",
+                aurora: "src/cities/meridia/aurora.png",
+                ophir: "src/cities/meridia/ophir.png",
+                terra: "src/cities/meridia/terra.png",
+                thaumasia: "src/cities/meridia/thaumasia.png",
+                vinogradov: "src/cities/meridia/vinogradov.png",
             }
         },
         borders: {
@@ -52,6 +60,14 @@
                 yellow: "src/borders/new_scotland/yellow.png",
                 blue: "src/borders/new_scotland/blue.png",
                 red: "src/borders/new_scotland/red.png",
+            },
+            meridia: {
+                ambrosia: "src/borders/meridia/ambrosia.png",
+                aurora: "src/borders/meridia/aurora.png",
+                ophir: "src/borders/meridia/ophir.png",
+                terra: "src/borders/meridia/terra.png",
+                thaumasia: "src/borders/meridia/thaumasia.png",
+                vinogradov: "src/borders/meridia/vinogradov.png",
             }
         }
     };
@@ -90,6 +106,13 @@
     addOverlay(sources.borders.new_scotland.yellow);
     addOverlay(sources.borders.new_scotland.blue);
     addOverlay(sources.borders.new_scotland.red);
+
+    addOverlay(sources.borders.meridia.ambrosia);
+    addOverlay(sources.borders.meridia.aurora);
+    addOverlay(sources.borders.meridia.ophir);
+    addOverlay(sources.borders.meridia.terra);
+    addOverlay(sources.borders.meridia.thaumasia);
+    addOverlay(sources.borders.meridia.vinogradov);
 
     //nivea
     addCities(sources.cities.nivea.district1, [
@@ -159,7 +182,31 @@
         {name: "Ascra", y: 1}
     ])
 
-
+    // meridia
+    addCities(sources.cities.meridia.ambrosia, [
+        ...blankLabel(3),
+        {name: "New Sicily", contrast: true, type: "subcapital", y: 3, x: -2, size: 10}
+    ])
+    addCities(sources.cities.meridia.aurora, [
+        ...blankLabel(26),
+        {name: "Oxia", pos: "r", y: 0, type: "subcapital", contrast: true, size: 10},
+    ])
+    addCities(sources.cities.meridia.ophir, [
+        ...blankLabel(4),
+        {name: "Xanthus", contrast: true, type: "subcapital", size: 12, x: -1}
+    ])
+    addCities(sources.cities.meridia.terra, [
+        ...blankLabel(13),
+        {name: "Meridian", type: "capital", size: 15, y: -7, x: -35}
+    ])
+    addCities(sources.cities.meridia.thaumasia, [
+        ...blankLabel(12),
+        {name: "Solice", type: "subcapital", pos: "l", contrast: true, size: 10, y: 5, x: 18}
+    ])
+    addCities(sources.cities.meridia.vinogradov, [
+        ...blankLabel(4),
+        {name: "Geos", type: "subcapital", contrast: true, size: 10, y: 2, x: -2}
+    ])
 
 
         

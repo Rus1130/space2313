@@ -137,8 +137,7 @@ function findBlocks(mask, width, height) {
 }
 
 function getTagsFromPath(path) {
-    const parts = path.split("/");
-    // remove first and last element
+    const parts = path.split(/\/|\./);
     return parts.slice(1, -1);
 }
 
@@ -184,37 +183,48 @@ function addCities(path, cityLabels = []) {
 
                 city.scale = CITY_SCALE;
 
-                CITIES.set(getTagsFromPath(path).concat(["capital"]), city);
+                CITIES.set(city.tags, city);
 
             } else if (type === "subcapital") {
                 const city = two.makeStar(x, y, radius * 1.3, radius * 2.5, 3);
                 city.fill = "white";
-                city.stroke = "black";
                 city.id = `${path}-subcapital-${i}`;
                 city.tags = getTagsFromPath(path).concat(["subcapital"]);
                 city.scale = CITY_SCALE;
 
-                CITIES.set(getTagsFromPath(path).concat(["subcapital"]), city);
+                if(radius == 1) city.linewidth = 0.5;
+                if(radius == 2) city.linewidth = 0.7;
+
+                CITIES.set(city.tags, city);
             } else {
                 const city = two.makeCircle(x, y, radius);
                 city.fill = "white";
                 city.stroke = "black";
                 city.id = `${path}-city-${i}`;
                 city.scale = CITY_SCALE;
-                city.tags = getTagsFromPath(path)
+                city.tags = getTagsFromPath(path);
 
-                CITIES.set(getTagsFromPath(path), city);
+                
+                if(radius == 1) city.linewidth = 0.5;
+                if(radius == 2) city.linewidth = 0.7;
+
+
+                CITIES.set(city.tags, city);
             }
 
             if (CITY_DEBUG) {
                 const text = two.makeText(i, x + (radius * CITY_SCALE + 4), y);
                 text.fill = "white";
-                text.size = 12;
+                text.size = 2;
             }
 
             if (labelObject) {
-                const size = labelObject.type === "capital" ? 24 : 
+
+                let size = labelObject.type === "capital" ? 24 : 
                             labelObject.type === "subcapital" ? 16 : 12;
+
+
+                if(labelObject.size) size = labelObject.size;
 
 
                 const position = labelObject.pos || "r";
@@ -240,14 +250,13 @@ function addCities(path, cityLabels = []) {
                 } else if (type === "capital") {
                     label.fill = "rgb(170, 170, 255)";
                     label.stroke = "black";
-                    label.linewidth = 1;
+                    label.linewidth = 0.5;
                 } else if (type === "subcapital") {
                     // label.fill = "rgb(170, 170, 255)";
                     // label.stroke = "black";
                     // label.linewidth = 1;
                     if(contrast) {
                         label.fill = "rgb(170, 170, 255)";
-                        label.stroke = "black";
                         label.linewidth = 0.6;
                     } else label.fill = "black";
                 }
