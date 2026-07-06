@@ -62,10 +62,15 @@ const HTML_TEMPLATE =
             }
         });
 
+        let speedToggle = false;
+
         document.body.addEventListener('keydown', (event) => {
             if (event.code === 'Space') tw3.togglePause();
-            if (event.code === 'ArrowRight') tw3.speedOverride(1);
-            if (event.code === 'ArrowLeft') tw3.speedOverride(null);
+            if (event.code === 'ArrowRight') {
+                speedToggle = !speedToggle;
+                if(speedToggle) tw3.speedOverride(1);
+                else tw3.speedOverride(null);
+            }
         });
 
         tw3.start();

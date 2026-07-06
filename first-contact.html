@@ -2,8 +2,8 @@
 <head>
     <link rel="stylesheet" href="./src/css.css">
     <script src="https://rus1130.github.io/projects/Global/typewriter.js"></script>
-    <meta property="og:title"       content="First Contact"                                               />
-    <meta property="og:description" content="I recently collected this data."                             />
+    <meta property="og:title"       content="First Contact"                                      />
+    <meta property="og:description" content="Hello."                                             />
     <meta property="og:url"         content="https://rus1130.github.io/space2213/first-contact/" />
     <title>First Contact</title>
 </head>
@@ -33,10 +33,16 @@
             wordWrap: 72
         });
 
+        let speedToggle = false;
+
         document.body.addEventListener('keydown', (event) => {
             if (event.code === 'Space') tw3.togglePause();
-            if (event.code === 'ArrowRight') tw3.speedOverride(1);
-            if (event.code === 'ArrowLeft') tw3.speedOverride(null);
+            if (event.code === 'ArrowRight') {
+                speedToggle = !speedToggle;
+                if(speedToggle) tw3.speedOverride(1);
+                else tw3.speedOverride(null);
+            }
+            if (event.code === 'ArrowDown') tw3.instant = true;
         });
 
         tw3.start();

@@ -88,10 +88,6 @@
     base.fill = new Two.Texture(sources.base);
     base.noStroke();
 
-
-    two.update();
-    two.play();
-
     // country borders
     addOverlay(sources.borders.northern_union);
     addOverlay(sources.borders.meridia);
@@ -113,6 +109,9 @@
     addOverlay(sources.borders.meridia.terra);
     addOverlay(sources.borders.meridia.thaumasia);
     addOverlay(sources.borders.meridia.vinogradov);
+
+    two.update();
+    two.play();
 
     //nivea
     addCities(sources.cities.nivea.district1, [
@@ -208,6 +207,7 @@
         {name: "Geos", type: "subcapital", contrast: true, size: 10, y: 2, x: -2}
     ])
 
-
+    two.update();
+    two.play();
         
 </script>

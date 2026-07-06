@@ -174,49 +174,28 @@ function addCities(path, cityLabels = []) {
 
             const type = labelObject?.type;
 
-            if (type === "capital") {
-                const city = two.makeStar(x, y, radius * 1.5, radius * 3, 5);
-                city.fill = "white";
-                city.stroke = "black";
-                city.id = `${path}-capital-${i}`;
-                city.tags = getTagsFromPath(path).concat(["capital"]);
 
-                city.scale = CITY_SCALE;
 
-                CITIES.set(city.tags, city);
+            let city;
 
-            } else if (type === "subcapital") {
-                const city = two.makeStar(x, y, radius * 1.3, radius * 2.5, 3);
-                city.fill = "white";
-                city.id = `${path}-subcapital-${i}`;
-                city.tags = getTagsFromPath(path).concat(["subcapital"]);
-                city.scale = CITY_SCALE;
 
-                if(radius == 1) city.linewidth = 0.5;
-                if(radius == 2) city.linewidth = 0.7;
-
-                CITIES.set(city.tags, city);
+            if(type === "capital") {
+                city = two.makeStar(x, y, radius * 1.5, radius * 3, 5);
+            } else if(type === "subcapital") {
+                city = two.makeStar(x, y, radius * 1.3, radius * 2.5, 3);
             } else {
-                const city = two.makeCircle(x, y, radius);
-                city.fill = "white";
-                city.stroke = "black";
-                city.id = `${path}-city-${i}`;
-                city.scale = CITY_SCALE;
-                city.tags = getTagsFromPath(path);
-
-                
-                if(radius == 1) city.linewidth = 0.5;
-                if(radius == 2) city.linewidth = 0.7;
-
-
-                CITIES.set(city.tags, city);
+                city = two.makeCircle(x, y, radius);
             }
+        
 
-            if (CITY_DEBUG) {
-                const text = two.makeText(i, x + (radius * CITY_SCALE + 4), y);
-                text.fill = "white";
-                text.size = 2;
-            }
+            city.id = `${path}-${type === "default" ? "city" : type}-${i}`;
+            city.stroke = "black";
+            city.fill = "white";
+            city.scale = CITY_SCALE;
+
+            city.tags = type === "default" ? getTagsFromPath(path) : getTagsFromPath(path).concat([type]);
+
+            CITIES.set(city.tags, city);
 
             if (labelObject) {
 
@@ -241,6 +220,7 @@ function addCities(path, cityLabels = []) {
                 label.translation.y += yOffset;
                 label.id = `${path}-city-label-${i}`;
                 label.alignment = alignment;
+                label.family = "Arial";
 
                 let type = labelObject.type || "default";
 
@@ -260,6 +240,13 @@ function addCities(path, cityLabels = []) {
                         label.linewidth = 0.6;
                     } else label.fill = "black";
                 }
+            }
+
+
+            if (CITY_DEBUG) {
+                const text = two.makeText(i, x + (radius * CITY_SCALE + 4), y);
+                text.fill = "orange";
+                text.size = 5;
             }
 
             i++;
