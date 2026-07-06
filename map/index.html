@@ -50,13 +50,15 @@
             northern_union: "src/borders/northern_union.png",
             meridia: "src/borders/meridia.png",
             east_scotland: "src/borders/east_scotland.png",
-            nivea: {
+        },
+        subdivisions: {
+            northern_union: {
                 district1: "src/borders/nivea/district_1.png",
                 district2: "src/borders/nivea/district_2.png",
                 district3: "src/borders/nivea/district_3.png",
                 district4: "src/borders/nivea/district_4.png",
             },
-            new_scotland: {
+            east_scotland: {
                 yellow: "src/borders/new_scotland/yellow.png",
                 blue: "src/borders/new_scotland/blue.png",
                 red: "src/borders/new_scotland/red.png",
@@ -94,21 +96,21 @@
     addOverlay(sources.borders.east_scotland);
 
     // country subdivisions
-    addOverlay(sources.borders.nivea.district1);
-    addOverlay(sources.borders.nivea.district2);
-    addOverlay(sources.borders.nivea.district3);
-    addOverlay(sources.borders.nivea.district4);
+    addOverlay(sources.subdivisions.northern_union.district1);
+    addOverlay(sources.subdivisions.northern_union.district2);
+    addOverlay(sources.subdivisions.northern_union.district3);
+    addOverlay(sources.subdivisions.northern_union.district4);
 
-    addOverlay(sources.borders.new_scotland.yellow);
-    addOverlay(sources.borders.new_scotland.blue);
-    addOverlay(sources.borders.new_scotland.red);
+    addOverlay(sources.subdivisions.east_scotland.yellow);
+    addOverlay(sources.subdivisions.east_scotland.blue);
+    addOverlay(sources.subdivisions.east_scotland.red);
 
-    addOverlay(sources.borders.meridia.ambrosia);
-    addOverlay(sources.borders.meridia.aurora);
-    addOverlay(sources.borders.meridia.ophir);
-    addOverlay(sources.borders.meridia.terra);
-    addOverlay(sources.borders.meridia.thaumasia);
-    addOverlay(sources.borders.meridia.vinogradov);
+    addOverlay(sources.subdivisions.meridia.ambrosia);
+    addOverlay(sources.subdivisions.meridia.aurora);
+    addOverlay(sources.subdivisions.meridia.ophir);
+    addOverlay(sources.subdivisions.meridia.terra);
+    addOverlay(sources.subdivisions.meridia.thaumasia);
+    addOverlay(sources.subdivisions.meridia.vinogradov);
 
     two.update();
     two.play();
