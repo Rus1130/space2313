@@ -19,7 +19,7 @@ Attachment: [speed 80 1]data.fits[speeddefault][newline]
 [newline]
 Hey Kent,[linebreak]
 [speed 40]
-I recently collected this data, but I ran into an issue trying to read it. It said the file’s corrupted, and I don’t have the tools over here to scrape the data out myself. Could you take a look at it [sleep 500](when you have the chance)?[newline]
+I recently collected this data, but I ran into an issue trying to read it. It said the file’s corrupted, and I don’t have the tools over here to scrape the data out myself. Could you take a look at it [sleep 500](when you have the time)?[newline]
 [newline]
 \-Tom, New Juneau Outpost
 [linebreak]
