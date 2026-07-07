@@ -20,7 +20,7 @@ const date = `${day} ${months[month-1]}, ${year}`;
 
 let metaTitle = `<meta property="og:title"       content="${name}"`
 let metaDesc  = `<meta property="og:description" content=""`
-let metaURL   = `<meta property="og:url"         content="https://rus1130.github.io/space2213/${nameNormalized}/"`
+let metaURL   = `<meta property="og:url"         content="https://rus1130.github.io/space2313/${nameNormalized}/"`
 
 // find the longest of the three strings, and pad the others with spaces to match
 let maxLength = Math.max(metaTitle.length, metaDesc.length, metaURL.length);
@@ -41,7 +41,7 @@ const HTML_TEMPLATE =
 </head>
 <body>
     <div id="out"></div>
-    <div class="button" id="return" onclick="location.href = 'https://rus1130.github.io/space2213/'" style="display: none;">▌< Return</div>
+    <div class="button" id="return" onclick="location.href = 'https://rus1130.github.io/space2313/'" style="display: none;">▌< Return</div>
 </body>
 <script>
     fetch('./src/${nameNormalized}.tw')
@@ -93,7 +93,7 @@ fs.writeFileSync(path.join(`${nameNormalized}.html`), HTML_TEMPLATE.replaceAll("
 fs.writeFileSync(path.join('src', `${nameNormalized}.tw`), txt_TEMPLATE.replaceAll("\n", "\r\n"));
 
 let homepage = fs.readFileSync(path.join('index.html'), 'utf8');
-let insertIndex = homepage.indexOf('<div class="button" onclick="location.href = \'https://rus1130.github.io/projects/index.html?bypass=true\'">▌< Return to main page</div>') - 4;
+let insertIndex = homepage.indexOf('<!-- -- INSERT POINT -- -->') - 4;
 let newLink = `    <!-- <div class="button" onclick="location.href = './${nameNormalized}'">▌${name}</div> -->`;
 
 homepage = homepage.slice(0, insertIndex) + newLink + '\r\n' + homepage.slice(insertIndex);
