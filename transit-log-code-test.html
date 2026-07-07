@@ -47,15 +47,22 @@
         "hull_stress",
         "microfracture_detection",
         "airlock",
+        "radiator",
 
         "radiation_shielding",
         "thermal_shielding",
-        "air_generator",
+        "air_recycler",
         "scrubber",
         "climate_control",
         "fire_suppression",
-        "water_recycling",
-        "waste_recycling"
+        "water_recycler",
+        "waste_recycler",
+
+        "ship_registration",
+        "internal_network",
+        "radio",
+        "encryption_hardware",
+        "emergency_beacon",
     ]
 
     const timings = [
@@ -89,6 +96,7 @@
         2500,
         2250,
         220,
+        10,
 
         500,
         500,
@@ -97,7 +105,13 @@
         550,
         500,
         620,
-        620
+        620,
+
+        20,
+        722,
+        420,
+        490,
+        880
     ]
 
     const criticalComponents = [
@@ -188,26 +202,37 @@
             {name: "technetium_containment", status: "ok"},
             {name: "hull_stress", status: "ok"},
             {name: "microfracture_detection", status: "ok"},
-            {name: "airlock", status: "ok"}
+            {name: "airlock", status: "ok"},
+            {name: "radiator", statuses: [
+                "warning", "ok", "ok", "ok", "warning", "ok", "ok", "ok",
+            ]}
         ]},
 
         {name: "life_support", contents: [
             {name: "radiation_shielding", status: "ok"},
             {name: "thermal_shielding", status: "ok"},
-            {name: "air_generator", statuses: [
-                "ok", "ok", "ok"
-            ]},
             {name: "scrubber", statuses: [
                 "ok", "ok", "ok", "ok", "ok", "ok"
             ]},
             {name: "climate_control", status: "ok"},
             {name: "fire_suppression", status: "ok"},
-            {name: "water_recycling", statuses: [
+            {name: "water_recycler", statuses: [
                 "ok", "ok"
             ]},
-            {name: "waste_recycling", statuses: [
+            {name: "waste_recycler", statuses: [
                 "ok", "ok"
-            ]}
+            ]},
+            {name: "air_recycler", statuses: [
+                "ok", "ok", "ok"
+            ]},
+        ]},
+
+        {name: "communications", contents: [
+            {name: "ship_registration", status: "ok"},
+            {name: "internal_network", status: "ok"},
+            {name: "radio", status: "ok"},
+            {name: "encryption_hardware", status: "ok"},
+            {name: "emergency_beacon", status: "ok"}
         ]}
     ]
 

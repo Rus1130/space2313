@@ -8,48 +8,10 @@
     }
 #}}
 
-{{#
-[color #339900]OK[resetcolor]
-[color #ffcc00]WARNING[resetcolor]
-[color #cc3300]ERROR[resetcolor]
-#}}
-
-{{# preflight diagnostics check[speed 10 1]...[speeddefault][newline]
-loading diagnostics program[speed 10 1]...[speeddefault][linebreak] #}}
-
-{{#
-
-otech - 2s
-main eng - 500ms
-second eng - 250ms
-inertial damp - 150ms
-fuel press - 50ms
-coolant press - 50ms
-ignit sys - 50ms
-technet inj - 750ms
-engine temp - 10ms
-gyroscope - 50ms
-
-prime reactor - 2s
-second reactor - 1s
-bat - 25ms
-current draw - 10ms
-
-navcomp - 600ms
-docking comp - 500ms
-imu - 500ms
-optical sensor - 5ms
-lidar sensor - 6ms
-radar sensor - 6ms
-rmc - 200ms
-
-
-og containment - 5s
-tech containment - 5s
-hull stress - 2.5s
-microfrac - 2.25s
-airlock - 220ms
-#}}
+[sleep 1000]
+preflight diagnostics check[speed 10 1]...[speeddefault][newline]
+loading diagnostics program[speed 10 1].[sleep 400].[sleep 400].[sleep 1000][speeddefault][newline]
+diagnostics program loaded. running[speed 10 1][sleep 400].[sleep 400].[sleep 400].[sleep 1000][speeddefault][linebreak]
 
 [speed 1 1]
 
@@ -81,7 +43,7 @@ ELECTRICAL 88.89%
 [linebreak]
 
 NAVIGATION =========================[newline]
-[tab 11]IPN CONNECTION((SPECIAL TIMING GOES HERE))[color #339900]OK[resetcolor][newline]
+[tab 11]IPN CONNECTION[sleep 250].[sleep 250].[sleep 250].[sleep 250].[sleep 250].[sleep 250].[sleep 137].[color #339900]OK[resetcolor][newline]
 [tab 11]NAVIGATIONAL COMPUTER.[sleep 1200]...[color #339900]OK 2[resetcolor][newline]
 [tab 11]DOCKING COMPUTER.[sleep 600]........[color #339900]OK[resetcolor][newline]
 [tab 11]IMU.[sleep 1000].....................[color #339900]OK 2[resetcolor][newline]
@@ -102,29 +64,51 @@ STRUCTURE =========================[newline]
 [tab 10]HULL STRESS.[sleep 2500].............[color #339900]OK[resetcolor][newline]
 [tab 10]MICROFRACTURE DETECTION.[sleep 2250].[color #339900]OK[resetcolor][newline]
 [tab 10]AIRLOCK.[sleep 220].................[color #339900]OK[resetcolor][newline]
+[tab 10]RADIATOR.[sleep 80]................[newline]
+[tab 33]1[color #FFCC00] WARNING[resetcolor][newline]
+[tab 31]2\-4[color #339900] OK[resetcolor][newline]
+[tab 33]5[color #FFCC00] WARNING[resetcolor][newline]
+[tab 31]6\-8[color #339900] OK[resetcolor][newline]
 [newline]
-STRUCTURE 100%
+STRUCTURE 84.62%
 [linebreak]
+
 
 LIFE SUPPORT =========================[newline]
 [tab 13]RADIATION SHIELDING.[sleep 500].....[color #339900]OK[resetcolor][newline]
 [tab 13]THERMAL SHIELDING.[sleep 500].......[color #339900]OK[resetcolor][newline]
-[tab 13]AIR GENERATOR.[sleep 1200]...........[color #339900]OK 3[resetcolor][newline]
 [tab 13]SCRUBBER.[sleep 1200]................[color #339900]OK 6[resetcolor][newline]
 [tab 13]CLIMATE CONTROL.[sleep 550].........[color #339900]OK[resetcolor][newline]
 [tab 13]FIRE SUPPRESSION.[sleep 500]........[color #339900]OK[resetcolor][newline]
+[tab 13]AIR RECYCLING.[sleep 1200]...........[color #339900]OK 3[resetcolor][newline]
 [tab 13]WATER RECYCLING.[sleep 1240].........[color #339900]OK 2[resetcolor][newline]
 [tab 13]WASTE RECYCLING.[sleep 1240].........[color #339900]OK 2[resetcolor][newline]
 [newline]
 LIFE SUPPORT 100%
+[linebreak]
+COMMUNICATIONS =========================[newline]
+[tab 15]SHIP REGISTRATION.[sleep 20].......[color #339900]OK[resetcolor][newline]
+[tab 15]INTERNAL NETWORK.[sleep 722]........[color #339900]OK[resetcolor][newline]
+[tab 15]RADIO.[sleep 420]...................[color #339900]OK[resetcolor][newline]
+[tab 15]ENCRYPTION HARDWARE.[sleep 490].....[color #339900]OK[resetcolor][newline]
+[tab 15]EMERGENCY BEACON.[sleep 880]........[color #339900]OK[resetcolor][newline]
+[newline]
+COMMUNICATIONS 100%
+[sleep 1200]
 [linebreak]========================================[newline]
+[speed 25 1]
 SUMMARY[linebreak]
-[tab 2]WARNING[newline]
-[tab 4]BATTERY..............5[linebreak]
-[tab 2]ERROR[newline]
-[tab 4]LIDAR SENSOR.........11[newline]
-[tab 4]RMC..................1\-2 \[ALL\][linebreak]
-OVERALL..................YELLOW
+[sleep 1000]
+[tab 2]WARNING[sleep 800][newline]
+[tab 4]BATTERY..............5[newline]
+[tab 4]RADIATOR.............1,5[linebreak]
+[sleep 1000]
+[tab 2]ERROR[sleep 800][newline]
+[tab 4]LIDAR SENSOR.........11[sleep 800][newline]
+[tab 4]RMC..................1\-2 [color #cc3300]\[ALL\][resetcolor][sleep 900][linebreak]
+[sleep 800]
+OVERALL..................[newline][sleep 500]
+SOME REDUNDANT SYSTEMS OFFLINE.[sleep 900] WILL NOT MAJORLY IMPACT SHIP PERFORMANCE.[sleep 900] RECOMMENDED ACTION:[sleep 700] PROCEED AS NORMAL.[sleep 1500]
 [speeddefault]
 [linebreak]
-PROCEEDING TO LAUNCH.[sleep 1000][newpage]
+[speed 80 1]PROCEEDING TO LAUNCH.[speeddefault][sleep 1000][linebreak][newpage]
