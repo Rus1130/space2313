@@ -1,0 +1,390 @@
+<style>
+    button:focus, input:focus, select:focus, textarea:focus, [contenteditable]:focus {
+        outline:none;
+    }
+</style>
+<head>
+    <meta property="og:title" content="">
+    <meta property="og:description" content="">
+    <meta property="og:url" content="">
+</head>
+<body>
+    
+    
+</body>
+<script>
+
+    function namify(str) { return str.toUpperCase().replaceAll("_", " "); }
+
+    const nameBank = [
+        "drive",
+        "main_engine",
+        "secondary_engine",
+        "inertial_dampener",
+        "fuel_pressure",
+        "coolant_pressure",
+        "ignition_systems",
+        "technetium_injector",
+        "engine_temperature",
+        "gyroscope",
+
+        "primary_reactor",
+        "secondary_reactor",
+        "battery",
+        "current_draw",
+        
+        "ipn_connection",
+        "navigational_computer",
+        "docking_computer",
+        "imu",
+        "optical_sensor",
+        "lidar_sensor",
+        "radar_sensor",
+        "rmc",
+
+        "oganesson_containment",
+        "technetium_containment",
+        "hull_stress",
+        "microfracture_detection",
+        "airlock",
+
+        "radiation_shielding",
+        "thermal_shielding",
+        "air_generator",
+        "scrubber",
+        "climate_control",
+        "fire_suppression",
+        "water_recycling",
+        "waste_recycling"
+    ]
+
+    const timings = [
+        2000,
+        500,
+        250,
+        150,
+        50,
+        50,
+        50,
+        750,
+        10,
+        50,
+
+        2000,
+        1000,
+        25,
+        10,
+
+        250,
+        600,
+        600,
+        500,
+        5,
+        6,
+        6,
+        200,
+
+        4000,
+        4000,
+        2500,
+        2250,
+        220,
+
+        500,
+        500,
+        400,
+        200,
+        550,
+        500,
+        620,
+        620
+    ]
+
+    const criticalComponents = [
+        "drive",
+        "main_engine",
+        "ipn_connection"
+    ]
+
+    const semiCriticalComponents = [
+
+    ]
+
+    const diagnosticsReport = [
+        {name: "flight", contents: [
+            {name: "drive", status: "ok"},
+            {name: "main_engine", statuses: [
+                "ok", "ok", "ok", "ok"
+            ]},
+            {name: "secondary_engine", statuses: [
+                "ok", "ok", "ok", "ok", "ok", "ok", "ok", "ok"
+            ]},
+            {name: "inertial_dampener", status: "ok"},
+            {name: "fuel_pressure", status: "ok"},
+            {name: "coolant_pressure", status: "ok"},
+            {name: "ignition_systems", status: "ok"},
+            {name: "technetium_injector", status: "ok"},
+            {name: "engine_temperature", status: "ok"},
+            {name: "gyroscope", statuses: [
+                "ok", "ok", "ok", "ok",
+            ]}
+        ]},
+
+        {name: "electrical", contents: [
+            {name: "primary_reactor", status: "ok"},
+            {name: "secondary_reactor", status: "ok"},
+            {name: "battery", statuses: [
+                "ok", "ok", "ok", "ok", "warning", "ok"
+            ]},
+            {name: "current_draw", status: "ok"}
+        ]},
+
+        {name: "navigation", contents: [
+            {name: "ipn_connection", status: "ok", desynced: true},
+            {name: "navigational_computer", statuses: [
+                "ok", "ok"
+            ]},
+            {name: "docking_computer", status: "ok"},
+            {name: "imu", statuses: [
+                "ok", "ok"
+            ]},
+            {name: "optical_sensor", statuses: [
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+            ]},
+            {name: "lidar_sensor", statuses: [
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "error", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+            ]},
+            {name: "radar_sensor", statuses: [
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+                "ok", "ok", "ok", "ok",
+            ]},
+            {name: "rmc", statuses: [
+                "error", "error"
+            ]}
+        ]},
+
+        {name: "structure", contents: [
+            {name: "oganesson_containment", status: "ok"},
+            {name: "technetium_containment", status: "ok"},
+            {name: "hull_stress", status: "ok"},
+            {name: "microfracture_detection", status: "ok"},
+            {name: "airlock", status: "ok"}
+        ]},
+
+        {name: "life_support", contents: [
+            {name: "radiation_shielding", status: "ok"},
+            {name: "thermal_shielding", status: "ok"},
+            {name: "air_generator", statuses: [
+                "ok", "ok", "ok"
+            ]},
+            {name: "scrubber", statuses: [
+                "ok", "ok", "ok", "ok", "ok", "ok"
+            ]},
+            {name: "climate_control", status: "ok"},
+            {name: "fire_suppression", status: "ok"},
+            {name: "water_recycling", statuses: [
+                "ok", "ok"
+            ]},
+            {name: "waste_recycling", statuses: [
+                "ok", "ok"
+            ]}
+        ]}
+    ]
+
+    const colorBank = {
+        "OK": "#339900",
+        "WARNING": "#FFCC00",
+        "ERROR": "#CC3300"
+    }
+
+    function outputSection(sectionName) {
+
+        let finalOutput = "";
+
+        const longestName = nameBank.reduce((a, b) => a.length > b.length ? a : b);
+
+        const section = diagnosticsReport.find(s => s.name === sectionName);
+
+        if (!section) {
+            throw new Error(`Diagnostics section "${sectionName}" not found.`);
+        }
+
+        finalOutput += namify(sectionName) + " " + "=".repeat(longestName.length + 2) + "[newline]\n";
+
+        for (const current of section.contents) {
+            const padding = ".".repeat(longestName.length - current.name.length + 2);
+
+            let strToOutput =
+                `[tab ${namify(sectionName).length + 1}]` +
+                namify(current.name) +
+                padding;
+
+                const sleepTimer = `[sleep ${timings[nameBank.indexOf(current.name)] * (current?.statuses == undefined ? 1 : current.statuses.length)}]`; // whatever character you want
+
+                const firstPeriod = strToOutput.indexOf(".");
+                if (firstPeriod !== -1) {
+                    strToOutput =
+                        strToOutput.slice(0, firstPeriod + 1) +
+                        sleepTimer +
+                        strToOutput.slice(firstPeriod + 1);
+                }
+
+            if(current?.desynced === true){
+
+                const status = current.status.toUpperCase();
+                const color = colorBank[status];
+
+                finalOutput += `[tab ${namify(sectionName).length + 1}]${namify(current.name)}((SPECIAL TIMING GOES HERE))[color ${color}]${status}[resetcolor]` + "[newline]\n";
+            } else {
+                if (current.status) {
+                    const color = colorBank[current.status.toUpperCase()];
+                    strToOutput += `[color ${color}]${current.status.toUpperCase()}[resetcolor]`;
+                    finalOutput += strToOutput + "[newline]\n";
+                    continue;
+                }
+
+                const groups = [];
+
+                let start = 0;
+                let end = 0;
+                let currentStatus = current.statuses[0];
+                let allSame = true;
+
+                for (let j = 1; j < current.statuses.length; j++) {
+                    const status = current.statuses[j];
+
+                    if (status !== currentStatus) {
+                        allSame = false;
+
+                        groups.push({
+                            start,
+                            end,
+                            status: currentStatus
+                        });
+
+                        start = end = j;
+                        currentStatus = status;
+                    } else {
+                        end = j;
+                    }
+                }
+
+                groups.push({
+                    start,
+                    end,
+                    status: currentStatus
+                });
+
+                if (allSame) {
+
+                    let color = colorBank[currentStatus.toUpperCase()];
+
+                    strToOutput += `[color ${color}]${currentStatus.toUpperCase()} ${current.statuses.length}[resetcolor]`;
+                    finalOutput += strToOutput + "[newline]\n";
+                } else {
+                    finalOutput += strToOutput + "[newline]\n";
+
+                    for (const group of groups) {
+
+                        let status = group.status.toUpperCase();
+
+                        const color = colorBank[status];
+
+                        let label =
+                            group.start === group.end
+                                ? `${group.start+1} ${status}`
+                                : `${group.start+1}\\-${group.end+1} ${status}`;
+
+                        let indentCount = longestName.length - label.length + status.length + 2;
+
+                        if(label.includes("-")) {
+                            indentCount += 1;
+                        }
+
+                        const indent = `[tab ${indentCount + namify(sectionName).length + 1}]`;
+
+                        // insert after the first space in label
+                        label = label.replace(" ", `[color ${color}] `);
+                        label+="[resetcolor]";
+
+                        finalOutput += indent + label + "[newline]\n";
+                    }
+                }
+            }
+        }
+
+        // get total number of statuses
+        const totalStatuses = section.contents.reduce((acc, current) => {
+            if (current.status) {
+                return acc + 1;
+            } else {
+                return acc + current.statuses.length;
+            }
+        }, 0);
+
+        // get total that are not error
+        const totalNotError = section.contents.reduce((acc, current) => {
+            if (current.status) {
+                return acc + (current.status.toUpperCase() !== "ERROR" ? 1 : 0);
+            } else {
+                return acc + current.statuses.filter(s => s.toUpperCase() !== "ERROR").length;
+            }
+        }, 0);
+
+        // get total that are okay
+
+        const totalOkay = section.contents.reduce((acc, current) => {
+            if (current.status) {
+                return acc + (current.status.toUpperCase() === "OK" ? 1 : 0);
+            } else {
+                return acc + current.statuses.filter(s => s.toUpperCase() === "OK").length;
+            }
+        }, 0);
+
+        finalOutput += `[newline]\n${namify(sectionName)} ${(totalOkay/totalStatuses*100).toFixed(2).replace(".00", "")+"%"}\n[linebreak]`;
+
+        return finalOutput;
+    }
+
+
+    function getDiagnosticsReport() {
+        let finalOutput = "[speed 1 1]";
+        for (const section of diagnosticsReport) {
+            finalOutput += "\n\n" + outputSection(section.name);
+        }
+
+        finalOutput+="========================================[newline]\nSUMMARY";
+
+        // create a summary of everything wrong
+
+       
+        
+        
+        finalOutput+="\n[speeddefault]"
+
+        console.log(finalOutput);
+    }
+
+    getDiagnosticsReport();
+    
+</script>
