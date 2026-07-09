@@ -15,6 +15,8 @@ diagnostics program loaded. running[speed 10 1][sleep 400].[sleep 400].[sleep 40
 
 [speed 1 1]
 
+v1.26.3 ==============================[linebreak]
+
 FLIGHT =========================[newline]
 [tab 7]DRIVE.[sleep 2000]...................[color #339900]OK[resetcolor][newline]
 [tab 7]MAIN ENGINE.[sleep 2000].............[color #339900]OK 4[resetcolor][newline]
@@ -73,23 +75,24 @@ STRUCTURE =========================[newline]
 STRUCTURE 84.62%
 [linebreak]
 
-
 LIFE SUPPORT =========================[newline]
 [tab 13]RADIATION SHIELDING.[sleep 500].....[color #339900]OK[resetcolor][newline]
 [tab 13]THERMAL SHIELDING.[sleep 500].......[color #339900]OK[resetcolor][newline]
 [tab 13]SCRUBBER.[sleep 1200]................[color #339900]OK 6[resetcolor][newline]
 [tab 13]CLIMATE CONTROL.[sleep 550].........[color #339900]OK[resetcolor][newline]
 [tab 13]FIRE SUPPRESSION.[sleep 500]........[color #339900]OK[resetcolor][newline]
-[tab 13]AIR RECYCLING.[sleep 1200]...........[color #339900]OK 3[resetcolor][newline]
-[tab 13]WATER RECYCLING.[sleep 1240].........[color #339900]OK 2[resetcolor][newline]
-[tab 13]WASTE RECYCLING.[sleep 1240].........[color #339900]OK 2[resetcolor][newline]
+[tab 13]WATER RECYCLER.[sleep 1240]..........[color #339900]OK 2[resetcolor][newline]
+[tab 13]WASTE RECYCLER.[sleep 1240]..........[color #339900]OK 2[resetcolor][newline]
+[tab 13]AIR RECYCLER.[sleep 1200]............[color #339900]OK 3[resetcolor][newline]
 [newline]
 LIFE SUPPORT 100%
 [linebreak]
+
 COMMUNICATIONS =========================[newline]
 [tab 15]SHIP REGISTRATION.[sleep 20].......[color #339900]OK[resetcolor][newline]
 [tab 15]INTERNAL NETWORK.[sleep 722]........[color #339900]OK[resetcolor][newline]
 [tab 15]RADIO.[sleep 420]...................[color #339900]OK[resetcolor][newline]
+[tab 15]IPN BEACON.[sleep 250]..............[color #339900]OK[resetcolor][newline]
 [tab 15]ENCRYPTION HARDWARE.[sleep 490].....[color #339900]OK[resetcolor][newline]
 [tab 15]EMERGENCY BEACON.[sleep 880]........[color #339900]OK[resetcolor][newline]
 [newline]

@@ -16,113 +16,57 @@
 
     function namify(str) { return str.toUpperCase().replaceAll("_", " "); }
 
-    const nameBank = [
-        "drive",
-        "main_engine",
-        "secondary_engine",
-        "inertial_dampener",
-        "fuel_pressure",
-        "coolant_pressure",
-        "ignition_systems",
-        "technetium_injector",
-        "engine_temperature",
-        "gyroscope",
+    const diagnosticsInfo = {
+        drive: 2000,
+        main_engine: 500,
+        secondary_engine: 250,
+        inertial_dampener: 150,
+        fuel_pressure: 50,
+        coolant_pressure: 50,
+        ignition_systems: 50,
+        technetium_injector: 750,
+        engine_temperature: 10,
+        gyroscope: 50,
 
-        "primary_reactor",
-        "secondary_reactor",
-        "battery",
-        "current_draw",
-        
-        "ipn_connection",
-        "navigational_computer",
-        "docking_computer",
-        "imu",
-        "optical_sensor",
-        "lidar_sensor",
-        "radar_sensor",
-        "rmc",
+        primary_reactor: 2000,
+        secondary_reactor: 1000,
+        battery: 25,
+        current_draw: 10,
 
-        "oganesson_containment",
-        "technetium_containment",
-        "hull_stress",
-        "microfracture_detection",
-        "airlock",
-        "radiator",
+        ipn_connection: 250,
+        navigational_computer: 600,
+        docking_computer: 600,
+        imu: 500,
+        optical_sensor: 5,
+        lidar_sensor: 6,
+        radar_sensor: 6,
+        rmc: 200,
 
-        "radiation_shielding",
-        "thermal_shielding",
-        "air_recycler",
-        "scrubber",
-        "climate_control",
-        "fire_suppression",
-        "water_recycler",
-        "waste_recycler",
+        oganesson_containment: 4000,
+        technetium_containment: 4000,
+        hull_stress: 2500,
+        microfracture_detection: 2250,
+        airlock: 220,
+        radiator: 10,
 
-        "ship_registration",
-        "internal_network",
-        "radio",
-        "encryption_hardware",
-        "emergency_beacon",
-    ]
+        radiation_shielding: 500,
+        thermal_shielding: 500,
+        air_recycler: 400,
+        scrubber: 200,
+        climate_control: 550,
+        fire_suppression: 500,
+        water_recycler: 620,
+        waste_recycler: 620,
 
-    const timings = [
-        2000,
-        500,
-        250,
-        150,
-        50,
-        50,
-        50,
-        750,
-        10,
-        50,
+        ship_registration: 20,
+        ipn_beacon: 250,
+        internal_network: 722,
+        radio: 420,
+        encryption_hardware: 490,
+        emergency_beacon: 880,
+    };
 
-        2000,
-        1000,
-        25,
-        10,
-
-        250,
-        600,
-        600,
-        500,
-        5,
-        6,
-        6,
-        200,
-
-        4000,
-        4000,
-        2500,
-        2250,
-        220,
-        10,
-
-        500,
-        500,
-        400,
-        200,
-        550,
-        500,
-        620,
-        620,
-
-        20,
-        722,
-        420,
-        490,
-        880
-    ]
-
-    const criticalComponents = [
-        "drive",
-        "main_engine",
-        "ipn_connection"
-    ]
-
-    const semiCriticalComponents = [
-
-    ]
+    const nameBank = Object.keys(diagnosticsInfo);
 
     const diagnosticsReport = [
         {name: "flight", contents: [
@@ -154,7 +98,7 @@
         ]},
 
         {name: "navigation", contents: [
-            {name: "ipn_connection", status: "ok", desynced: true},
+            {name: "ipn_connection", status: "ok", desynced: true, count: 7, delay: 250, last: 137},
             {name: "navigational_computer", statuses: [
                 "ok", "ok"
             ]},
@@ -231,6 +175,7 @@
             {name: "ship_registration", status: "ok"},
             {name: "internal_network", status: "ok"},
             {name: "radio", status: "ok"},
+            {name: "ipn_beacon", status: "ok"},
             {name: "encryption_hardware", status: "ok"},
             {name: "emergency_beacon", status: "ok"}
         ]}
@@ -264,7 +209,10 @@
                 namify(current.name) +
                 padding;
 
-                const sleepTimer = `[sleep ${timings[nameBank.indexOf(current.name)] * (current?.statuses == undefined ? 1 : current.statuses.length)}]`; // whatever character you want
+                const sleepTimer = `[sleep ${
+                    diagnosticsInfo[current.name] *
+                    (current.statuses ? current.statuses.length : 1)
+                }]`;
 
                 const firstPeriod = strToOutput.indexOf(".");
                 if (firstPeriod !== -1) {
@@ -279,7 +227,7 @@
                 const status = current.status.toUpperCase();
                 const color = colorBank[status];
 
-                finalOutput += `[tab ${namify(sectionName).length + 1}]${namify(current.name)}((SPECIAL TIMING GOES HERE))[color ${color}]${status}[resetcolor]` + "[newline]\n";
+                finalOutput += `[tab ${namify(sectionName).length + 1}]${namify(current.name)}${`[sleep ${current.delay}].`.repeat(current.count-1)+`[sleep ${current.last}].`}[color ${color}]${status}[resetcolor]` + "[newline]\n";
             } else {
                 if (current.status) {
                     const color = colorBank[current.status.toUpperCase()];
@@ -393,12 +341,12 @@
 
 
     function getDiagnosticsReport() {
-        let finalOutput = "[speed 1 1]";
+        let finalOutput = "[speed 1 1][newline]\nv1.26.3 ==============================[newline]";
         for (const section of diagnosticsReport) {
             finalOutput += "\n\n" + outputSection(section.name);
         }
 
-        finalOutput+="========================================[newline]\nSUMMARY";
+        finalOutput+="========================================[newline]\n[speed 25 1]\nSUMMARY[linebreak]";
 
         // create a summary of everything wrong
 
