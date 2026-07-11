@@ -1,0 +1,179 @@
+<style>
+    button:focus, input:focus, select:focus, textarea:focus, [contenteditable]:focus {
+        outline:none;
+    }
+</style>
+<head>
+    <meta property="og:title" content="">
+    <meta property="og:description" content="">
+    <meta property="og:url" content="">
+    <script src="cameraControl.js"></script>
+    <script src="../src/two.js"></script>
+</head>
+<body>
+    
+    
+</body>
+<script>
+
+
+
+const two = new Two({
+    fullscreen: true,
+    autostart: true
+}).appendTo(document.body);
+
+// Everything in the world goes in here
+const world = two.makeGroup();
+
+// Camera state
+const camera = {
+    x: 0,
+    y: 0,
+    zoom: 1,
+    paused: false
+};
+
+const PixelsPerAU = 200;
+const PLANET_RADIUS = 2.5;
+let days = 0;
+let DAYS_PER_SECOND = 20;
+
+const kmToAU = km => km / 149597870.7;
+const kmToPixels = km => kmToAU(km) * PixelsPerAU;
+
+const orbitsKM = {
+    mercury: 57_909_227,
+    venus: 108_209_475,
+    earth: 149_598_262,
+    mars: 227_943_824,
+    jupiter: 778_340_821,
+    saturn: 1_426_666_422,
+    uranus: 2_870_658_186,
+    neptune: 4_498_396_441
+}
+
+const planets = {
+    mercury: {
+        radius: kmToPixels(orbitsKM.mercury),
+        period: 87.9691,
+    },
+
+    venus: {
+        radius: kmToPixels(orbitsKM.venus),
+        period: 224.701,
+    },
+
+    earth: {
+        radius: kmToPixels(orbitsKM.earth),
+        period: 365.256363004,
+    },
+
+    mars: {
+        radius: kmToPixels(orbitsKM.mars),
+        period: 686.980,
+    },
+
+    jupiter: {
+        radius: kmToPixels(orbitsKM.jupiter),
+        period: 4332.589,
+    },
+
+    saturn: {
+        radius: kmToPixels(orbitsKM.saturn),
+        period: 10759.22,
+    },
+
+    uranus: {
+        radius: kmToPixels(orbitsKM.uranus),
+        period: 30688.5,
+    },
+
+    neptune: {
+        radius: kmToPixels(orbitsKM.neptune),
+        period: 60182,
+    }
+};
+
+const orbits = {};
+
+function addOrbit(name, radiusPixels, periodDays, options = {}) {
+
+    const orbit = two.makeCircle(
+        0,
+        0,
+        radiusPixels
+    );
+
+    orbit.noFill();
+
+    world.add(orbit);
+
+    const planet = two.makeCircle(
+        radiusPixels,
+        0,
+        options.planetRadius ?? 3
+    );
+
+    planet.fill = options.planetColor ?? "black";
+    planet.stroke = options.planetColor ?? "black";
+
+    world.add(planet);
+
+    orbits[name] = {
+        radius: radiusPixels,
+        period: periodDays,
+        orbit,
+        planet
+    };
+
+    return orbits[name];
+}
+
+const sun = two.makeCircle(
+    0,
+    0,
+    10
+);
+
+sun.fill = "orange";
+sun.stroke = "orange";
+
+
+world.add(sun);
+
+
+for (const [name, planet] of Object.entries(planets)) {
+    addOrbit(name, planet.radius, planet.period);
+}
+
+
+
+let lastTime = performance.now();
+
+two.bind("update", () => {
+
+    const now = performance.now();
+    const deltaSeconds = (now - lastTime) / 1000;
+    lastTime = now;
+
+    if (!camera.paused) {
+        days += deltaSeconds * DAYS_PER_SECOND;
+    }
+
+    for (const orbit of Object.values(orbits)) {
+
+        const angle = 2 * Math.PI * days / orbit.period;
+
+        orbit.planet.translation.set(
+            orbit.radius * Math.cos(angle),
+            orbit.radius * Math.sin(angle)
+        );
+    }
+
+});
+
+updateCamera();
+
+
+</script>
