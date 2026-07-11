@@ -529,6 +529,25 @@ const lanes = {
         makeLane(layer3Stations[4], undefined, { color: "grey", width: 2, dashes: [2,2] }),
         makeLane(layer3Stations[5], undefined, { color: "grey", width: 2, dashes: [2,2] })
     ],
+
+    layer3To4Offset: [
+        makeLane(layer3Stations[0], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer3Stations[1], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer3Stations[2], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer3Stations[3], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer3Stations[4], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer3Stations[5], undefined, { color: "grey", width: 2, dashes: [2,2] })
+    ],
+
+    layer2To3Offset: [
+        makeLane(layer2Stations[0], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer2Stations[1], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer2Stations[2], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer2Stations[3], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer2Stations[4], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer2Stations[5], undefined, { color: "grey", width: 2, dashes: [2,2] })
+    ],
+
     earthMars: makeLane(bodies.earth, bodies.mars, { color: "green", width: 2, dashes: [5,5] }),
     mercuryVenus: makeLane(bodies.mercury, bodies.venus, { color: "#bd3d31", width: 2, dashes: [5,5] }),
 };
@@ -630,6 +649,21 @@ two.bind("update", () => {
         lane.update(closestBody(layer3Stations[index], "layer4Stations"));
     });
 
+    const next3To4 =
+    ((Number(closestBody(layer3Stations[0], "layer4Stations").name) - 41 + 1) % 6) + 41;
+
+    lanes.layer3To4Offset.forEach((lane, index) => {
+        const station = ((next3To4 - 41 + index) % 6) + 41;
+        lane.update(bodies[station]);
+    });
+
+    const next2To3 =
+    ((Number(closestBody(layer2Stations[0], "layer3Stations").name) - 31 + 1) % 6) + 31;
+
+    lanes.layer2To3Offset.forEach((lane, index) => {
+        const station = ((next2To3 - 31 + index) % 6) + 31;
+        lane.update(bodies[station]);
+    });
 });
 
 updateCamera();
