@@ -267,23 +267,22 @@ function addSatelliteOrbit(parentName, name, distanceKM, options = {}) {
 
 function closestBody(body, orbitGroup) {
     let closest = null;
-    let closestDistance = Infinity;
+    let closestDistance2 = Infinity;
 
-    const targetX = body.planet.translation.x;
-    const targetY = body.planet.translation.y;
+    const tx = body.planet.translation.x;
+    const ty = body.planet.translation.y;
 
     for (const candidate of Object.values(bodies)) {
 
-        // only check bodies in the requested orbit group
         if (candidate.path.name !== orbitGroup) continue;
 
-        const dx = candidate.planet.translation.x - targetX;
-        const dy = candidate.planet.translation.y - targetY;
+        const dx = candidate.planet.translation.x - tx;
+        const dy = candidate.planet.translation.y - ty;
 
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const d2 = dx * dx + dy * dy;
 
-        if (distance < closestDistance) {
-            closestDistance = distance;
+        if (d2 < closestDistance2) {
+            closestDistance2 = d2;
             closest = candidate;
         }
     }
@@ -291,36 +290,25 @@ function closestBody(body, orbitGroup) {
     return closest;
 }
 
+const TAU = Math.PI * 2;
+
 function makeLane(body1, body2, options = {}) {
 
-    function lane(p1, p2, t) {
-        const r1 = Math.hypot(p1.x, p1.y);
-        const r2 = Math.hypot(p2.x, p2.y);
-
-        const a1 = Math.atan2(p1.y, p1.x);
-        const a2 = Math.atan2(p2.y, p2.x);
-
-        // Smallest signed angular difference (-π, π]
-        const delta = ((a2 - a1 + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
-
-        const r = r1 + (r2 - r1) * t;
-        const a = a1 + delta * t;
-
-        return {
-            x: r * Math.cos(a),
-            y: r * Math.sin(a)
-        };
-    }
-
-
-    const segments = options.segments ?? 100;
+    const segments = options.segments ?? 10;
 
     const vertices = Array.from(
         { length: segments + 1 },
         () => new Two.Anchor()
     );
 
+    // Precompute t values once
+    const ts = new Float32Array(segments + 1);
+    for (let i = 0; i <= segments; i++) {
+        ts[i] = i / segments;
+    }
+
     const path = new Two.Path(vertices);
+
     path.noFill();
     path.stroke = options.color ?? "white";
     path.linewidth = options.width ?? 1;
@@ -339,12 +327,30 @@ function makeLane(body1, body2, options = {}) {
         const p1 = body1.planet.translation;
         const p2 = newBody2.planet.translation;
 
-        for (let i = 0; i <= segments; i++) {
-            const t = i / segments;
-            const p = lane(p1, p2, t);
+        const r1 = Math.hypot(p1.x, p1.y);
+        const r2 = Math.hypot(p2.x, p2.y);
 
-            path.vertices[i].x = p.x;
-            path.vertices[i].y = p.y;
+        const a1 = Math.atan2(p1.y, p1.x);
+        const a2 = Math.atan2(p2.y, p2.x);
+
+        let delta = a2 - a1;
+
+        while (delta > Math.PI) delta -= TAU;
+        while (delta < -Math.PI) delta += TAU;
+
+        const dr = r2 - r1;
+
+        for (let i = 0; i <= segments; i++) {
+
+            const t = ts[i];
+
+            const r = r1 + dr * t;
+            const a = a1 + delta * t;
+
+            const v = vertices[i];
+
+            v.x = r * Math.cos(a);
+            v.y = r * Math.sin(a);
         }
 
         path._flagVertices = true;
@@ -355,7 +361,6 @@ function makeLane(body1, body2, options = {}) {
     world._flagOrder = true;
 
     lanePaths.push(path);
-
 
     return path;
 }
@@ -427,6 +432,32 @@ const colors = {
     neptune: "blue"
 }
 
+const laneColors = {
+    earthMars: "green",
+    mercuryVenus: "#bd3d31",
+
+    mercury1: "gray",
+
+    venus1: "#ff9500",
+    venus2: "#ff9500",
+
+    earth1: "blue",
+    earth2: "blue",
+
+    mars1: "#eb4034",
+    mars2: "#eb4034",
+
+    station1To2: "grey",
+    station2To3: "grey",
+    station3To4: "grey",
+
+    station2To3Offset: "#1999bd",
+    station3To4Offset: "#1999bd",
+}
+
+const stationLaneDashes = [2,5];
+const planetLineDashes = [2,2];
+
 addOrbit("mercury", orbitsKM.mercury, { opacity: 0.5 });
 addBody("mercury", "mercury", planets.mercury.period, {color: colors.mercury });
 
@@ -488,68 +519,68 @@ const layer4Stations = getAllBodiesOfPath("layer4Stations");
 
 const lanes = {
     mercury: [
-        makeLane(bodies.mercury, undefined, { color: colors.mercury, width: 2, dashes: [2,2] }),
+        makeLane(bodies.mercury, undefined, { color: laneColors.mercury1, width: 2, dashes: planetLineDashes }),
     ],
     venus: [
-        makeLane(bodies.venus, undefined, { color: colors.venus, width: 2, dashes: [2,2] }),
-        makeLane(bodies.venus, undefined, { color: colors.venus, width: 2, dashes: [2,2] })
+        makeLane(bodies.venus, undefined, { color: laneColors.venus1, width: 2, dashes: planetLineDashes }),
+        makeLane(bodies.venus, undefined, { color: laneColors.venus2, width: 2, dashes: planetLineDashes })
     ],
     earth: [
-        makeLane(bodies.earth, undefined, { color: colors.earth, width: 2, dashes: [2,2] }),
-        makeLane(bodies.earth, undefined, { color: colors.earth, width: 2, dashes: [2,2] })
+        makeLane(bodies.earth, undefined, { color: laneColors.earth1, width: 2, dashes: planetLineDashes }),
+        makeLane(bodies.earth, undefined, { color: laneColors.earth2, width: 2, dashes: planetLineDashes })
     ],
     mars: [
-        makeLane(bodies.mars, undefined, { color: colors.mars, width: 2, dashes: [2,2] }),
-        makeLane(bodies.mars, undefined, { color: colors.mars, width: 2, dashes: [2,2] })
+        makeLane(bodies.mars, undefined, { color: laneColors.mars1, width: 2, dashes: planetLineDashes }),
+        makeLane(bodies.mars, undefined, { color: laneColors.mars2, width: 2, dashes: planetLineDashes })
     ],
 
     layer1To2: [
-        makeLane(layer1Stations[0], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer1Stations[1], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer1Stations[2], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer1Stations[3], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer1Stations[4], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer1Stations[5], undefined, { color: "grey", width: 2, dashes: [2,2] })
+        makeLane(layer1Stations[0], undefined, { color: laneColors.station1To2, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer1Stations[1], undefined, { color: laneColors.station1To2, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer1Stations[2], undefined, { color: laneColors.station1To2, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer1Stations[3], undefined, { color: laneColors.station1To2, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer1Stations[4], undefined, { color: laneColors.station1To2, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer1Stations[5], undefined, { color: laneColors.station1To2, width: 2, dashes: stationLaneDashes })
     ],
 
     layer2To3: [
-        makeLane(layer2Stations[0], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer2Stations[1], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer2Stations[2], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer2Stations[3], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer2Stations[4], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer2Stations[5], undefined, { color: "grey", width: 2, dashes: [2,2] })
+        makeLane(layer2Stations[0], undefined, { color: laneColors.station2To3, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer2Stations[1], undefined, { color: laneColors.station2To3, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer2Stations[2], undefined, { color: laneColors.station2To3, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer2Stations[3], undefined, { color: laneColors.station2To3, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer2Stations[4], undefined, { color: laneColors.station2To3, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer2Stations[5], undefined, { color: laneColors.station2To3, width: 2, dashes: stationLaneDashes })
     ],
 
     layer3To4: [
-        makeLane(layer3Stations[0], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer3Stations[1], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer3Stations[2], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer3Stations[3], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer3Stations[4], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer3Stations[5], undefined, { color: "grey", width: 2, dashes: [2,2] })
+        makeLane(layer3Stations[0], undefined, { color: laneColors.station3To4, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer3Stations[1], undefined, { color: laneColors.station3To4, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer3Stations[2], undefined, { color: laneColors.station3To4, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer3Stations[3], undefined, { color: laneColors.station3To4, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer3Stations[4], undefined, { color: laneColors.station3To4, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer3Stations[5], undefined, { color: laneColors.station3To4, width: 2, dashes: stationLaneDashes })
     ],
 
     layer3To4Offset: [
-        makeLane(layer3Stations[0], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer3Stations[1], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer3Stations[2], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer3Stations[3], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer3Stations[4], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer3Stations[5], undefined, { color: "grey", width: 2, dashes: [2,2] })
+        makeLane(layer3Stations[0], undefined, { color: laneColors.station3To4Offset, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer3Stations[1], undefined, { color: laneColors.station3To4Offset, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer3Stations[2], undefined, { color: laneColors.station3To4Offset, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer3Stations[3], undefined, { color: laneColors.station3To4Offset, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer3Stations[4], undefined, { color: laneColors.station3To4Offset, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer3Stations[5], undefined, { color: laneColors.station3To4Offset, width: 2, dashes: stationLaneDashes })
     ],
 
     layer2To3Offset: [
-        makeLane(layer2Stations[0], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer2Stations[1], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer2Stations[2], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer2Stations[3], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer2Stations[4], undefined, { color: "grey", width: 2, dashes: [2,2] }),
-        makeLane(layer2Stations[5], undefined, { color: "grey", width: 2, dashes: [2,2] })
+        makeLane(layer2Stations[0], undefined, { color: laneColors.station2To3Offset, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer2Stations[1], undefined, { color: laneColors.station2To3Offset, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer2Stations[2], undefined, { color: laneColors.station2To3Offset, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer2Stations[3], undefined, { color: laneColors.station2To3Offset, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer2Stations[4], undefined, { color: laneColors.station2To3Offset, width: 2, dashes: stationLaneDashes }),
+        makeLane(layer2Stations[5], undefined, { color: laneColors.station2To3Offset, width: 2, dashes: stationLaneDashes })
     ],
 
-    earthMars: makeLane(bodies.earth, bodies.mars, { color: "green", width: 2, dashes: [5,5] }),
-    mercuryVenus: makeLane(bodies.mercury, bodies.venus, { color: "#bd3d31", width: 2, dashes: [5,5] }),
+    earthMars: makeLane(bodies.earth, bodies.mars, { color: laneColors.earthMars, width: 2, dashes: [5,5] }),
+    mercuryVenus: makeLane(bodies.mercury, bodies.venus, { color: laneColors.mercuryVenus, width: 2, dashes: [5,5] }),
 };
 
 
