@@ -2,6 +2,7 @@ const OVERLAYS = new Map();
 const CITIES = new Map();
 
 function addOverlay(path) {
+    path = `src/${path}`;
     const overlay = two.makeRectangle(WIDTH / 2, HEIGHT / 2, WIDTH, HEIGHT);
     overlay.fill = new Two.Texture(path);
     overlay.noStroke();
