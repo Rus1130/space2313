@@ -5,21 +5,27 @@ function updateCamera() {
     );
 
     world.scale = camera.zoom;
+
+    // Keep orbit lines 1px wide
+    for (const path of Object.values(paths)) {
+        path.shape.linewidth = 1 / camera.zoom;
+    }
+
+    for (const body of Object.values(bodies)) {
+        body.planet.scale = 1 / camera.zoom;
+        body.label.scale = 1 / camera.zoom;
+    }
+
+    for(const path of lanePaths) {
+        path.linewidth = 1 / camera.zoom;
+    }
 }
 
 window.addEventListener("wheel", e => {
     e.preventDefault();
 
-    const factor = e.deltaY > 0 ? 0.9 : 1.1;
-
-    camera.zoom *= factor;
+    camera.zoom *= e.deltaY > 0 ? 0.9 : 1.1;
     camera.zoom = Math.max(0.02, Math.min(100, camera.zoom));
-
-    // go through the orbits, and resize the orbit lines based on the new zoom level
-    for(const [planet, orbit] of Object.entries(orbits)) {
-        orbit.orbit.linewidth = 1 / camera.zoom;
-        orbit.planet.radius = PLANET_RADIUS * (1/camera.zoom)
-    }
 
     updateCamera();
 }, { passive: false });

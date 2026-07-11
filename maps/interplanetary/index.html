@@ -2,20 +2,42 @@
     button:focus, input:focus, select:focus, textarea:focus, [contenteditable]:focus {
         outline:none;
     }
+
+    div {
+        position: absolute;
+    }
 </style>
 <head>
     <meta property="og:title" content="">
     <meta property="og:description" content="">
     <meta property="og:url" content="">
     <script src="cameraControl.js"></script>
-    <script src="../src/two.js"></script>
+    <script src="../../src/two.js"></script>
 </head>
-<body>
+<div>
+    &nbsp;<span>Time: 1s = <span id="time">10</span> days (up/down arrow +1, shift up/down arrow + 10; space to pause)</span><br>
+    &nbsp;<span id="fps">60</span> fps</span>
+</div>
+<body style="user-select: none;">
     
     
 </body>
 <script>
 
+const timeElement = document.getElementById("time");
+const fpsCounter = document.getElementById("fps");
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowUp") {
+        DAYS_PER_SECOND += e.shiftKey ? 10 : 1;
+        if(DAYS_PER_SECOND < 1) DAYS_PER_SECOND = 1;
+        timeElement.textContent = DAYS_PER_SECOND;
+    } else if (e.key === "ArrowDown") {
+        DAYS_PER_SECOND -= e.shiftKey ? 10 : 1;
+        if(DAYS_PER_SECOND < 1) DAYS_PER_SECOND = 1;
+        timeElement.textContent = DAYS_PER_SECOND;
+    }
+});
 
 
 const two = new Two({
@@ -31,103 +53,349 @@ const camera = {
     x: 0,
     y: 0,
     zoom: 1,
-    paused: false
+    paused: true
 };
 
-const PixelsPerAU = 200;
-const PLANET_RADIUS = 2.5;
+let PixelsPerAU = 200;
+const PLANET_RADIUS = 4;
 let days = 0;
-let DAYS_PER_SECOND = 20;
+let DAYS_PER_SECOND = 10;
 
 const kmToAU = km => km / 149597870.7;
 const kmToPixels = km => kmToAU(km) * PixelsPerAU;
+const AUToPixels = au => au * PixelsPerAU;
+
+const AUToKM = au => au * 149597870.7;
 
 const orbitsKM = {
-    mercury: 57_909_227,
-    venus: 108_209_475,
-    earth: 149_598_262,
-    mars: 227_943_824,
-    jupiter: 778_340_821,
-    saturn: 1_426_666_422,
-    uranus: 2_870_658_186,
-    neptune: 4_498_396_441
+    mercury: AUToKM(0.387099),
+    venus: AUToKM(0.723332),
+    earth: AUToKM(1),
+    mars: AUToKM(1.523710),
+    jupiter: AUToKM(5.202887),
+    saturn: AUToKM(9.536675),
+    uranus: AUToKM(19.189164),
+    neptune: AUToKM(30.069922),
+    asteroidBeltInner: AUToKM(2.06),
+    asteroidBeltOuter: AUToKM(3.27),
+    jStations: 350_000,
+    sStations: 350_000,
 }
+
+orbitsKM.layer1Stations = (orbitsKM.mercury + orbitsKM.venus) / 2;
+orbitsKM.layer2Stations = (orbitsKM.venus + orbitsKM.earth) / 2;
+orbitsKM.layer3Stations = (orbitsKM.earth + orbitsKM.mars) / 2;
+orbitsKM.layer4Stations = AUToKM(1.95);
+orbitsKM.outerStations = AUToKM(3.4);
+orbitsKM.jStation = (orbitsKM.jupiter + orbitsKM.outerStations) / 2;
 
 const planets = {
     mercury: {
-        radius: kmToPixels(orbitsKM.mercury),
+        radius: orbitsKM.mercury,
         period: 87.9691,
     },
-
     venus: {
         radius: kmToPixels(orbitsKM.venus),
         period: 224.701,
     },
-
     earth: {
         radius: kmToPixels(orbitsKM.earth),
         period: 365.256363004,
     },
-
     mars: {
         radius: kmToPixels(orbitsKM.mars),
         period: 686.980,
     },
-
     jupiter: {
         radius: kmToPixels(orbitsKM.jupiter),
         period: 4332.589,
     },
-
     saturn: {
         radius: kmToPixels(orbitsKM.saturn),
         period: 10759.22,
     },
-
     uranus: {
         radius: kmToPixels(orbitsKM.uranus),
         period: 30688.5,
     },
-
     neptune: {
         radius: kmToPixels(orbitsKM.neptune),
         period: 60182,
     }
 };
 
-const orbits = {};
+const stations = {
+    layer1: {
+        radius: kmToPixels(orbitsKM.layer1Stations),
+        period: (planets.mercury.period + planets.venus.period) / 2,
+        count: 6
+    },
+    layer2: {
+        radius: kmToPixels(orbitsKM.layer2Stations),
+        period: (planets.venus.period + planets.earth.period) / 2,
+        count: 6
+    },
+    layer3: {
+        radius: kmToPixels(orbitsKM.layer3Stations),
+        period: (planets.earth.period + planets.mars.period) / 2,
+        count: 6
+    },
+    layer4: {
+        radius: kmToPixels(orbitsKM.layer4Stations),
+        period: 1.25 * planets.mars.period,
+        count: 6
+    },
+    outer: {
+        radius: kmToPixels(orbitsKM.outerStations),
+        period: (planets.mars.period + planets.jupiter.period) / 2,
+        count: 12
+    },
+};
 
-function addOrbit(name, radiusPixels, periodDays, options = {}) {
+const paths = {};
+const bodies = {};
+const lanePaths = [];
 
-    const orbit = two.makeCircle(
-        0,
-        0,
-        radiusPixels
-    );
+function getAllBodiesOfPath(pathName) {
+    return Object.values(bodies).filter(body => body.path.name === pathName);
+}
 
-    orbit.noFill();
+function addOrbit(name, radiusKm, options = {}) {
 
-    world.add(orbit);
+    const radius = kmToPixels(radiusKm);
+
+    const circle = two.makeCircle(0, 0, radius);
+
+    circle.noFill();
+    circle.stroke = options.color ?? "#444";
+    circle.linewidth = options.width ?? 1;
+    circle.opacity = options.opacity ?? 1;
+
+    world.add(circle);
+
+    paths[name] = {
+        name,
+        radius,
+        shape: circle
+    };
+
+    return paths[name];
+}
+
+function addBody(name, pathName, periodDays, options = {}) {
+
+    const path = paths[pathName];
+
+    if (!path) {
+        throw new Error(`Orbit "${pathName}" does not exist.`);
+    }
 
     const planet = two.makeCircle(
-        radiusPixels,
+        path.radius,
         0,
-        options.planetRadius ?? 3
+        options.radius ?? PLANET_RADIUS
     );
 
-    planet.fill = options.planetColor ?? "black";
-    planet.stroke = options.planetColor ?? "black";
+    planet.fill = options.color ?? "white";
+    planet.stroke = "black";
+    planet.linewidth = 0.5;
 
     world.add(planet);
 
-    orbits[name] = {
-        radius: radiusPixels,
+    const label = new Two.Text(
+        options.label ?? name,
+        path.radius,
+        0
+    );
+
+    label.fill = options.labelColor ?? "black";
+    label.stroke = options.labelStroke ?? "white";
+    label.linewidth = 0.1;
+    label.size = options.labelSize ?? 12;
+    label.family = options.labelFont ?? "Arial";
+    label.alignment = options.labelAlignment ?? "left";
+    label.baseline = options.labelBaseline ?? "middle";
+
+    world.add(label);
+
+    bodies[name] = {
+        name,
+        path,
         period: periodDays,
-        orbit,
-        planet
+        offset: options.offset ?? 0,
+        planet,
+        radius: options.radius ?? PLANET_RADIUS,
+        label,
     };
 
-    return orbits[name];
+    return bodies[name];
+}
+
+function addSatelliteOrbit(parentName, name, distanceKM, options = {}) {
+
+    const parent = bodies[parentName];
+
+    if (!parent) {
+        throw new Error(`Parent body "${parentName}" does not exist.`);
+    }
+
+    const radius = kmToPixels(distanceKM);
+
+    const orbit = two.makeCircle(
+        parent.planet.translation.x,
+        parent.planet.translation.y,
+        radius
+    );
+
+    orbit.noFill();
+    orbit.stroke = options.color ?? "#444";
+    orbit.linewidth = options.width ?? 1;
+    orbit.opacity = options.opacity ?? 1;
+
+    world.add(orbit);
+
+    paths[name] = {
+        name,
+        radius,
+        parent,
+        satelliteOrbit: true,
+        shape: orbit
+    };
+
+    return paths[name];
+}
+
+function closestBody(body, orbitGroup) {
+    let closest = null;
+    let closestDistance = Infinity;
+
+    const targetX = body.planet.translation.x;
+    const targetY = body.planet.translation.y;
+
+    for (const candidate of Object.values(bodies)) {
+
+        // only check bodies in the requested orbit group
+        if (candidate.path.name !== orbitGroup) continue;
+
+        const dx = candidate.planet.translation.x - targetX;
+        const dy = candidate.planet.translation.y - targetY;
+
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < closestDistance) {
+            closestDistance = distance;
+            closest = candidate;
+        }
+    }
+
+    return closest;
+}
+
+function makeLane(body1, body2, options = {}) {
+
+    function lane(p1, p2, t) {
+        const r1 = Math.hypot(p1.x, p1.y);
+        const r2 = Math.hypot(p2.x, p2.y);
+
+        const a1 = Math.atan2(p1.y, p1.x);
+        const a2 = Math.atan2(p2.y, p2.x);
+
+        // Smallest signed angular difference (-π, π]
+        const delta = ((a2 - a1 + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+
+        const r = r1 + (r2 - r1) * t;
+        const a = a1 + delta * t;
+
+        return {
+            x: r * Math.cos(a),
+            y: r * Math.sin(a)
+        };
+    }
+
+
+    const segments = options.segments ?? 100;
+
+    const vertices = Array.from(
+        { length: segments + 1 },
+        () => new Two.Anchor()
+    );
+
+    const path = new Two.Path(vertices);
+    path.noFill();
+    path.stroke = options.color ?? "white";
+    path.linewidth = options.width ?? 1;
+    path.dashes = options.dashes ?? [];
+    path.opacity = options.opacity ?? 1;
+
+    path.curved = false;
+    path.closed = false;
+
+    world.add(path);
+
+    path.update = (newBody2) => {
+
+        if (!newBody2) return;
+
+        const p1 = body1.planet.translation;
+        const p2 = newBody2.planet.translation;
+
+        for (let i = 0; i <= segments; i++) {
+            const t = i / segments;
+            const p = lane(p1, p2, t);
+
+            path.vertices[i].x = p.x;
+            path.vertices[i].y = p.y;
+        }
+
+        path._flagVertices = true;
+    };
+
+    world.remove(path);
+    world.children.splice(1, 0, path);
+    world._flagOrder = true;
+
+    lanePaths.push(path);
+
+
+    return path;
+}
+
+function makeDonut(innerRadius, outerRadius, segments = 128, options = {}) {
+    const vertices = [];
+
+    // Outer loop
+    for (let i = 0; i < segments + 1; i++) {
+        const a = (i / segments) * Math.PI * 2;
+
+        vertices.push(
+            new Two.Anchor(
+                Math.cos(a) * outerRadius,
+                Math.sin(a) * outerRadius
+            )
+        );
+    }
+
+    // Inner loop reversed
+    for (let i = segments; i >= 0; i--) {
+        const a = (i / segments) * Math.PI * 2;
+
+        vertices.push(
+            new Two.Anchor(
+                Math.cos(a) * innerRadius,
+                Math.sin(a) * innerRadius
+            )
+        );
+    }
+
+    const donut = two.makePath(vertices, true);
+
+    donut.fill = options.fill ?? "rgb(0,0,0, 0.4)";
+    donut.stroke = options.stroke ?? "rgb(0,0,0,0)";
+    donut.linewidth = 1;
+
+    world.add(donut);
+
+    return donut;
 }
 
 const sun = two.makeCircle(
@@ -142,13 +410,133 @@ sun.stroke = "orange";
 
 world.add(sun);
 
+makeDonut(
+    kmToPixels(orbitsKM.asteroidBeltInner),
+    kmToPixels(orbitsKM.asteroidBeltOuter),
+    256
+);
 
-for (const [name, planet] of Object.entries(planets)) {
-    addOrbit(name, planet.radius, planet.period);
+const colors = {
+    mercury: "gray",
+    venus: "#ff9500",
+    earth: "blue",
+    mars: "#eb4034",
+    jupiter: "orange",
+    saturn: "gold",
+    uranus: "lightblue",
+    neptune: "blue"
 }
 
+addOrbit("mercury", orbitsKM.mercury, { opacity: 0.5 });
+addBody("mercury", "mercury", planets.mercury.period, {color: colors.mercury });
+
+addOrbit("venus", orbitsKM.venus, { opacity: 0.5 });
+addBody("venus", "venus", planets.venus.period, {color: colors.venus });
+
+addOrbit("earth", orbitsKM.earth, { opacity: 0.5 });
+addBody("earth", "earth", planets.earth.period, {color: colors.earth });
+
+addOrbit("mars", orbitsKM.mars, { opacity: 0.5 });
+addBody("mars", "mars", planets.mars.period, {color: colors.mars });
+
+addOrbit("jupiter", orbitsKM.jupiter, { opacity: 0.5 });
+addBody("jupiter", "jupiter", planets.jupiter.period, {color: colors.jupiter });
+
+addOrbit("saturn", orbitsKM.saturn, { opacity: 0.5 });
+addBody("saturn", "saturn", planets.saturn.period, {color: colors.saturn });
+
+addOrbit("uranus", orbitsKM.uranus, { opacity: 0.5 });
+addBody("uranus", "uranus", planets.uranus.period, {color: colors.uranus });
+
+addOrbit("neptune", orbitsKM.neptune, { opacity: 0.5 });
+addBody("neptune", "neptune", planets.neptune.period, {color: colors.neptune });
+
+addOrbit("layer1Stations", orbitsKM.layer1Stations, { color: "grey", opacity: 0.2 });
+for(let i = 0; i < stations.layer1.count; i++) {
+    const offset = (i / stations.layer1.count);
+    addBody(`1${i+1}`, "layer1Stations", stations.layer1.period, { color: "grey", offset, radius: 2 });
+}
+
+addOrbit("layer2Stations", orbitsKM.layer2Stations, { color: "grey", opacity: 0.2 });
+for(let i = 0; i < stations.layer2.count; i++) {
+    const offset = (i / stations.layer2.count);
+    addBody(`2${i+1}`, "layer2Stations", stations.layer2.period, { color: "grey", offset, radius: 2 });
+}
+
+addOrbit("layer3Stations", orbitsKM.layer3Stations, { color: "grey", opacity: 0.2 });
+for(let i = 0; i < stations.layer3.count; i++) {
+    const offset = (i / stations.layer3.count);
+    addBody(`3${i+1}`, "layer3Stations", stations.layer3.period, { color: "grey", offset, radius: 2 });
+}
+
+addOrbit("layer4Stations", orbitsKM.layer4Stations, { color: "grey", opacity: 0.2 });
+for(let i = 0; i < stations.layer4.count; i++) {
+    const offset = (i / stations.layer4.count);
+    addBody(`4${i+1}`, "layer4Stations", stations.layer4.period, { color: "grey", offset, radius: 2 });
+}
+
+addOrbit("outerStations", orbitsKM.outerStations, { color: "grey", opacity: 0.2 });
+for(let i = 0; i < stations.outer.count; i++) {
+    const offset = (i / stations.outer.count);
+    addBody(`O${i+1}`, "outerStations", stations.outer.period, { color: "grey", offset, radius: 2 });
+}
+
+const layer1Stations = getAllBodiesOfPath("layer1Stations");
+const layer2Stations = getAllBodiesOfPath("layer2Stations");
+const layer3Stations = getAllBodiesOfPath("layer3Stations");
+const layer4Stations = getAllBodiesOfPath("layer4Stations");
+
+const lanes = {
+    mercury: [
+        makeLane(bodies.mercury, undefined, { color: colors.mercury, width: 2, dashes: [2,2] }),
+    ],
+    venus: [
+        makeLane(bodies.venus, undefined, { color: colors.venus, width: 2, dashes: [2,2] }),
+        makeLane(bodies.venus, undefined, { color: colors.venus, width: 2, dashes: [2,2] })
+    ],
+    earth: [
+        makeLane(bodies.earth, undefined, { color: colors.earth, width: 2, dashes: [2,2] }),
+        makeLane(bodies.earth, undefined, { color: colors.earth, width: 2, dashes: [2,2] })
+    ],
+    mars: [
+        makeLane(bodies.mars, undefined, { color: colors.mars, width: 2, dashes: [2,2] }),
+        makeLane(bodies.mars, undefined, { color: colors.mars, width: 2, dashes: [2,2] })
+    ],
+
+    layer1To2: [
+        makeLane(layer1Stations[0], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer1Stations[1], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer1Stations[2], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer1Stations[3], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer1Stations[4], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer1Stations[5], undefined, { color: "grey", width: 2, dashes: [2,2] })
+    ],
+
+    layer2To3: [
+        makeLane(layer2Stations[0], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer2Stations[1], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer2Stations[2], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer2Stations[3], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer2Stations[4], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer2Stations[5], undefined, { color: "grey", width: 2, dashes: [2,2] })
+    ],
+
+    layer3To4: [
+        makeLane(layer3Stations[0], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer3Stations[1], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer3Stations[2], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer3Stations[3], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer3Stations[4], undefined, { color: "grey", width: 2, dashes: [2,2] }),
+        makeLane(layer3Stations[5], undefined, { color: "grey", width: 2, dashes: [2,2] })
+    ],
+    earthMars: makeLane(bodies.earth, bodies.mars, { color: "green", width: 2, dashes: [5,5] }),
+    mercuryVenus: makeLane(bodies.mercury, bodies.venus, { color: "#bd3d31", width: 2, dashes: [5,5] }),
+};
 
 
+let fps = 0;
+let frames = 0;
+let fpsTime = performance.now();
 let lastTime = performance.now();
 
 two.bind("update", () => {
@@ -157,19 +545,90 @@ two.bind("update", () => {
     const deltaSeconds = (now - lastTime) / 1000;
     lastTime = now;
 
-    if (!camera.paused) {
-        days += deltaSeconds * DAYS_PER_SECOND;
+    frames++;
+
+    if (now - fpsTime >= 1000) {
+        fps = frames;
+        frames = 0;
+        fpsTime = now;
+
+        fpsCounter.textContent = fps.toString().padStart(2, "0");
     }
 
-    for (const orbit of Object.values(orbits)) {
+    if (!camera.paused) {
+        days += deltaSeconds * DAYS_PER_SECOND;        
+       
+    }
 
-        const angle = 2 * Math.PI * days / orbit.period;
+    for (const path of Object.values(paths)) {
+        if (path.satelliteOrbit) {
 
-        orbit.planet.translation.set(
-            orbit.radius * Math.cos(angle),
-            orbit.radius * Math.sin(angle)
+            path.shape.translation.set(
+                path.parent.planet.translation.x,
+                path.parent.planet.translation.y
+            );
+
+        }
+    }
+
+    for (const body of Object.values(bodies)) {
+
+        const angle = 2 * Math.PI * (
+            days / body.period +
+            body.offset
+        );
+
+        let x;
+        let y;
+
+        if (body.satellite) {
+
+            x = body.parent.planet.translation.x +
+                body.distance * Math.cos(angle);
+
+            y = body.parent.planet.translation.y +
+                body.distance * Math.sin(angle);
+
+        } else {
+
+            x = body.path.radius * Math.cos(angle);
+            y = body.path.radius * Math.sin(angle);
+
+        }
+
+        body.planet.translation.set(x, y);
+
+        body.label.translation.set(
+            x + body.radius + 4,
+            y
         );
     }
+
+    lanes.mercury[0].update(closestBody(bodies.mercury, "layer1Stations"));
+
+    lanes.venus[0].update(closestBody(bodies.venus, "layer1Stations"));
+    lanes.venus[1].update(closestBody(bodies.venus, "layer2Stations"));
+
+    lanes.earth[0].update(closestBody(bodies.earth, "layer2Stations"));
+    lanes.earth[1].update(closestBody(bodies.earth, "layer3Stations"));
+
+    lanes.mars[0].update(closestBody(bodies.mars, "layer3Stations"));
+    lanes.mars[1].update(closestBody(bodies.mars, "layer4Stations"));
+
+    lanes.earthMars.update(bodies.mars);
+    lanes.mercuryVenus.update(bodies.venus);
+
+    lanes.layer1To2.forEach((lane, index) => {
+        lane.update(closestBody(layer1Stations[index], "layer2Stations"));
+    });
+
+    lanes.layer2To3.forEach((lane, index) => {
+        lane.update(closestBody(layer2Stations[index], "layer3Stations"));
+    });
+
+    lanes.layer3To4.forEach((lane, index) => {
+        lane.update(closestBody(layer3Stations[index], "layer4Stations"));
+    });
 
 });
 

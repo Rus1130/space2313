@@ -68,6 +68,11 @@ function getImageData(path, callback) {
         IMAGE_DATA_CACHE.set(path, result);
         callback(result);
     };
+
+    img.onerror = (err) => {
+        console.error(`Failed to load image at path: ${path}`, err);
+    }
+
     img.src = path;
 }
 
@@ -155,6 +160,7 @@ function findCityByTags(tags) {
 }
 
 function addCities(path, cityLabels = []) {
+    path = `src/${path}`;
     getImageData(path, (imgData) => {
         const mask = findWhiteMask(imgData);
         const blocks = findBlocks(mask, imgData.width, imgData.height);
