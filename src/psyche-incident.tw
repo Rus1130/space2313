@@ -1,0 +1,9 @@
+{{# written 10 july, 2026 #}}
+{{#timecalc
+    char: 100
+    newline: 500
+    custom: {
+        ",": 350
+        ".": 600
+    }
+#}}
