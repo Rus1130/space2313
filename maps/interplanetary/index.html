@@ -16,7 +16,7 @@
 </head>
 <div>
     &nbsp;<span>Time: 1s = <span id="time">10</span> days (up/down arrow +1, shift up/down arrow + 10; space to pause)</span><br>
-    &nbsp;<span id="fps">60</span> fps</span>
+    &nbsp;<span id="fps">100.00%</span> performace</span>
 </div>
 <body style="user-select: none;">
     
@@ -611,7 +611,7 @@ two.bind("update", () => {
         frames = 0;
         fpsTime = now;
 
-        fpsCounter.textContent = fps.toString().padStart(2, "0");
+        fpsCounter.textContent = String(((Math.min(fps, 60) / 60) * 100).toFixed(2)) + "%";
     }
 
     if (!camera.paused) {
