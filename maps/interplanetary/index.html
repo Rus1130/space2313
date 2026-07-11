@@ -294,6 +294,15 @@ const TAU = Math.PI * 2;
 
 function makeLane(body1, body2, options = {}) {
 
+    // get the distance between the two bodies
+
+    // const dist = body2 ? Math.hypot(
+    //     body2.planet.translation.x - body1.planet.translation.x,
+    //     body2.planet.translation.y - body1.planet.translation.y
+    // ) : 0;
+
+    // figure out how many segments to use based on the distance, with a minimum of 1 and a maximum of 10
+
     const segments = options.segments ?? 10;
 
     const vertices = Array.from(
