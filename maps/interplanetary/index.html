@@ -209,7 +209,7 @@ function addBody(name, pathName, periodDays, options = {}) {
     );
 
     label.fill = options.labelColor ?? "black";
-    label.stroke = options.labelStroke ?? "white";
+    label.stroke = "none";
     label.linewidth = 0.1;
     label.size = options.labelSize ?? 12;
     label.family = options.labelFont ?? "Arial";
@@ -442,7 +442,7 @@ const colors = {
 }
 
 const laneColors = {
-    earthMars: "green",
+    earthMars: "#007d06",
     mercuryVenus: "#bd3d31",
 
     mercury1: "gray",
@@ -456,15 +456,15 @@ const laneColors = {
     mars1: "#eb4034",
     mars2: "#eb4034",
 
-    station1To2: "grey",
-    station2To3: "grey",
-    station3To4: "grey",
+    station1To2: "#167dfa",
+    station2To3: "#167dfa",
+    station3To4: "#167dfa",
 
-    station2To3Offset: "#1999bd",
-    station3To4Offset: "#1999bd",
+    station2To3Offset: "#36ad3c",
+    station3To4Offset: "#36ad3c",
 }
 
-const stationLaneDashes = [2,5];
+const stationLaneDashes = [5,5];
 const planetLineDashes = [2,2];
 
 addOrbit("mercury", orbitsKM.mercury, { opacity: 0.5 });
@@ -588,8 +588,8 @@ const lanes = {
         makeLane(layer2Stations[5], undefined, { color: laneColors.station2To3Offset, width: 2, dashes: stationLaneDashes })
     ],
 
-    earthMars: makeLane(bodies.earth, bodies.mars, { color: laneColors.earthMars, width: 2, dashes: [5,5] }),
-    mercuryVenus: makeLane(bodies.mercury, bodies.venus, { color: laneColors.mercuryVenus, width: 2, dashes: [5,5] }),
+    earthMars: makeLane(bodies.earth, bodies.mars, { color: laneColors.earthMars, width: 2, dashes: [5,5], segments: 32 }),
+    mercuryVenus: makeLane(bodies.mercury, bodies.venus, { color: laneColors.mercuryVenus, width: 2, dashes: [5,5], segments: 32 }),
 };
 
 
