@@ -10,7 +10,7 @@
 <head>
     <meta property="og:title" content="Interplanetary Map">
     <meta property="og:description" content="Interplanetary map for Space 2313">
-    <meta property="og:url" content="https://rus1130.github.io/space2313/maps/interplanetary/">
+    <meta property="og:url" content="https://rus1130.github.io/space2313/maps/interplanetary-old/">
     <script src="cameraControl.js"></script>
     <script src="../../src/two.js"></script>
 </head>
@@ -56,10 +56,16 @@ const camera = {
     paused: true
 };
 
-let PixelsPerAU = 200;
 const PLANET_RADIUS = 4;
+const MOON_EXAGGERATION = 10;
+
+let PixelsPerAU = 200;
 let days = 0;
 let DAYS_PER_SECOND = 10;
+
+
+let renderLanes = true;
+
 
 const kmToAU = km => km / 149597870.7;
 const kmToPixels = km => kmToAU(km) * PixelsPerAU;
@@ -176,6 +182,7 @@ function addOrbit(name, radiusKm, options = {}) {
     paths[name] = {
         name,
         radius,
+        centerBody: null,
         shape: circle
     };
 
@@ -225,7 +232,7 @@ function addBody(name, pathName, periodDays, options = {}) {
         offset: options.offset ?? 0,
         planet,
         radius: options.radius ?? PLANET_RADIUS,
-        label,
+        label
     };
 
     return bodies[name];
@@ -238,6 +245,8 @@ function addSatelliteOrbit(parentName, name, distanceKM, options = {}) {
     if (!parent) {
         throw new Error(`Parent body "${parentName}" does not exist.`);
     }
+
+    distanceKM *= MOON_EXAGGERATION;
 
     const radius = kmToPixels(distanceKM);
 
@@ -257,8 +266,7 @@ function addSatelliteOrbit(parentName, name, distanceKM, options = {}) {
     paths[name] = {
         name,
         radius,
-        parent,
-        satelliteOrbit: true,
+        centerBody: parent,
         shape: orbit
     };
 
@@ -476,11 +484,21 @@ addBody("venus", "venus", planets.venus.period, {color: colors.venus });
 addOrbit("earth", orbitsKM.earth, { opacity: 0.5 });
 addBody("earth", "earth", planets.earth.period, {color: colors.earth });
 
+addSatelliteOrbit("earth", "moon", 384_400, { opacity: 0.5 });
+addBody("moon", "moon", 27.321661, {color: "lightgray", radius: 2, satellite: true, parent: bodies.earth });
+
 addOrbit("mars", orbitsKM.mars, { opacity: 0.5 });
 addBody("mars", "mars", planets.mars.period, {color: colors.mars });
 
 addOrbit("jupiter", orbitsKM.jupiter, { opacity: 0.5 });
 addBody("jupiter", "jupiter", planets.jupiter.period, {color: colors.jupiter });
+
+addSatelliteOrbit("jupiter", "ganymede", 1_070_400, { opacity: 0.5 });
+addSatelliteOrbit("jupiter", "callisto", 1_882_700, { opacity: 0.5 });
+addSatelliteOrbit("jupiter", "europa", 671_100, { opacity: 0.5 });
+addBody("ganymede", "ganymede", 7.15455296, {color: "lightgray", radius: 2, satellite: true, parent: bodies.jupiter });
+addBody("callisto", "callisto", 16.6890184, {color: "lightgray", radius: 2, satellite: true, parent: bodies.jupiter });
+addBody("europa", "europa", 3.551181, {color: "lightgray", radius: 2, satellite: true, parent: bodies.jupiter });
 
 addOrbit("saturn", orbitsKM.saturn, { opacity: 0.5 });
 addBody("saturn", "saturn", planets.saturn.period, {color: colors.saturn });
@@ -620,40 +638,32 @@ two.bind("update", () => {
     }
 
     for (const path of Object.values(paths)) {
-        if (path.satelliteOrbit) {
 
-            path.shape.translation.set(
-                path.parent.planet.translation.x,
-                path.parent.planet.translation.y
-            );
+        if (!path.centerBody) continue;
 
-        }
+        path.shape.translation.set(
+            path.centerBody.planet.translation.x,
+            path.centerBody.planet.translation.y
+        );
     }
 
     for (const body of Object.values(bodies)) {
 
-        const angle = 2 * Math.PI * (
+        const angle = TAU * (
             days / body.period +
             body.offset
         );
 
-        let x;
-        let y;
+        const centerX = body.path.centerBody
+            ? body.path.centerBody.planet.translation.x
+            : 0;
 
-        if (body.satellite) {
+        const centerY = body.path.centerBody
+            ? body.path.centerBody.planet.translation.y
+            : 0;
 
-            x = body.parent.planet.translation.x +
-                body.distance * Math.cos(angle);
-
-            y = body.parent.planet.translation.y +
-                body.distance * Math.sin(angle);
-
-        } else {
-
-            x = body.path.radius * Math.cos(angle);
-            y = body.path.radius * Math.sin(angle);
-
-        }
+        const x = centerX + body.path.radius * Math.cos(angle);
+        const y = centerY + body.path.radius * Math.sin(angle);
 
         body.planet.translation.set(x, y);
 
@@ -663,47 +673,50 @@ two.bind("update", () => {
         );
     }
 
-    lanes.mercury[0].update(closestBody(bodies.mercury, "layer1Stations"));
+    if(renderLanes) {
 
-    lanes.venus[0].update(closestBody(bodies.venus, "layer1Stations"));
-    lanes.venus[1].update(closestBody(bodies.venus, "layer2Stations"));
+        lanes.mercury[0].update(closestBody(bodies.mercury, "layer1Stations"));
 
-    lanes.earth[0].update(closestBody(bodies.earth, "layer2Stations"));
-    lanes.earth[1].update(closestBody(bodies.earth, "layer3Stations"));
+        lanes.venus[0].update(closestBody(bodies.venus, "layer1Stations"));
+        lanes.venus[1].update(closestBody(bodies.venus, "layer2Stations"));
 
-    lanes.mars[0].update(closestBody(bodies.mars, "layer3Stations"));
-    lanes.mars[1].update(closestBody(bodies.mars, "layer4Stations"));
+        lanes.earth[0].update(closestBody(bodies.earth, "layer2Stations"));
+        lanes.earth[1].update(closestBody(bodies.earth, "layer3Stations"));
 
-    lanes.earthMars.update(bodies.mars);
-    lanes.mercuryVenus.update(bodies.venus);
+        lanes.mars[0].update(closestBody(bodies.mars, "layer3Stations"));
+        lanes.mars[1].update(closestBody(bodies.mars, "layer4Stations"));
 
-    lanes.layer1To2.forEach((lane, index) => {
-        lane.update(closestBody(layer1Stations[index], "layer2Stations"));
-    });
+        lanes.earthMars.update(bodies.mars);
+        lanes.mercuryVenus.update(bodies.venus);
 
-    lanes.layer2To3.forEach((lane, index) => {
-        lane.update(closestBody(layer2Stations[index], "layer3Stations"));
-    });
+        lanes.layer1To2.forEach((lane, index) => {
+            lane.update(closestBody(layer1Stations[index], "layer2Stations"));
+        });
 
-    lanes.layer3To4.forEach((lane, index) => {
-        lane.update(closestBody(layer3Stations[index], "layer4Stations"));
-    });
+        lanes.layer2To3.forEach((lane, index) => {
+            lane.update(closestBody(layer2Stations[index], "layer3Stations"));
+        });
 
-    const next3To4 =
-    ((Number(closestBody(layer3Stations[0], "layer4Stations").name) - 41 + 1) % 6) + 41;
+        lanes.layer3To4.forEach((lane, index) => {
+            lane.update(closestBody(layer3Stations[index], "layer4Stations"));
+        });
 
-    lanes.layer3To4Offset.forEach((lane, index) => {
-        const station = ((next3To4 - 41 + index) % 6) + 41;
-        lane.update(bodies[station]);
-    });
+        const next3To4 =
+        ((Number(closestBody(layer3Stations[0], "layer4Stations").name) - 41 + 1) % 6) + 41;
 
-    const next2To3 =
-    ((Number(closestBody(layer2Stations[0], "layer3Stations").name) - 31 + 1) % 6) + 31;
+        lanes.layer3To4Offset.forEach((lane, index) => {
+            const station = ((next3To4 - 41 + index) % 6) + 41;
+            lane.update(bodies[station]);
+        });
 
-    lanes.layer2To3Offset.forEach((lane, index) => {
-        const station = ((next2To3 - 31 + index) % 6) + 31;
-        lane.update(bodies[station]);
-    });
+        const next2To3 =
+        ((Number(closestBody(layer2Stations[0], "layer3Stations").name) - 31 + 1) % 6) + 31;
+
+        lanes.layer2To3Offset.forEach((lane, index) => {
+            const station = ((next2To3 - 31 + index) % 6) + 31;
+            lane.update(bodies[station]);
+        });
+    }
 });
 
 updateCamera();
