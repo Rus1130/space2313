@@ -1,0 +1,321 @@
+<style>
+    button:focus, input:focus, select:focus, textarea:focus, [contenteditable]:focus {
+        outline:none;
+    }
+
+    html, body {
+        margin: 0;
+        overflow: hidden;
+        background: black;
+    }
+</style>
+<head>
+    <meta property="og:title" content="">
+    <meta property="og:description" content="">
+    <meta property="og:url" content="">
+    <script src="https://pixijs.download/release/pixi.min.js"></script>
+</head>
+<body>
+    
+    
+</body>
+<script type="module">
+    const app = new PIXI.Application();
+
+    await app.init({
+        resizeTo: window,
+        background: "#ffffff",
+        antialias: true,
+        autoDensity: true,
+        resolution: window.devicePixelRatio,
+    });
+
+    document.body.appendChild(app.canvas);
+
+    const DAYS_PER_SECOND = 10;
+    const PIXELS_PER_AU = 100;
+    let days = 0;
+
+
+    const kmToAU = km => km / 149597870.7;
+    const kmToPixels = km => kmToAU(km) * PIXELS_PER_AU;
+    const AUToPixels = au => au * PIXELS_PER_AU;
+    const AUToKM = au => au * 149597870.7;
+
+    const orbitsKM = {
+        mercury: AUToKM(0.387099),
+        venus: AUToKM(0.723332),
+        earth: AUToKM(1),
+        mars: AUToKM(1.523710),
+        jupiter: AUToKM(5.202887),
+        saturn: AUToKM(9.536675),
+        uranus: AUToKM(19.189164),
+        neptune: AUToKM(30.069922),
+        asteroidBeltInner: AUToKM(2.06),
+        asteroidBeltOuter: AUToKM(3.27),
+    }
+
+    const planets = {
+        mercury: {
+            radius: orbitsKM.mercury,
+            period: 87.9691,
+            color: 0x808080
+        },
+        venus: {
+            radius: kmToPixels(orbitsKM.venus),
+            period: 224.701,
+            color: 0xff9500
+        },
+        earth: {
+            radius: kmToPixels(orbitsKM.earth),
+            period: 365.256363004,
+            color: 0x0000ff
+        },
+        mars: {
+            radius: kmToPixels(orbitsKM.mars),
+            period: 686.980,
+            color: 0xeb4034
+        },
+        jupiter: {
+            radius: kmToPixels(orbitsKM.jupiter),
+            period: 4332.589,
+            color: 0xffa500
+        },
+        saturn: {
+            radius: kmToPixels(orbitsKM.saturn),
+            period: 10759.22,
+            color: 0xffd700
+        },
+        uranus: {
+            radius: kmToPixels(orbitsKM.uranus),
+            period: 30688.5,
+            color: 0x29b8ff
+        },
+        neptune: {
+            radius: kmToPixels(orbitsKM.neptune),
+            period: 60182,
+            color: 0x0000ff
+        }
+    };
+
+    const paths = {};
+    const bodies = {};
+
+
+    function createOrbit(name, radiusKm, options = {}) {
+
+        const radius = kmToPixels(radiusKm);
+
+        const orbit = new PIXI.Graphics();
+
+        orbit
+            .circle(0, 0, radius)
+            .stroke({
+                color: options.color ?? 0x000000,
+                width: options.width ?? 1,
+                alpha: options.opacity ?? 1
+            });
+
+        world.addChild(orbit);
+
+        paths[name] = {
+            name,
+            radius,
+            centerBody: options.centerBody ?? null,
+            shape: orbit
+        };
+
+        return paths[name];
+    }
+
+    function createBody(name, orbitName, periodDays, options = {}) {
+
+        const orbit = paths[orbitName];
+
+        if (!orbit) {
+            throw new Error(`Orbit "${orbitName}" does not exist.`);
+        }
+
+        const body = new PIXI.Graphics();
+
+        body
+            .circle(0, 0, options.radius ?? 3)
+            .fill(options.color ?? 0xffffff);
+
+        world.addChild(body);
+
+        bodies[name] = {
+            name,
+            orbit,
+            period: periodDays,
+            offset: options.offset ?? 0,
+            radius: options.radius ?? 4,
+            sprite: body
+        };
+
+        return bodies[name];
+    }
+
+    const world = new PIXI.Container();
+    app.stage.addChild(world);
+
+    const camera = {
+        x: 0,
+        y: 0,
+        zoom: 1
+    };
+
+    function updateCamera() {
+
+        world.position.set(
+            app.renderer.width / 2 - camera.x * camera.zoom,
+            app.renderer.height / 2 - camera.y * camera.zoom
+        );
+
+        world.scale.set(camera.zoom);
+
+        // go through each body and scale it inversely to the camera zoom
+        for (const body of Object.values(bodies)) {
+            body.sprite.scale.set(Math.max(1 / camera.zoom, 1.1));
+        }
+    }
+
+    const sun = new PIXI.Graphics()
+        .circle(0, 0, 10)
+        .fill(0xffaa00);
+
+    world.addChild(sun);
+
+
+    let dragging = false;
+    let lastMouse = { x: 0, y: 0 };
+
+    app.canvas.addEventListener("mousedown", e => {
+        dragging = true;
+        lastMouse.x = e.clientX;
+        lastMouse.y = e.clientY;
+    });
+
+    window.addEventListener("mouseup", () => {
+        dragging = false;
+    });
+
+    window.addEventListener("mousemove", e => {
+
+        if (!dragging) return;
+
+        const dx = e.clientX - lastMouse.x;
+        const dy = e.clientY - lastMouse.y;
+
+        camera.x -= dx / camera.zoom;
+        camera.y -= dy / camera.zoom;
+
+        lastMouse.x = e.clientX;
+        lastMouse.y = e.clientY;
+
+        updateCamera();
+    });
+
+    //--------------------------------------------------
+    // Zoom
+    //--------------------------------------------------
+
+    app.canvas.addEventListener("wheel", e => {
+
+        e.preventDefault();
+
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+
+        // World coordinates before zoom
+        const worldX =
+            camera.x +
+            (mouseX - app.renderer.width / 2) / camera.zoom;
+
+        const worldY =
+            camera.y +
+            (mouseY - app.renderer.height / 2) / camera.zoom;
+
+        const factor = Math.exp(-e.deltaY * 0.001);
+
+        camera.zoom *= factor;
+
+        camera.zoom = Math.max(0.05, Math.min(100, camera.zoom));
+
+        // Keep mouse pointing at same world location
+        camera.x =
+            worldX -
+            (mouseX - app.renderer.width / 2) / camera.zoom;
+
+        camera.y =
+            worldY -
+            (mouseY - app.renderer.height / 2) / camera.zoom;
+
+        updateCamera();
+
+    }, { passive: false });
+
+    const TAU = Math.PI * 2;
+
+    function updateBodies() {
+
+        for (const body of Object.values(bodies)) {
+
+            const angle = TAU * (
+                days / body.period +
+                body.offset
+            );
+
+            let centerX = 0;
+            let centerY = 0;
+
+            if (body.orbit.centerBody) {
+                centerX = body.orbit.centerBody.sprite.x;
+                centerY = body.orbit.centerBody.sprite.y;
+            }
+
+            body.sprite.position.set(
+                centerX + body.orbit.radius * Math.cos(angle),
+                centerY + body.orbit.radius * Math.sin(angle)
+            );
+        }
+
+        // Move satellite orbit graphics
+        for (const orbit of Object.values(paths)) {
+
+            if (!orbit.centerBody) continue;
+
+            orbit.shape.position.copyFrom(
+                orbit.centerBody.sprite.position
+            );
+        }
+    }
+ 
+    createOrbit("mercury", orbitsKM.mercury);
+    createOrbit("venus",    orbitsKM.venus,  );
+    createOrbit("earth",    orbitsKM.earth,  );
+    createOrbit("mars",     orbitsKM.mars,   );
+    createOrbit("jupiter",  orbitsKM.jupiter,);
+    createOrbit("saturn",   orbitsKM.saturn, );
+    createOrbit("uranus",   orbitsKM.uranus, );
+    createOrbit("neptune",  orbitsKM.neptune,);
+
+    createBody("mercury", "mercury", planets.mercury.period, { color: planets.mercury.color });
+    createBody("venus", "venus", planets.venus.period, { color: planets.venus.color });
+    createBody("earth", "earth", planets.earth.period, { color: planets.earth.color });
+    createBody("mars", "mars", planets.mars.period, { color: planets.mars.color });
+    createBody("jupiter", "jupiter", planets.jupiter.period, { color: planets.jupiter.color });
+    createBody("saturn", "saturn", planets.saturn.period, { color: planets.saturn.color });
+    createBody("uranus", "uranus", planets.uranus.period, { color: planets.uranus.color });
+    createBody("neptune", "neptune", planets.neptune.period, { color: planets.neptune.color });
+
+    app.ticker.add(() => {
+        const deltaSeconds = app.ticker.deltaMS / 1000;
+
+        days += deltaSeconds * DAYS_PER_SECOND;
+
+        updateBodies();
+    });
+
+    updateCamera();
+</script>
