@@ -56,7 +56,7 @@
     let PIXELS_PER_AU = 200;
     let days = 0;
     let paused = true;
-    const MOON_SCALAR = 30;
+    let MOON_SCALAR = 30//30;
 
     const TAU = Math.PI * 2;
 
@@ -871,6 +871,9 @@
     const majorLaneDash = [4, 4];
     const minorLaneDash = [2, 2];
 
+    createLane("moonTo3", "moon", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
+    createLane("moonTo2", "moon", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
+
     createLane("earthMars", "earth", { color: laneColors.earthMars, width: 1, dash: majorLaneDash });
     createLane("mercuryVenus", "mercury", { color: laneColors.mercuryVenus, width: 1, dash: majorLaneDash });
 
@@ -922,6 +925,9 @@
         updateLane("earthMars", closestBody(bodies.earth, "mars"));
         updateLane("mercuryVenus", closestBody(bodies.mercury, "venus"));
 
+        updateLane("moonTo3", closestBody(bodies.moon, "layer3Stations"));
+        updateLane("moonTo2", closestBody(bodies.moon, "layer2Stations"));
+
         [
             ["mercury", "layer1Stations", "mercury1"],
             ["venus",   "layer1Stations", "venus1"],
@@ -954,10 +960,6 @@
                 closestBody(bodies[`4${i}`], "layer3Stations")
             );
         };
-
-        // find all bodies that start with 3
-        // const layer2Stations = Object.values(bodies).filter(b => b.name.startsWith("2"));
-        // const layer3Stations = Object.values(bodies).filter(b => b.name.startsWith("3"));
 
         for(let i = 1; i <= 6; i++) {
             updateLane(
