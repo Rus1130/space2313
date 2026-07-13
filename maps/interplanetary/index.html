@@ -32,10 +32,44 @@
 
     document.body.appendChild(app.canvas);
 
-    const DAYS_PER_SECOND = 10;
-    const PIXELS_PER_AU = 100;
-    let days = 0;
+    const world = new PIXI.Container();
 
+    const sun = new PIXI.Graphics()
+        .circle(0, 0, 10)
+        .fill(0xffaa00);
+
+    world.addChild(sun);
+
+    const orbitLayer = new PIXI.Container();
+    const bodyLayer = new PIXI.Container();
+    const labelLayer = new PIXI.Container();
+    const laneLayer = new PIXI.Container();
+
+    world.addChild(orbitLayer);
+    world.addChild(laneLayer);
+    world.addChild(bodyLayer);
+    world.addChild(labelLayer);
+
+    app.stage.addChild(world);
+
+    let DAYS_PER_SECOND = 10;
+    let PIXELS_PER_AU = 200;
+    let PIXELS_PER_100_000_KM = 20;
+    let days = 0;
+    let paused = true;
+    const MOON_SCALAR = 30;
+
+    const TAU = Math.PI * 2;
+
+    const camera = {
+        x: 0,
+        y: 0,
+        zoom: 1
+    };
+
+    const paths = {};
+    const bodies = {};
+    const lanes = {};
 
     const kmToAU = km => km / 149597870.7;
     const kmToPixels = km => kmToAU(km) * PIXELS_PER_AU;
@@ -54,6 +88,11 @@
         asteroidBeltInner: AUToKM(2.06),
         asteroidBeltOuter: AUToKM(3.27),
     }
+
+    orbitsKM.layer1Stations = (orbitsKM.mercury + orbitsKM.venus) / 2;
+    orbitsKM.layer2Stations = (orbitsKM.venus + orbitsKM.earth) / 2;
+    orbitsKM.layer3Stations = (orbitsKM.earth + orbitsKM.mars) / 2;
+    orbitsKM.layer4Stations = (orbitsKM.asteroidBeltInner + orbitsKM.mars) / 2;
 
     const planets = {
         mercury: {
@@ -98,9 +137,92 @@
         }
     };
 
-    const paths = {};
-    const bodies = {};
+    const laneColors = {
+        earthMars: "#007d06",
+        mercuryVenus: "#bd3d31",
 
+        mercury1: "gray",
+
+        venus1: "#ff9500",
+        venus2: "#ff9500",
+
+        earth1: "blue",
+        earth2: "blue",
+
+        mars1: "#eb4034",
+        mars2: "#eb4034",
+
+        station1To2: "#167dfa",
+        station2To3: "#167dfa",
+        station3To4: "#167dfa",
+
+        station2To3Offset: "#36ad3c",
+        station3To4Offset: "#36ad3c",
+    }
+
+    const stations = {
+        layer1: {
+            radius: kmToPixels(orbitsKM.layer1Stations),
+            period: (planets.mercury.period + planets.venus.period) / 2,
+            count: 6
+        },
+        layer2: {
+            radius: kmToPixels(orbitsKM.layer2Stations),
+            period: (planets.venus.period + planets.earth.period) / 2,
+            count: 6
+        },
+        layer3: {
+            radius: kmToPixels(orbitsKM.layer3Stations),
+            period: (planets.earth.period + planets.mars.period) / 2,
+            count: 6
+        },
+        layer4: {
+            radius: kmToPixels(orbitsKM.layer4Stations),
+            period: 1.25 * planets.mars.period,
+            count: 6
+        },
+        outer: {
+            radius: kmToPixels(orbitsKM.outerStations),
+            period: (planets.mars.period + planets.jupiter.period) / 2,
+            count: 12
+        },
+    };
+
+    function closestBody(body, orbitGroup, numberOffset = 0) {
+
+        const stations = Object.values(bodies).filter(
+            candidate => candidate.orbit.name === orbitGroup
+        );
+
+        if (stations.length === 0) return null;
+
+        let closestIndex = 0;
+        let closestDistance2 = Infinity;
+
+        const tx = body.sprite.x;
+        const ty = body.sprite.y;
+
+        for (let i = 0; i < stations.length; i++) {
+
+            const candidate = stations[i];
+
+            const dx = candidate.sprite.x - tx;
+            const dy = candidate.sprite.y - ty;
+
+            const d2 = dx * dx + dy * dy;
+
+            if (d2 < closestDistance2) {
+                closestDistance2 = d2;
+                closestIndex = i;
+            }
+        }
+
+        // Wrap index around array length
+        const targetIndex = (closestIndex + numberOffset) % stations.length;
+
+        // Handle negative offsets
+        return stations[(targetIndex + stations.length) % stations.length];
+    }
 
     function createOrbit(name, radiusKm, options = {}) {
 
@@ -112,21 +234,48 @@
             .circle(0, 0, radius)
             .stroke({
                 color: options.color ?? 0x000000,
-                width: options.width ?? 1,
+                width: options.width ?? 0.5,
                 alpha: options.opacity ?? 1
             });
 
-        world.addChild(orbit);
+        orbitLayer.addChild(orbit);
+
+        let centerBody = null;
+
+        if (options.centerBody) {
+            centerBody = typeof options.centerBody === "string"
+                ? bodies[options.centerBody]
+                : options.centerBody;
+        }
 
         paths[name] = {
             name,
             radius,
-            centerBody: options.centerBody ?? null,
-            shape: orbit
+            centerBody,
+            shape: orbit,
+
+            color: options.color ?? 0x000000,
+            opacity: options.opacity ?? 1,
+            baseWidth: options.width ?? 0.5
         };
 
         return paths[name];
     }
+
+    function redrawOrbit(orbit) {
+        orbit.shape.clear();
+
+        orbit.shape
+            .circle(0, 0, orbit.radius)
+            .stroke({
+                color: orbit.color,
+                width: Math.max(orbit.baseWidth / camera.zoom, 0.5),
+                alpha: orbit.opacity
+            });
+
+    }
+
+    let bodyClicked = null;
 
     function createBody(name, orbitName, periodDays, options = {}) {
 
@@ -142,7 +291,28 @@
             .circle(0, 0, options.radius ?? 3)
             .fill(options.color ?? 0xffffff);
 
-        world.addChild(body);
+        body.interactive = true;
+        body.on("pointerup", () => {
+            bodyClicked = name;
+
+            console.log(`Body "${name}" focused`);
+        });
+
+        bodyLayer.addChild(body);
+
+        const label = new PIXI.Text({
+            text: options.label ?? name,
+            style: {
+                fontFamily: options.fontFamily ?? "Monospace",
+                fontSize: options.fontSize ?? 10,
+                fill: options.labelColor ?? 0x000000,
+            },
+            resolution: 10
+        });
+
+        label.anchor.set(0.1, 0.5);
+
+        labelLayer.addChild(label);
 
         bodies[name] = {
             name,
@@ -150,42 +320,217 @@
             period: periodDays,
             offset: options.offset ?? 0,
             radius: options.radius ?? 4,
-            sprite: body
+            sprite: body,
+            label
         };
 
         return bodies[name];
     }
 
-    const world = new PIXI.Container();
-    app.stage.addChild(world);
+    function createLane(name, startingBody, options = {}) {
+        const graphics = new PIXI.Graphics();
 
-    const camera = {
-        x: 0,
-        y: 0,
-        zoom: 1
-    };
+        laneLayer.addChild(graphics);
 
-    function updateCamera() {
+        const [dashlength, gapLength] = options.dash ?? [0, 0];
 
-        world.position.set(
-            app.renderer.width / 2 - camera.x * camera.zoom,
-            app.renderer.height / 2 - camera.y * camera.zoom
-        );
+        const ts = new Float32Array(options.segments ?? 32);
 
-        world.scale.set(camera.zoom);
-
-        // go through each body and scale it inversely to the camera zoom
-        for (const body of Object.values(bodies)) {
-            body.sprite.scale.set(Math.max(1 / camera.zoom, 1.1));
+        for (let i = 0; i < ts.length; i++) {
+            ts[i] = i / (ts.length - 1);
         }
+
+        lanes[name] = {
+            name,
+
+            graphics,
+
+            startingBody: typeof startingBody === "string"
+                ? bodies[startingBody]
+                : startingBody,
+
+            endingBody: null,
+
+            color: options.color ?? 0x44ffff,
+
+            width: options.width ?? 1,
+
+            dashLength: dashlength,
+
+            gapLength: gapLength,
+
+            ts,
+        };
+
+        return lanes[name];
     }
 
-    const sun = new PIXI.Graphics()
-        .circle(0, 0, 10)
-        .fill(0xffaa00);
+    function lanePoint(A, B, t) {
 
-    world.addChild(sun);
+        const dx = B.x - A.x;
+        const dy = B.y - A.y;
 
+        const distance = Math.hypot(dx, dy);
+
+        if (distance === 0)
+            return { x: A.x, y: A.y };
+
+        // Curves naturally more as distance increases.
+        const curve = 0.35 * (1 - Math.exp(-distance / 250));
+
+        const mx = (A.x + B.x) * 0.5;
+        const my = (A.y + B.y) * 0.5;
+
+        const nx = -dy / distance;
+        const ny = dx / distance;
+
+        const cx = mx + nx * distance * curve;
+        const cy = my + ny * distance * curve;
+
+        const u = 1 - t;
+
+        return {
+            x:
+                u*u*A.x +
+                2*u*t*cx +
+                t*t*B.x,
+
+            y:
+                u*u*A.y +
+                2*u*t*cy +
+                t*t*B.y
+        };
+    }
+
+    function updateLane(name, endingBody) {
+
+        const lane = lanes[name];
+
+        if(!lane) throw new Error(`Lane "${name}" does not exist.`);
+        if(!endingBody) throw new Error(`Ending body for lane "${name}" does not exist.`);
+
+        const g = lane.graphics;
+
+        g.clear();
+
+        const p1 = lane.startingBody.sprite.position;
+        const p2 = endingBody.sprite.position;
+
+        const r1 = Math.hypot(p1.x, p1.y);
+        const r2 = Math.hypot(p2.x, p2.y);
+
+        const a1 = Math.atan2(p1.y, p1.x);
+        const a2 = Math.atan2(p2.y, p2.x);
+
+        let delta = a2 - a1;
+
+        while (delta > Math.PI) delta -= TAU;
+        while (delta < -Math.PI) delta += TAU;
+
+        const dr = r2 - r1;
+
+        const pts = [];
+
+        for (const t of lane.ts) {
+
+            const r = r1 + dr * t;
+            const a = a1 + delta * t;
+
+            pts.push({
+                x: r * Math.cos(a),
+                y: r * Math.sin(a)
+            });
+        }
+
+        const dash = lane.dashLength;
+        const gap = lane.gapLength;
+        const pattern = dash + gap;
+
+        let travelled = 0;
+
+        for (let i = 0; i < pts.length - 1; i++) {
+
+            const p0 = pts[i];
+            const p1 = pts[i + 1];
+
+            const dx = p1.x - p0.x;
+            const dy = p1.y - p0.y;
+
+            const length = Math.hypot(dx, dy);
+
+            if (length === 0) continue;
+
+            const ux = dx / length;
+            const uy = dy / length;
+
+            let local = 0;
+
+            while (local < length) {
+
+                const phase = travelled % pattern;
+
+                if (phase < dash) {
+
+                    const drawLength = Math.min(
+                        dash - phase,
+                        length - local
+                    );
+
+                    g.moveTo(
+                        p0.x + ux * local,
+                        p0.y + uy * local
+                    );
+
+                    g.lineTo(
+                        p0.x + ux * (local + drawLength),
+                        p0.y + uy * (local + drawLength)
+                    );
+
+                    local += drawLength;
+                    travelled += drawLength;
+
+                } else {
+
+                    const skipLength = Math.min(
+                        pattern - phase,
+                        length - local
+                    );
+
+                    local += skipLength;
+                    travelled += skipLength;
+
+                }
+            }
+        }
+
+        g.stroke({
+            color: lane.color,
+            width: lane.width / camera.zoom
+        });
+    }
+
+    window.addEventListener("keydown", e => {
+        switch (e.code) {
+            case "Space": {
+                e.preventDefault();
+                paused = !paused;
+                console.log(`Simulation ${paused ? "paused" : "resumed"}`);
+            } break;
+
+            case "ArrowUp": {
+                e.preventDefault();
+                DAYS_PER_SECOND += e.shiftKey ? 10 : 1;
+                console.log(`Days per second: ${DAYS_PER_SECOND}`);
+            } break;
+
+            case "ArrowDown": {
+                e.preventDefault();
+                DAYS_PER_SECOND -= e.shiftKey ? 10 : 1;
+                DAYS_PER_SECOND = Math.max(1, DAYS_PER_SECOND);
+                console.log(`Days per second: ${DAYS_PER_SECOND}`);
+            } break;
+        }
+    });
 
     let dragging = false;
     let lastMouse = { x: 0, y: 0 };
@@ -194,6 +539,11 @@
         dragging = true;
         lastMouse.x = e.clientX;
         lastMouse.y = e.clientY;
+
+        if(bodyClicked != null) {
+            console.log(`${bodyClicked} was unfocused`);
+            bodyClicked = null;
+        }
     });
 
     window.addEventListener("mouseup", () => {
@@ -201,7 +551,6 @@
     });
 
     window.addEventListener("mousemove", e => {
-
         if (!dragging) return;
 
         const dx = e.clientX - lastMouse.x;
@@ -216,12 +565,7 @@
         updateCamera();
     });
 
-    //--------------------------------------------------
-    // Zoom
-    //--------------------------------------------------
-
     app.canvas.addEventListener("wheel", e => {
-
         e.preventDefault();
 
         const mouseX = e.clientX;
@@ -255,10 +599,7 @@
 
     }, { passive: false });
 
-    const TAU = Math.PI * 2;
-
     function updateBodies() {
-
         for (const body of Object.values(bodies)) {
 
             const angle = TAU * (
@@ -278,6 +619,11 @@
                 centerX + body.orbit.radius * Math.cos(angle),
                 centerY + body.orbit.radius * Math.sin(angle)
             );
+
+            body.label.position.set(
+                body.sprite.x + body.radius + 4,
+                body.sprite.y
+            );
         }
 
         // Move satellite orbit graphics
@@ -290,6 +636,54 @@
             );
         }
     }
+    
+    function updateCamera() {
+
+        world.position.set(
+            app.renderer.width / 2 - camera.x * camera.zoom,
+            app.renderer.height / 2 - camera.y * camera.zoom
+        );
+
+        world.scale.set(camera.zoom);
+
+
+        for (const body of Object.values(bodies)) {
+            body.sprite.scale.set(Math.max(1 / camera.zoom, 1.1));
+
+            const labelScale = Math.min(
+                Math.max(1 / camera.zoom, 0.5),
+                3
+            );
+
+            body.label.scale.set(labelScale);
+        }
+
+        for (const orbit of Object.values(paths)) {
+            redrawOrbit(orbit);
+        }
+    }
+        
+    app.ticker.add(() => {
+        const deltaSeconds = app.ticker.deltaMS / 1000;
+
+        if (!paused) {
+            days += deltaSeconds * DAYS_PER_SECOND;
+        }
+
+        if (bodyClicked != null) {
+            const body = bodies[bodyClicked];
+
+            if (body) {
+                camera.x = body.sprite.x;
+                camera.y = body.sprite.y;
+            }
+
+            updateCamera();
+        }
+
+        updateBodies();
+        updateLanes();
+    });
  
     createOrbit("mercury", orbitsKM.mercury);
     createOrbit("venus",    orbitsKM.venus,  );
@@ -300,6 +694,15 @@
     createOrbit("uranus",   orbitsKM.uranus, );
     createOrbit("neptune",  orbitsKM.neptune,);
 
+    const colors = {
+        layerStation: 0xbfbfbf
+    }
+
+    createOrbit("layer1Stations", orbitsKM.layer1Stations, { color: colors.layerStation, width: 0.5 });
+    createOrbit("layer2Stations", orbitsKM.layer2Stations, { color: colors.layerStation, width: 0.5 });
+    createOrbit("layer3Stations", orbitsKM.layer3Stations, { color: colors.layerStation, width: 0.5 });
+    createOrbit("layer4Stations", orbitsKM.layer4Stations, { color: colors.layerStation, width: 0.5 });
+
     createBody("mercury", "mercury", planets.mercury.period, { color: planets.mercury.color });
     createBody("venus", "venus", planets.venus.period, { color: planets.venus.color });
     createBody("earth", "earth", planets.earth.period, { color: planets.earth.color });
@@ -309,13 +712,266 @@
     createBody("uranus", "uranus", planets.uranus.period, { color: planets.uranus.color });
     createBody("neptune", "neptune", planets.neptune.period, { color: planets.neptune.color });
 
-    app.ticker.add(() => {
-        const deltaSeconds = app.ticker.deltaMS / 1000;
+    const moons = {
+        moon: {
+            orbit: "moonOrbit",
+            centerBody: "earth",
+            period: 27.321661,
+            distance: 384_400,
+            color: 0xaaaaaa
+        },
+        ganymede: {
+            orbit: "ganymedeOrbit",
+            centerBody: "jupiter",
+            period: 7.15455296,
+            distance: 1_070_400,
+            color: 0xaaaaaa,
+        },
+        callisto: {
+            orbit: "callistoOrbit",
+            centerBody: "jupiter",
+            period: 16.6890184,
+            distance: 1_882_700,
+            color: 0xaaaaaa,
+        },
+        europa: {
+            orbit: "europaOrbit",
+            centerBody: "jupiter",
+            period: 3.551181,
+            distance: 671_100,
+            color: 0xaaaaaa
+        },
+        titan: {
+            orbit: "titanOrbit",
+            centerBody: "saturn",
+            period: 15.945421,
+            distance: 1_222_000,
+            color: 0xaaaaaa
+        },
+        rhea: {
+            orbit: "rheaOrbit",
+            centerBody: "saturn",
+            period: 4.518212,
+            distance: 527_000,
+            color: 0xaaaaaa
+        },
+        iapetus: {
+            orbit: "iapetusOrbit",
+            centerBody: "saturn",
+            period: 79.3215,
+            distance: 3_560_000,
+            color: 0xaaaaaa
+        },
+        dione: {
+            orbit: "dioneOrbit",
+            centerBody: "saturn",
+            period: 2.736915,
+            distance: 377_400,
+            color: 0xaaaaaa
+        },
+        tethys: {
+            orbit: "tethysOrbit",
+            centerBody: "saturn",
+            period: 1.887802,
+            distance: 294_600,
+            color: 0xaaaaaa
+        },
+        enceladus: {
+            orbit: "enceladusOrbit",
+            centerBody: "saturn",
+            period: 1.370218,
+            distance: 238_000,
+            color: 0xaaaaaa
+        },
+        titania: {
+            orbit: "titaniaOrbit",
+            centerBody: "uranus",
+            period: 8.706234,
+            distance: 436_300,
+            color: 0xaaaaaa
+        },
+        oberon: {
+            orbit: "oberonOrbit",
+            centerBody: "uranus",
+            period: 13.463239,
+            distance: 583_500,
+            color: 0xaaaaaa
+        },
+        umbriel: {
+            orbit: "umbrielOrbit",
+            centerBody: "uranus",
+            period: 4.144177,
+            distance: 266_000,
+            color: 0xaaaaaa
+        },
+        ariel: {
+            orbit: "arielOrbit",
+            centerBody: "uranus",
+            period: 2.520379,
+            distance: 191_000,
+            color: 0xaaaaaa
+        },
+        miranda: {
+            orbit: "mirandaOrbit",
+            centerBody: "uranus",
+            period: 1.413479,
+            distance: 129_900,
+            color: 0xaaaaaa
+        },
+        triton: {
+            orbit: "tritonOrbit",
+            centerBody: "neptune",
+            period: -5.877,
+            distance: 354_800,
+            color: 0xaaaaaa
+        }
 
-        days += deltaSeconds * DAYS_PER_SECOND;
+    }
 
-        updateBodies();
-    });
+    for (const [moonName, moonData] of Object.entries(moons)) {
+        const orbitName = moonData.orbit;
+        const centerBodyName = moonData.centerBody;
+
+        createOrbit(
+            orbitName,
+            moonData.distance * MOON_SCALAR,
+            { color: 0xaaaaaa, width: 0.5, centerBody: centerBodyName }
+        );
+
+        createBody(
+            moonName,
+            orbitName,
+            moonData.period,
+            { color: moonData.color, radius: 1.5 }
+        );
+    }
+
+    for(let i = 0; i < stations.layer1.count; i++) {
+        const offset = i / stations.layer1.count;
+        createBody(`1${i+1}`, "layer1Stations", stations.layer1.period, { offset, radius: 2, color: colors.layerStation });
+    }
+
+    for(let i = 0; i < stations.layer2.count; i++) {
+        const offset = i / stations.layer2.count;
+        createBody(`2${i+1}`, "layer2Stations", stations.layer2.period, { offset, radius: 2, color: colors.layerStation });
+    }
+
+    for(let i = 0; i < stations.layer3.count; i++) {
+        const offset = i / stations.layer3.count;
+        createBody(`3${i+1}`, "layer3Stations", stations.layer3.period, { offset, radius: 2, color: colors.layerStation });
+    }
+
+    for(let i = 0; i < stations.layer4.count; i++) {
+        const offset = i / stations.layer4.count;
+        createBody(`4${i+1}`, "layer4Stations", stations.layer4.period, { offset, radius: 2, color: colors.layerStation });
+    }
+
+    const majorLaneDash = [4, 4];
+    const minorLaneDash = [2, 2];
+
+    createLane("earthMars", "earth", { color: laneColors.earthMars, width: 1, dash: majorLaneDash });
+    createLane("mercuryVenus", "mercury", { color: laneColors.mercuryVenus, width: 1, dash: majorLaneDash });
+
+    createLane("mercury1", "mercury", { color: laneColors.mercury1, width: 1, dash: minorLaneDash });
+    createLane("venus1", "venus", { color: laneColors.venus1, width: 1, dash: minorLaneDash });
+    createLane("venus2", "venus", { color: laneColors.venus2, width: 1, dash: minorLaneDash });
+    createLane("earth1", "earth", { color: laneColors.earth1, width: 1, dash: minorLaneDash });
+    createLane("earth2", "earth", { color: laneColors.earth2, width: 1, dash: minorLaneDash });
+    createLane("mars1", "mars", { color: laneColors.mars1, width: 1, dash: minorLaneDash });
+    createLane("mars2", "mars", { color: laneColors.mars2, width: 1, dash: minorLaneDash });
+
+    createLane("21To1", "21", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
+    createLane("22To1", "22", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
+    createLane("23To1", "23", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
+    createLane("24To1", "24", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
+    createLane("25To1", "25", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
+    createLane("26To1", "26", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
+
+    createLane("31To2", "31", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
+    createLane("32To2", "32", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
+    createLane("33To2", "33", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
+    createLane("34To2", "34", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
+    createLane("35To2", "35", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
+    createLane("36To2", "36", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
+
+    createLane("41To3", "41", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+    createLane("42To3", "42", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+    createLane("43To3", "43", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+    createLane("44To3", "44", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+    createLane("45To3", "45", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+    createLane("46To3", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+
+    createLane("31To2Offset", "31", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
+    createLane("32To2Offset", "32", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
+    createLane("33To2Offset", "33", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
+    createLane("34To2Offset", "34", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
+    createLane("35To2Offset", "35", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
+    createLane("36To2Offset", "36", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
+
+    createLane("41To3Offset", "41", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
+    createLane("42To3Offset", "42", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
+    createLane("43To3Offset", "43", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
+    createLane("44To3Offset", "44", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
+    createLane("45To3Offset", "45", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
+    createLane("46To3Offset", "46", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
+
+
+    function updateLanes(){
+        updateLane("earthMars", closestBody(bodies.earth, "mars"));
+        updateLane("mercuryVenus", closestBody(bodies.mercury, "venus"));
+
+        [
+            ["mercury", "layer1Stations", "mercury1"],
+            ["venus",   "layer1Stations", "venus1"],
+            ["venus",   "layer2Stations", "venus2"],
+            ["earth",   "layer2Stations", "earth1"],
+            ["earth",   "layer3Stations", "earth2"],
+            ["mars",    "layer3Stations", "mars1"],
+            ["mars",    "layer4Stations", "mars2"],
+        ].forEach(([from, group, lane]) => {
+            updateLane(lane, closestBody(bodies[from], group));
+        });
+
+        for (let i = 1; i <= 6; i++) {
+            updateLane(
+                `2${i}To1`,
+                closestBody(bodies[`2${i}`], "layer1Stations")
+            );
+        }
+
+        for (let i = 1; i <= 6; i++) {
+            updateLane(
+                `3${i}To2`,
+                closestBody(bodies[`3${i}`], "layer2Stations")
+            );
+        };
+
+        for(let i = 1; i <= 6; i++) {
+            updateLane(
+                `4${i}To3`,
+                closestBody(bodies[`4${i}`], "layer3Stations")
+            );
+        };
+
+        // find all bodies that start with 3
+        // const layer2Stations = Object.values(bodies).filter(b => b.name.startsWith("2"));
+        // const layer3Stations = Object.values(bodies).filter(b => b.name.startsWith("3"));
+
+        for(let i = 1; i <= 6; i++) {
+            updateLane(
+                `3${i}To2Offset`,
+                closestBody(bodies[`3${i}`], "layer2Stations", -1)
+            );
+        }
+
+        for(let i = 1; i <= 6; i++) {
+            updateLane(
+                `4${i}To3Offset`,
+                closestBody(bodies[`4${i}`], "layer3Stations", -1)
+            );
+        }
+    }
+
 
     updateCamera();
 </script>
