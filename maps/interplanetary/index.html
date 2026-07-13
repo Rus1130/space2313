@@ -10,9 +10,9 @@
     }
 </style>
 <head>
-    <meta property="og:title" content="">
-    <meta property="og:description" content="">
-    <meta property="og:url" content="">
+    <meta property="og:title" content="Interplanetary Map"                                     >
+    <meta property="og:description" content="Solar System map for Space 2313"                  >
+    <meta property="og:url" content="https://rus1130.github.io/space2313/maps/interplanetary/" >
     <script src="https://pixijs.download/release/pixi.min.js"></script>
 </head>
 <body>
@@ -54,7 +54,6 @@
 
     let DAYS_PER_SECOND = 10;
     let PIXELS_PER_AU = 200;
-    let PIXELS_PER_100_000_KM = 20;
     let days = 0;
     let paused = true;
     const MOON_SCALAR = 30;
@@ -92,7 +91,7 @@
     orbitsKM.layer1Stations = (orbitsKM.mercury + orbitsKM.venus) / 2;
     orbitsKM.layer2Stations = (orbitsKM.venus + orbitsKM.earth) / 2;
     orbitsKM.layer3Stations = (orbitsKM.earth + orbitsKM.mars) / 2;
-    orbitsKM.layer4Stations = (orbitsKM.asteroidBeltInner + orbitsKM.mars) / 2;
+    orbitsKM.layer4Stations = AUToKM(1.95);
 
     const planets = {
         mercury: {
@@ -693,6 +692,9 @@
     createOrbit("saturn",   orbitsKM.saturn, );
     createOrbit("uranus",   orbitsKM.uranus, );
     createOrbit("neptune",  orbitsKM.neptune,);
+
+    createOrbit("innerAsteroidBelt", orbitsKM.asteroidBeltInner, { color: 0x7A84B6, width: 1 });
+    createOrbit("outerAsteroidBelt", orbitsKM.asteroidBeltOuter, { color: 0x7A84B6, width: 1 });
 
     const colors = {
         layerStation: 0xbfbfbf
