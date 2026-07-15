@@ -2,9 +2,9 @@
 <head>
     <link rel="stylesheet" href="./src/css.css">
     <script src="https://rus1130.github.io/projects/Global/typewriter.js"></script>
-    <meta property="og:title"       content="PSYCHE INCIDENT"                                                                                 />
-    <meta property="og:description" content="THE FOLLOWING REPORT HAS BEEN DECLASSIFIED IN IT’S ENTIRETY. ALL REDACTIONS HAVE BEEN REMOVED."  />
-    <meta property="og:url"         content="https://rus1130.github.io/space2313/psyche-incident/"                                            />
+    <meta property="og:title"       content="PSYCHE INCIDENT"                                      />
+    <meta property="og:description" content="THIS REPORT HAS BEEN RELEASED TO THE PUBLIC."         />
+    <meta property="og:url"         content="https://rus1130.github.io/space2313/psyche-incident/" />
     <title>PSYCHE INCIDENT</title>
 </head>
 <body>
@@ -16,18 +16,19 @@
     .then(response => response.text())
     .then(text => {
         let tw3 = new Typewriter3(text, document.getElementById("out"), {
-            charDelay: 100,
-            newlineDelay: 500,
+            charDelay: 28,
+            newlineDelay: 150,
             customDelays: {
-                ",": 350,
-                ".": 600
+                ",": 335,
+                ".": 650,
             },
             newpageText: "▌Next >",
             defaultTextColor: "#ffffff",
             defaultBackgroundColor: "#000000",
             onFunctionTag: () => {
                 document.getElementById('return').style.display = 'block';
-            }
+            },
+            wordWrap: 100,
         });
 
         let speedToggle = false;
