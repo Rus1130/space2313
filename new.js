@@ -59,6 +59,9 @@ const HTML_TEMPLATE =
             defaultBackgroundColor: "#000000",
             onFunctionTag: () => {
                 document.getElementById('return').style.display = 'block';
+                window.scrollTo(0, document.body.scrollHeight);
+                document.body.style.overflowY = 'scroll';
+                document.documentElement.classList.add('hide-scrollbar');
             }
         });
 

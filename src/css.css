@@ -1,20 +1,27 @@
-    #out, body {
-        overflow-y: hidden;
-        scrollbar-width: none;
-        background-color: black;
-        color: white;
-        margin-right: 0;
-    }
-    * {
-        font-family: monospace;
-        user-select: none;
-    }
-    .button {
-        margin-bottom: 1px;
-        display: block;
-        cursor: pointer;
-    }
-    .button:hover, .typewriter3-newpage:hover {
-        background-color: white;
-        color: black;
-    }
+#out, body {
+    overflow-y: hidden;
+    scrollbar-width: none;
+    background-color: black;
+    color: white;
+    margin-right: 0;
+}
+* {
+    font-family: monospace;
+    user-select: none;
+}
+.button {
+    margin-bottom: 1px;
+    display: block;
+    cursor: pointer;
+}
+.button:hover, .typewriter3-newpage:hover {
+    background-color: white;
+    color: black;
+}
+.hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
