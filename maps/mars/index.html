@@ -25,11 +25,11 @@
             argyre: "cities/argyre.png",
             uzboy: "cities/uzboy.png",
             daedalia: "cities/daedalia.png",
-            nivea: {
-                district1: "cities/nivea/district_1.png",
-                district2: "cities/nivea/district_2.png",
-                district3: "cities/nivea/district_3.png",
-                district4: "cities/nivea/district_4.png",
+            boralia: {
+                district1: "cities/boralia/district_1.png",
+                district2: "cities/boralia/district_2.png",
+                district3: "cities/boralia/district_3.png",
+                district4: "cities/boralia/district_4.png",
             },
             new_scotland: {
                 west: "cities/new_scotland/west.png",
@@ -53,10 +53,10 @@
         },
         subdivisions: {
             northern_union: {
-                district1: "borders/nivea/district_1.png",
-                district2: "borders/nivea/district_2.png",
-                district3: "borders/nivea/district_3.png",
-                district4: "borders/nivea/district_4.png",
+                district1: "borders/boralia/district_1.png",
+                district2: "borders/boralia/district_2.png",
+                district3: "borders/boralia/district_3.png",
+                district4: "borders/boralia/district_4.png",
             },
             east_scotland: {
                 yellow: "borders/new_scotland/yellow.png",
@@ -112,26 +112,26 @@
     addOverlay(sources.subdivisions.meridia.thaumasia);
     addOverlay(sources.subdivisions.meridia.vinogradov);
 
-    //nivea
-    addCities(sources.cities.nivea.district1, [
+    //boralia
+    addCities(sources.cities.boralia.district1, [
         {name: "Spit",   type: "default", pos: "r", y: 0},
         {name: "Jury",   type: "default", pos: "r", y: 2, x: -2},
         {name: "Khua",   type: "default", pos: "r", y: 3},
         {name: "Spirin", type: "capital", pos: "r", x: 2},
     ])
 
-    addCities(sources.cities.nivea.district2, [
+    addCities(sources.cities.boralia.district2, [
         {name: "Akatol",     type: "default", pos: "l"},
         {name: "Borderline", type: "default", pos: "r", y: 4},
         {name: "Whiteice",   type: "subcapital", pos: "r", y: -4, x: -4},
     ])
 
-    addCities(sources.cities.nivea.district3, [
+    addCities(sources.cities.boralia.district3, [
         {name: "Acida", type: "default", pos: "l", contrast: true, x: 10, y: -4},
         {name: "Shipport", type: "subcapital", pos: "l", y: -2},
     ])
 
-    addCities(sources.cities.nivea.district4, [
+    addCities(sources.cities.boralia.district4, [
         {name: "Ironhull", type: "subcapital", pos: "r", x: 1},
         {name: "Telaroute", type: "default", pos: "l", x: 2, y: 4},
     ])
