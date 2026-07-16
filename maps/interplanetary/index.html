@@ -57,6 +57,7 @@
     let days = 0;
     let paused = true;
     let MOON_SCALAR = 30//30;
+    let updateBodiesAndLanes = true;
 
     const TAU = Math.PI * 2;
 
@@ -92,6 +93,7 @@
     orbitsKM.layer2Stations = (orbitsKM.venus + orbitsKM.earth) / 2;
     orbitsKM.layer3Stations = (orbitsKM.earth + orbitsKM.mars) / 2;
     orbitsKM.layer4Stations = AUToKM(1.95);
+    orbitsKM.outerStations = AUToKM(3.35);
 
     const planets = {
         mercury: {
@@ -183,8 +185,8 @@
         outer: {
             radius: kmToPixels(orbitsKM.outerStations),
             period: (planets.mars.period + planets.jupiter.period) / 2,
-            count: 12
-        },
+            count: 24
+        }
     };
 
     function closestBody(body, orbitGroup, numberOffset = 0) {
@@ -268,10 +270,34 @@
             .circle(0, 0, orbit.radius)
             .stroke({
                 color: orbit.color,
-                width: Math.max(orbit.baseWidth / camera.zoom, 0.5),
+                width: Math.max(orbit.baseWidth / camera.zoom, 0.1),
                 alpha: orbit.opacity
             });
 
+    }
+
+    function removeOrbit(name) {
+        const orbit = paths[name];
+
+        if (!orbit) {
+            throw new Error(`Orbit "${name}" does not exist.`);
+        }
+
+        orbitLayer.removeChild(orbit.shape);
+        delete paths[name];
+    }
+
+    function removeBody(name) {
+        const body = bodies[name];
+
+        if (!body) {
+            throw new Error(`Body "${name}" does not exist.`);
+        }
+
+        bodyLayer.removeChild(body.sprite);
+        labelLayer.removeChild(body.label);
+
+        delete bodies[name];
     }
 
     let bodyClicked = null;
@@ -292,8 +318,8 @@
 
         body.interactive = true;
         body.on("pointerup", () => {
+            moonMode = false;
             bodyClicked = name;
-
             console.log(`Body "${name}" focused`);
         });
 
@@ -508,6 +534,8 @@
         });
     }
 
+    let moonMode = false;
+
     window.addEventListener("keydown", e => {
         switch (e.code) {
             case "Space": {
@@ -528,6 +556,10 @@
                 DAYS_PER_SECOND = Math.max(1, DAYS_PER_SECOND);
                 console.log(`Days per second: ${DAYS_PER_SECOND}`);
             } break;
+
+            case "KeyE": {
+                moonMode = !moonMode;
+            } break;
         }
     });
 
@@ -542,6 +574,7 @@
         if(bodyClicked != null) {
             console.log(`${bodyClicked} was unfocused`);
             bodyClicked = null;
+            moonMode = false;
         }
     });
 
@@ -680,39 +713,52 @@
             updateCamera();
         }
 
-        updateBodies();
-        updateLanes();
+        if(updateBodiesAndLanes) {
+            updateBodies();
+            updateLanes();
+        }
     });
- 
-    createOrbit("mercury", orbitsKM.mercury);
-    createOrbit("venus",    orbitsKM.venus,  );
-    createOrbit("earth",    orbitsKM.earth,  );
-    createOrbit("mars",     orbitsKM.mars,   );
-    createOrbit("jupiter",  orbitsKM.jupiter,);
-    createOrbit("saturn",   orbitsKM.saturn, );
-    createOrbit("uranus",   orbitsKM.uranus, );
-    createOrbit("neptune",  orbitsKM.neptune,);
 
-    createOrbit("innerAsteroidBelt", orbitsKM.asteroidBeltInner, { color: 0x7A84B6, width: 1 });
-    createOrbit("outerAsteroidBelt", orbitsKM.asteroidBeltOuter, { color: 0x7A84B6, width: 1 });
+    function createOrbits(){
+        createOrbit("mercury", orbitsKM.mercury);
+        createOrbit("venus",    orbitsKM.venus,  );
+        createOrbit("earth",    orbitsKM.earth,  );
+        createOrbit("mars",     orbitsKM.mars,   );
+        createOrbit("jupiter",  orbitsKM.jupiter,);
+        createOrbit("saturn",   orbitsKM.saturn, );
+        createOrbit("uranus",   orbitsKM.uranus, );
+        createOrbit("neptune",  orbitsKM.neptune,);
+
+        createOrbit("innerAsteroidBelt", orbitsKM.asteroidBeltInner, { color: 0x7A84B6, width: 1 });
+        createOrbit("outerAsteroidBelt", orbitsKM.asteroidBeltOuter, { color: 0x7A84B6, width: 1 });
+
+        createOrbit("layer1Stations", orbitsKM.layer1Stations, { color: colors.layerStation, width: 0.5 });
+        createOrbit("layer2Stations", orbitsKM.layer2Stations, { color: colors.layerStation, width: 0.5 });
+        createOrbit("layer3Stations", orbitsKM.layer3Stations, { color: colors.layerStation, width: 0.5 });
+        createOrbit("layer4Stations", orbitsKM.layer4Stations, { color: colors.layerStation, width: 0.5 });
+
+        createOrbit("outerStations", orbitsKM.outerStations, { color: colors.layerStation, width: 0.5 });
+    }
+ 
+
 
     const colors = {
         layerStation: 0xbfbfbf
     }
 
-    createOrbit("layer1Stations", orbitsKM.layer1Stations, { color: colors.layerStation, width: 0.5 });
-    createOrbit("layer2Stations", orbitsKM.layer2Stations, { color: colors.layerStation, width: 0.5 });
-    createOrbit("layer3Stations", orbitsKM.layer3Stations, { color: colors.layerStation, width: 0.5 });
-    createOrbit("layer4Stations", orbitsKM.layer4Stations, { color: colors.layerStation, width: 0.5 });
 
-    createBody("mercury", "mercury", planets.mercury.period, { color: planets.mercury.color });
-    createBody("venus", "venus", planets.venus.period, { color: planets.venus.color });
-    createBody("earth", "earth", planets.earth.period, { color: planets.earth.color });
-    createBody("mars", "mars", planets.mars.period, { color: planets.mars.color });
-    createBody("jupiter", "jupiter", planets.jupiter.period, { color: planets.jupiter.color });
-    createBody("saturn", "saturn", planets.saturn.period, { color: planets.saturn.color });
-    createBody("uranus", "uranus", planets.uranus.period, { color: planets.uranus.color });
-    createBody("neptune", "neptune", planets.neptune.period, { color: planets.neptune.color });
+    function createPlanets(){
+        createBody("mercury", "mercury", planets.mercury.period, { color: planets.mercury.color, radius: 2 });
+        createBody("venus", "venus", planets.venus.period, { color: planets.venus.color, radius: 2 });
+        createBody("earth", "earth", planets.earth.period, { color: planets.earth.color, radius: 2 });
+        createBody("mars", "mars", planets.mars.period, { color: planets.mars.color, radius: 2 });
+        createBody("jupiter", "jupiter", planets.jupiter.period, { color: planets.jupiter.color, radius: 2 });
+        createBody("saturn", "saturn", planets.saturn.period, { color: planets.saturn.color, radius: 2 });
+        createBody("uranus", "uranus", planets.uranus.period, { color: planets.uranus.color, radius: 2 });
+        createBody("neptune", "neptune", planets.neptune.period, { color: planets.neptune.color, radius: 2 });
+    }
+
+
 
     const moons = {
         moon: {
@@ -830,103 +876,136 @@
 
     }
 
-    for (const [moonName, moonData] of Object.entries(moons)) {
-        const orbitName = moonData.orbit;
-        const centerBodyName = moonData.centerBody;
+    function createMoons() {
+        for (const [moonName, moonData] of Object.entries(moons)) {
+            const orbitName = moonData.orbit;
+            const centerBodyName = moonData.centerBody;
 
-        createOrbit(
-            orbitName,
-            moonData.distance * MOON_SCALAR,
-            { color: 0xaaaaaa, width: 0.5, centerBody: centerBodyName }
-        );
+            createOrbit(
+                orbitName,
+                moonData.distance * MOON_SCALAR,
+                { color: 0x000000, width: 0.1, centerBody: centerBodyName }
+            );
 
-        createBody(
-            moonName,
-            orbitName,
-            moonData.period,
-            { color: moonData.color, radius: 1.5 }
-        );
+            createBody(
+                moonName,
+                orbitName,
+                moonData.period,
+                { color: moonData.color, radius: 0.4 }
+            );
+        }
     }
 
-    for(let i = 0; i < stations.layer1.count; i++) {
-        const offset = i / stations.layer1.count;
-        createBody(`1${i+1}`, "layer1Stations", stations.layer1.period, { offset, radius: 2, color: colors.layerStation });
+    function createStations() {
+        for(let i = 0; i < stations.layer1.count; i++) {
+            const offset = i / stations.layer1.count;
+            createBody(`1${i+1}`, "layer1Stations", stations.layer1.period, { offset, radius: 0.6, color: colors.layerStation });
+        }
+
+        for(let i = 0; i < stations.layer2.count; i++) {
+            const offset = i / stations.layer2.count;
+            createBody(`2${i+1}`, "layer2Stations", stations.layer2.period, { offset, radius: 0.6, color: colors.layerStation });
+        }
+
+        for(let i = 0; i < stations.layer3.count; i++) {
+            const offset = i / stations.layer3.count;
+            createBody(`3${i+1}`, "layer3Stations", stations.layer3.period, { offset, radius: 0.6, color: colors.layerStation });
+        }
+
+        for(let i = 0; i < stations.layer4.count; i++) {
+            const offset = i / stations.layer4.count;
+            createBody(`4${i+1}`, "layer4Stations", stations.layer4.period, { offset, radius: 0.6, color: colors.layerStation });
+        }
+
+
+        for(let i = 0; i < stations.outer.count; i++) {
+            const offset = i / stations.outer.count;
+            createBody(`O${i+1}`, "outerStations", stations.outer.period, { offset, radius: 0.6, color: colors.layerStation });
+        }
     }
 
-    for(let i = 0; i < stations.layer2.count; i++) {
-        const offset = i / stations.layer2.count;
-        createBody(`2${i+1}`, "layer2Stations", stations.layer2.period, { offset, radius: 2, color: colors.layerStation });
+    function createLanes(){
+        const majorLaneDash = [8, 8];
+        const minorLaneDash = [3, 3];
+
+        createLane("earthMars", "earth", { color: laneColors.earthMars, width: 1, dash: majorLaneDash });
+        createLane("mercuryVenus", "mercury", { color: laneColors.mercuryVenus, width: 1, dash: majorLaneDash });
+
+        createLane("mercury1", "mercury", { color: laneColors.mercury1, width: 1, dash: minorLaneDash });
+        createLane("venus1", "venus", { color: laneColors.venus1, width: 1, dash: minorLaneDash });
+        createLane("venus2", "venus", { color: laneColors.venus2, width: 1, dash: minorLaneDash });
+        createLane("earth1", "earth", { color: laneColors.earth1, width: 1, dash: minorLaneDash });
+        createLane("earth2", "earth", { color: laneColors.earth2, width: 1, dash: minorLaneDash });
+        createLane("mars1", "mars", { color: laneColors.mars1, width: 1, dash: minorLaneDash });
+        createLane("mars2", "mars", { color: laneColors.mars2, width: 1, dash: minorLaneDash });
+
+        createLane("21To1", "21", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
+        createLane("22To1", "22", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
+        createLane("23To1", "23", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
+        createLane("24To1", "24", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
+        createLane("25To1", "25", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
+        createLane("26To1", "26", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
+
+        createLane("31To2", "31", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
+        createLane("32To2", "32", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
+        createLane("33To2", "33", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
+        createLane("34To2", "34", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
+        createLane("35To2", "35", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
+        createLane("36To2", "36", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
+
+        createLane("41To3", "41", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("42To3", "42", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("43To3", "43", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("44To3", "44", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("45To3", "45", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("46To3", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+
+        createLane("31To2Offset", "31", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
+        createLane("32To2Offset", "32", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
+        createLane("33To2Offset", "33", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
+        createLane("34To2Offset", "34", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
+        createLane("35To2Offset", "35", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
+        createLane("36To2Offset", "36", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
+
+        createLane("41To3Offset", "41", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
+        createLane("42To3Offset", "42", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
+        createLane("43To3Offset", "43", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
+        createLane("44To3Offset", "44", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
+        createLane("45To3Offset", "45", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
+        createLane("46To3Offset", "46", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
+
+
+        createLane("41ToOuter1", "41", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("41ToOuter2", "41", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("41ToOuter3", "41", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+
+        createLane("42ToOuter1", "42", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("42ToOuter2", "42", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("42ToOuter3", "42", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+
+        createLane("43ToOuter1", "43", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("43ToOuter2", "43", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("43ToOuter3", "43", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+
+        createLane("44ToOuter1", "44", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("44ToOuter2", "44", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("44ToOuter3", "44", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+
+        createLane("45ToOuter1", "45", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("45ToOuter2", "45", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("45ToOuter3", "45", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+
+        createLane("46ToOuter1", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("46ToOuter2", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        createLane("46ToOuter3", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+
     }
 
-    for(let i = 0; i < stations.layer3.count; i++) {
-        const offset = i / stations.layer3.count;
-        createBody(`3${i+1}`, "layer3Stations", stations.layer3.period, { offset, radius: 2, color: colors.layerStation });
-    }
-
-    for(let i = 0; i < stations.layer4.count; i++) {
-        const offset = i / stations.layer4.count;
-        createBody(`4${i+1}`, "layer4Stations", stations.layer4.period, { offset, radius: 2, color: colors.layerStation });
-    }
-
-    const majorLaneDash = [4, 4];
-    const minorLaneDash = [2, 2];
-
-    createLane("moonTo3", "moon", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
-    createLane("moonTo2", "moon", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
-
-    createLane("earthMars", "earth", { color: laneColors.earthMars, width: 1, dash: majorLaneDash });
-    createLane("mercuryVenus", "mercury", { color: laneColors.mercuryVenus, width: 1, dash: majorLaneDash });
-
-    createLane("mercury1", "mercury", { color: laneColors.mercury1, width: 1, dash: minorLaneDash });
-    createLane("venus1", "venus", { color: laneColors.venus1, width: 1, dash: minorLaneDash });
-    createLane("venus2", "venus", { color: laneColors.venus2, width: 1, dash: minorLaneDash });
-    createLane("earth1", "earth", { color: laneColors.earth1, width: 1, dash: minorLaneDash });
-    createLane("earth2", "earth", { color: laneColors.earth2, width: 1, dash: minorLaneDash });
-    createLane("mars1", "mars", { color: laneColors.mars1, width: 1, dash: minorLaneDash });
-    createLane("mars2", "mars", { color: laneColors.mars2, width: 1, dash: minorLaneDash });
-
-    createLane("21To1", "21", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
-    createLane("22To1", "22", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
-    createLane("23To1", "23", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
-    createLane("24To1", "24", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
-    createLane("25To1", "25", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
-    createLane("26To1", "26", { color: laneColors.station1To2, width: 1, dash: minorLaneDash });
-
-    createLane("31To2", "31", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
-    createLane("32To2", "32", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
-    createLane("33To2", "33", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
-    createLane("34To2", "34", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
-    createLane("35To2", "35", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
-    createLane("36To2", "36", { color: laneColors.station2To3, width: 1, dash: minorLaneDash });
-
-    createLane("41To3", "41", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
-    createLane("42To3", "42", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
-    createLane("43To3", "43", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
-    createLane("44To3", "44", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
-    createLane("45To3", "45", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
-    createLane("46To3", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
-
-    createLane("31To2Offset", "31", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
-    createLane("32To2Offset", "32", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
-    createLane("33To2Offset", "33", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
-    createLane("34To2Offset", "34", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
-    createLane("35To2Offset", "35", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
-    createLane("36To2Offset", "36", { color: laneColors.station2To3Offset, width: 1, dash: minorLaneDash });
-
-    createLane("41To3Offset", "41", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
-    createLane("42To3Offset", "42", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
-    createLane("43To3Offset", "43", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
-    createLane("44To3Offset", "44", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
-    createLane("45To3Offset", "45", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
-    createLane("46To3Offset", "46", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
 
 
     function updateLanes(){
         updateLane("earthMars", closestBody(bodies.earth, "mars"));
         updateLane("mercuryVenus", closestBody(bodies.mercury, "venus"));
-
-        updateLane("moonTo3", closestBody(bodies.moon, "layer3Stations"));
-        updateLane("moonTo2", closestBody(bodies.moon, "layer2Stations"));
 
         [
             ["mercury", "layer1Stations", "mercury1"],
@@ -974,7 +1053,45 @@
                 closestBody(bodies[`4${i}`], "layer3Stations", -1)
             );
         }
+
+
+        for(let i = 1; i <= 6; i++) {
+            updateLane(`4${i}ToOuter1`, closestBody(bodies[`4${i}`], "outerStations", -1));
+            updateLane(`4${i}ToOuter2`, closestBody(bodies[`4${i}`], "outerStations"));
+            updateLane(`4${i}ToOuter3`, closestBody(bodies[`4${i}`], "outerStations", 1));
+
+        }
+
+        // updateLane("41ToOuter1", closestBody(bodies["41"], "outerStations", -1));
+        // updateLane("41ToOuter2", closestBody(bodies["41"], "outerStations"));
+        // updateLane("41ToOuter3", closestBody(bodies["41"], "outerStations", 1));
+
+        // updateLane("42ToOuter1", closestBody(bodies["42"], "outerStations", -1));
+        // updateLane("42ToOuter2", closestBody(bodies["42"], "outerStations"));
+        // updateLane("42ToOuter3", closestBody(bodies["42"], "outerStations", 1));
     }
+
+    function resetAll(){
+        for (const name of Object.keys(paths)) {
+            removeOrbit(name);
+        }
+
+        for (const name of Object.keys(bodies)) {
+            removeBody(name);
+        }
+
+        for (const name of Object.keys(lanes)) {
+            laneLayer.removeChild(lanes[name].graphics);
+            delete lanes[name];
+        }
+    }
+
+
+    createOrbits();
+    createPlanets();
+    createMoons();
+    createStations();
+    createLanes();
 
 
     updateCamera();
