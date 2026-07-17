@@ -57,12 +57,13 @@ const HTML_TEMPLATE =
             newpageText: "▌Next >",
             defaultTextColor: "#ffffff",
             defaultBackgroundColor: "#000000",
+            instant: new URLSearchParams(window.location.search).get("i") === "",
             onFunctionTag: () => {
                 document.getElementById('return').style.display = 'block';
                 window.scrollTo(0, document.body.scrollHeight);
                 document.body.style.overflowY = 'scroll';
                 document.documentElement.classList.add('hide-scrollbar');
-            }
+            },
         });
 
         let speedToggle = false;

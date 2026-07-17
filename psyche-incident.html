@@ -33,6 +33,7 @@
                 document.documentElement.classList.add('hide-scrollbar');
             },
             wordWrap: 100,
+            instant: new URLSearchParams(window.location.search).get("i") === "",
         });
 
         let speedToggle = false;

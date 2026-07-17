@@ -12,6 +12,9 @@
     <div class="button" id="return" onclick="location.href = 'https://rus1130.github.io/space2313/'" style="display: none;">▌< Return</div>
 </body>
 <script>
+
+    console.log()
+
     fetch('./src/introduction.tw')
     .then(response => response.text())
     .then(text => {
@@ -31,7 +34,8 @@
                 window.scrollTo(0, document.body.scrollHeight);
                 document.body.style.overflowY = 'scroll';
                 document.documentElement.classList.add('hide-scrollbar');
-            }
+            },
+            instant: new URLSearchParams(window.location.search).get("i") === "",
         });
 
         let speedToggle = false;

@@ -33,7 +33,8 @@
                 document.body.style.overflowY = 'scroll';
                 document.documentElement.classList.add('hide-scrollbar');
             },
-            wordWrap: 72
+            wordWrap: 72,
+            instant: new URLSearchParams(window.location.search).get("i") === "",
         });
 
         let speedToggle = false;
