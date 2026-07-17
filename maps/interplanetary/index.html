@@ -53,18 +53,37 @@
     app.stage.addChild(world);
 
     let DAYS_PER_SECOND = 10;
-    let PIXELS_PER_AU = 200;
     let days = 0;
     let paused = true;
-    let MOON_SCALAR = 30//30;
     let updateBodiesAndLanes = true;
+
+
+    // let PIXELS_PER_AU = 200
+    // let MOON_SCALAR = 30
+    // let planetSize = 2
+    // let moonSize = 1
+    // let stationSize = 0.1
+    // let majorLaneDash = [30, 30];
+    // let minorLaneDash = [15, 15];
+    // let startingZoom = 1
+    // let moonOrbitWidth = 0.5
+
+    let PIXELS_PER_AU = 10_000
+    let MOON_SCALAR = 1
+    let planetSize = 1
+    let moonSize = 0.2
+    let stationSize = 0.1
+    let majorLaneDash = [140, 140];
+    let minorLaneDash = [100, 100];
+    let startingZoom = 0.01
+    let moonOrbitWidth = 0.5
 
     const TAU = Math.PI * 2;
 
     const camera = {
         x: 0,
         y: 0,
-        zoom: 1
+        zoom: startingZoom
     };
 
     const paths = {};
@@ -270,7 +289,7 @@
             .circle(0, 0, orbit.radius)
             .stroke({
                 color: orbit.color,
-                width: Math.max(orbit.baseWidth / camera.zoom, 0.1),
+                width: Math.max(orbit.baseWidth / camera.zoom, 0.01),
                 alpha: orbit.opacity
             });
 
@@ -571,10 +590,17 @@
         lastMouse.x = e.clientX;
         lastMouse.y = e.clientY;
 
-        if(bodyClicked != null) {
+        if (bodyClicked) {
+            const body = bodies[bodyClicked];
+
+            camera.x = body.sprite.x;
+            camera.y = body.sprite.y;
+
             console.log(`${bodyClicked} was unfocused`);
             bodyClicked = null;
             moonMode = false;
+
+            updateCamera();
         }
     });
 
@@ -616,7 +642,7 @@
 
         camera.zoom *= factor;
 
-        camera.zoom = Math.max(0.05, Math.min(100, camera.zoom));
+        camera.zoom = Math.max(0.01, Math.min(100, camera.zoom));
 
         // Keep mouse pointing at same world location
         camera.x =
@@ -651,11 +677,6 @@
                 centerX + body.orbit.radius * Math.cos(angle),
                 centerY + body.orbit.radius * Math.sin(angle)
             );
-
-            body.label.position.set(
-                body.sprite.x + body.radius + 4,
-                body.sprite.y
-            );
         }
 
         // Move satellite orbit graphics
@@ -668,26 +689,46 @@
             );
         }
     }
-    
+
     function updateCamera() {
 
+        let pivotX = camera.x;
+        let pivotY = camera.y;
+
+        if (bodyClicked) {
+            const body = bodies[bodyClicked];
+
+            if (body) {
+                pivotX = body.sprite.x;
+                pivotY = body.sprite.y;
+            }
+        }
+
+        world.pivot.set(pivotX, pivotY);
+
         world.position.set(
-            app.renderer.width / 2 - camera.x * camera.zoom,
-            app.renderer.height / 2 - camera.y * camera.zoom
+            app.renderer.width / 2,
+            app.renderer.height / 2
         );
 
         world.scale.set(camera.zoom);
 
-
         for (const body of Object.values(bodies)) {
             body.sprite.scale.set(Math.max(1 / camera.zoom, 1.1));
 
-            const labelScale = Math.min(
-                Math.max(1 / camera.zoom, 0.5),
-                3
-            );
+            const labelScale = 1 / camera.zoom;
+
+            // const labelScale = Math.min(
+            //     Math.max(1 / camera.zoom, 0.5),
+            //     3
+            // );
 
             body.label.scale.set(labelScale);
+
+            body.label.position.set(
+                body.sprite.x + (body.radius + 4) / camera.zoom,
+                body.sprite.y
+            );
         }
 
         for (const orbit of Object.values(paths)) {
@@ -696,27 +737,20 @@
     }
         
     app.ticker.add(() => {
+
         const deltaSeconds = app.ticker.deltaMS / 1000;
 
         if (!paused) {
             days += deltaSeconds * DAYS_PER_SECOND;
         }
 
-        if (bodyClicked != null) {
-            const body = bodies[bodyClicked];
-
-            if (body) {
-                camera.x = body.sprite.x;
-                camera.y = body.sprite.y;
-            }
-
-            updateCamera();
-        }
-
-        if(updateBodiesAndLanes) {
+        if (updateBodiesAndLanes) {
             updateBodies();
             updateLanes();
         }
+
+        updateCamera();
+
     });
 
     function createOrbits(){
@@ -747,15 +781,15 @@
     }
 
 
-    function createPlanets(){
-        createBody("mercury", "mercury", planets.mercury.period, { color: planets.mercury.color, radius: 2 });
-        createBody("venus", "venus", planets.venus.period, { color: planets.venus.color, radius: 2 });
-        createBody("earth", "earth", planets.earth.period, { color: planets.earth.color, radius: 2 });
-        createBody("mars", "mars", planets.mars.period, { color: planets.mars.color, radius: 2 });
-        createBody("jupiter", "jupiter", planets.jupiter.period, { color: planets.jupiter.color, radius: 2 });
-        createBody("saturn", "saturn", planets.saturn.period, { color: planets.saturn.color, radius: 2 });
-        createBody("uranus", "uranus", planets.uranus.period, { color: planets.uranus.color, radius: 2 });
-        createBody("neptune", "neptune", planets.neptune.period, { color: planets.neptune.color, radius: 2 });
+    function createPlanets(size){
+        createBody("mercury", "mercury", planets.mercury.period, { color: planets.mercury.color, radius: size });
+        createBody("venus", "venus", planets.venus.period, { color: planets.venus.color, radius: size });
+        createBody("earth", "earth", planets.earth.period, { color: planets.earth.color, radius: size });
+        createBody("mars", "mars", planets.mars.period, { color: planets.mars.color, radius: size });
+        createBody("jupiter", "jupiter", planets.jupiter.period, { color: planets.jupiter.color, radius: size });
+        createBody("saturn", "saturn", planets.saturn.period, { color: planets.saturn.color, radius: size });
+        createBody("uranus", "uranus", planets.uranus.period, { color: planets.uranus.color, radius: size });
+        createBody("neptune", "neptune", planets.neptune.period, { color: planets.neptune.color, radius: size });
     }
 
 
@@ -876,7 +910,7 @@
 
     }
 
-    function createMoons() {
+    function createMoons(moonSize) {
         for (const [moonName, moonData] of Object.entries(moons)) {
             const orbitName = moonData.orbit;
             const centerBodyName = moonData.centerBody;
@@ -884,50 +918,47 @@
             createOrbit(
                 orbitName,
                 moonData.distance * MOON_SCALAR,
-                { color: 0x000000, width: 0.1, centerBody: centerBodyName }
+                { color: 0x000000, width: moonOrbitWidth, centerBody: centerBodyName }
             );
 
             createBody(
                 moonName,
                 orbitName,
                 moonData.period,
-                { color: moonData.color, radius: 0.4 }
+                { color: moonData.color, radius: moonSize }
             );
         }
     }
 
-    function createStations() {
+    function createStations(size) {
         for(let i = 0; i < stations.layer1.count; i++) {
             const offset = i / stations.layer1.count;
-            createBody(`1${i+1}`, "layer1Stations", stations.layer1.period, { offset, radius: 0.6, color: colors.layerStation });
+            createBody(`1${i+1}`, "layer1Stations", stations.layer1.period, { offset, radius: size, color: colors.layerStation });
         }
 
         for(let i = 0; i < stations.layer2.count; i++) {
             const offset = i / stations.layer2.count;
-            createBody(`2${i+1}`, "layer2Stations", stations.layer2.period, { offset, radius: 0.6, color: colors.layerStation });
+            createBody(`2${i+1}`, "layer2Stations", stations.layer2.period, { offset, radius: size, color: colors.layerStation });
         }
 
         for(let i = 0; i < stations.layer3.count; i++) {
             const offset = i / stations.layer3.count;
-            createBody(`3${i+1}`, "layer3Stations", stations.layer3.period, { offset, radius: 0.6, color: colors.layerStation });
+            createBody(`3${i+1}`, "layer3Stations", stations.layer3.period, { offset, radius: size, color: colors.layerStation });
         }
 
         for(let i = 0; i < stations.layer4.count; i++) {
             const offset = i / stations.layer4.count;
-            createBody(`4${i+1}`, "layer4Stations", stations.layer4.period, { offset, radius: 0.6, color: colors.layerStation });
+            createBody(`4${i+1}`, "layer4Stations", stations.layer4.period, { offset, radius: size, color: colors.layerStation });
         }
 
 
         for(let i = 0; i < stations.outer.count; i++) {
             const offset = i / stations.outer.count;
-            createBody(`O${i+1}`, "outerStations", stations.outer.period, { offset, radius: 0.6, color: colors.layerStation });
+            createBody(`O${i+1}`, "outerStations", stations.outer.period, { offset, radius: size, color: colors.layerStation });
         }
     }
 
-    function createLanes(){
-        const majorLaneDash = [8, 8];
-        const minorLaneDash = [3, 3];
-
+    function createLanes(minorLaneDash, majorLaneDash) {
         createLane("earthMars", "earth", { color: laneColors.earthMars, width: 1, dash: majorLaneDash });
         createLane("mercuryVenus", "mercury", { color: laneColors.mercuryVenus, width: 1, dash: majorLaneDash });
 
@@ -998,7 +1029,35 @@
         createLane("46ToOuter1", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
         createLane("46ToOuter2", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
         createLane("46ToOuter3", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+    }
 
+
+    function realisticModeOnly(stationSize){
+        createOrbit("uranusStationOrbit", (moons.oberon.distance + 100_000) * MOON_SCALAR, { color: 0x7A84B6, width: 1, centerBody: "uranus" });
+
+        createOrbit("titaniaStationOrbit", 5_000 * MOON_SCALAR, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "titania" });
+        createOrbit("oberonStationOrbit", 5_000 * MOON_SCALAR, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "oberon" });      
+        createOrbit("umbrielStationOrbit", 5_000 * MOON_SCALAR, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "umbriel" });
+        createOrbit("arielStationOrbit", 5_000 * MOON_SCALAR, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "ariel" });
+        createOrbit("mirandaStationOrbit", 5_000 * MOON_SCALAR, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "miranda" });  
+
+        createBody("herschelStation", "uranusStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Herschel Station" });
+        createBody("caelusStation", "uranusStationOrbit", 10, { offset: 1/3, color: colors.layerStation, radius: stationSize, label: "Caelus Station" });
+        createBody("georgiaStation", "uranusStationOrbit", 10, { offset: 2/3, color: colors.layerStation, radius: stationSize, label: "Georgia Station" });
+
+        createBody("imogenStation", "titaniaStationOrbit", moons.titania.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Imogen Station" });
+        createBody("calphurniaStation", "titaniaStationOrbit", moons.titania.period, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "Calphurnia Station" });
+        
+        createBody("falstallStation", "oberonStationOrbit", moons.oberon.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Falstall Station" });
+        createBody("othelloStation", "oberonStationOrbit", moons.oberon.period, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "Othello Station" });
+
+        createBody("wundaStation", "umbrielStationOrbit", moons.umbriel.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Wunda Station" });
+        createBody("setibosStation", "umbrielStationOrbit", moons.umbriel.period, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "Setibos Station" });
+
+        createBody("beryluneStation", "arielStationOrbit", moons.ariel.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Berylune Station" });
+        createBody("yangoorStation", "arielStationOrbit", moons.ariel.period, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "Yangoor Station" });
+
+        createBody("ardenStation", "mirandaStationOrbit", moons.miranda.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Arden Station" });
     }
 
 
@@ -1061,14 +1120,6 @@
             updateLane(`4${i}ToOuter3`, closestBody(bodies[`4${i}`], "outerStations", 1));
 
         }
-
-        // updateLane("41ToOuter1", closestBody(bodies["41"], "outerStations", -1));
-        // updateLane("41ToOuter2", closestBody(bodies["41"], "outerStations"));
-        // updateLane("41ToOuter3", closestBody(bodies["41"], "outerStations", 1));
-
-        // updateLane("42ToOuter1", closestBody(bodies["42"], "outerStations", -1));
-        // updateLane("42ToOuter2", closestBody(bodies["42"], "outerStations"));
-        // updateLane("42ToOuter3", closestBody(bodies["42"], "outerStations", 1));
     }
 
     function resetAll(){
@@ -1088,10 +1139,11 @@
 
 
     createOrbits();
-    createPlanets();
-    createMoons();
-    createStations();
-    createLanes();
+    createPlanets(planetSize);
+    createMoons(moonSize);
+    createStations(stationSize);
+    createLanes(minorLaneDash, majorLaneDash);
+    realisticModeOnly(0.1)
 
 
     updateCamera();
