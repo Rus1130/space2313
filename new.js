@@ -41,7 +41,7 @@ const HTML_TEMPLATE =
 <body>
 </body>
 <script type="module">
-    import { SuperType } from 'https://rus1130.github.io/supertype.js';
+    import { SuperType } from 'https://rus1130.github.io/supertype/index.js';
 
     const tw = new SuperType(document.body, {
         "end": function() {
@@ -56,7 +56,7 @@ const HTML_TEMPLATE =
         }
     })
 
-    await tw.load("example.st").then(() => {
+    await tw.load("/src/${name}.st").then(() => {
         tw.start();
     })
 
@@ -86,7 +86,7 @@ typewriter: {
 `
 
 fs.writeFileSync(path.join(`${nameNormalized}.html`), HTML_TEMPLATE.replaceAll("\n", "\r\n"));
-fs.writeFileSync(path.join('src', `${nameNormalized}.tw`), txt_TEMPLATE.replaceAll("\n", "\r\n"));
+fs.writeFileSync(path.join('src', `${nameNormalized}.st`), txt_TEMPLATE.replaceAll("\n", "\r\n"));
 
 let homepage = fs.readFileSync(path.join('index.html'), 'utf8');
 let insertIndex = homepage.indexOf('<!-- -- INSERT POINT -- -->') - 4;

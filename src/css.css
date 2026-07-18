@@ -15,6 +15,8 @@ body {
     margin-bottom: 1px;
     display: block;
     cursor: pointer;
+    background-color: black;
+    color: white;
 }
 .button:hover {
     background-color: white;
