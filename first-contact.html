@@ -1,0 +1,40 @@
+<!-- written 18 july, 2026 -->
+<head>
+    <link rel="stylesheet" href="./src/css.css">
+    <meta property="og:title"       content="First Contact"                                      />
+    <meta property="og:description" content=""                                                   />
+    <meta property="og:url"         content="https://rus1130.github.io/space2313/first-contact/" />
+    <title>First Contact</title>
+</head>
+<body>
+</body>
+<script type="module">
+    import { SuperType } from 'https://rus1130.github.io/supertype/index.js';
+
+    const tw = new SuperType(document.body, {
+        "end": function() {
+            const returnButton = document.createElement("div");
+            returnButton.classList.add("button");
+            returnButton.id = "return";
+            returnButton.textContent = "▌< Return";
+            returnButton.onclick = () => {
+                location.href = 'https://rus1130.github.io/space2313/';
+            };
+            tw.target.appendChild(returnButton);
+        }
+    })
+
+    await tw.load("/src/first-contact.st").then(() => {
+        tw.start();
+    })
+
+    document.body.addEventListener("keydown", (e) => {
+        if(e.key === " ") {
+            tw.paused() ? tw.resume() : tw.pause();
+        }
+
+        if(e.key === "i"){
+            tw.header.instant = !tw.header.instant;
+        }
+    });
+</script>
