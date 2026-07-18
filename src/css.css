@@ -1,8 +1,10 @@
-#out, body {
+button:focus, input:focus, select:focus, textarea:focus, [contenteditable]:focus {
+    outline:none;
+}
+body {
     overflow-y: hidden;
     scrollbar-width: none;
     background-color: black;
-    color: white;
     margin-right: 0;
 }
 * {
@@ -14,7 +16,7 @@
     display: block;
     cursor: pointer;
 }
-.button:hover, .typewriter3-newpage:hover {
+.button:hover {
     background-color: white;
     color: black;
 }

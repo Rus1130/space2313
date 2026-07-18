@@ -33,64 +33,56 @@ const HTML_TEMPLATE =
 `<!-- written ${date} -->
 <head>
     <link rel="stylesheet" href="./src/css.css">
-    <script src="https://rus1130.github.io/projects/Global/typewriter.js"></script>
     ${metaTitle}
     ${metaDesc}
     ${metaURL}
     <title>${name}</title>
 </head>
 <body>
-    <div id="out"></div>
-    <div class="button" id="return" onclick="location.href = 'https://rus1130.github.io/space2313/'" style="display: none;">▌< Return</div>
 </body>
-<script>
-    fetch('./src/${nameNormalized}.tw')
-    .then(response => response.text())
-    .then(text => {
-        let tw3 = new Typewriter3(text, document.getElementById("out"), {
-            charDelay: 100,
-            newlineDelay: 500,
-            customDelays: {
-                ",": 350,
-                ".": 600
-            },
-            newpageText: "▌Next >",
-            defaultTextColor: "#ffffff",
-            defaultBackgroundColor: "#000000",
-            instant: new URLSearchParams(window.location.search).get("i") === "",
-            onFunctionTag: () => {
-                document.getElementById('return').style.display = 'block';
-                window.scrollTo(0, document.body.scrollHeight);
-                document.body.style.overflowY = 'scroll';
-                document.documentElement.classList.add('hide-scrollbar');
-            },
-        });
+<script type="module">
+    import { SuperType } from 'https://rus1130.github.io/supertype.js';
 
-        let speedToggle = false;
+    const tw = new SuperType(document.body, {
+        "end": function() {
+            const returnButton = document.createElement("div");
+            returnButton.classList.add("button");
+            returnButton.id = "return";
+            returnButton.textContent = "▌< Return";
+            returnButton.onclick = () => {
+                location.href = 'https://rus1130.github.io/space2313/';
+            };
+            tw.target.appendChild(returnButton);
+        }
+    })
 
-        document.body.addEventListener('keydown', (event) => {
-            if (event.code === 'Space') tw3.togglePause();
-            if (event.code === 'ArrowRight') {
-                speedToggle = !speedToggle;
-                if(speedToggle) tw3.speedOverride(1);
-                else tw3.speedOverride(null);
-            }
-        });
+    await tw.load("example.st").then(() => {
+        tw.start();
+    })
 
-        tw3.start();
+    document.body.addEventListener("keydown", (e) => {
+        if(e.key === " ") {
+            tw.paused() ? tw.resume() : tw.pause();
+        }
+
+        if(e.key === "i"){
+            tw.header.instant = !tw.header.instant;
+        }
     });
 </script>`
 
 const txt_TEMPLATE = 
 `{{# written ${date} #}}
-{{#timecalc
-    char: 100
-    newline: 500
-    custom: {
+typewriter: {
+    charDelay: 50
+    newlineDelay: 500
+    textColor: #ffffff
+    backgroundColor: #000000
+    customDelays: {
         ",": 350
         ".": 600
     }
-#}}
+}
 `
 
 fs.writeFileSync(path.join(`${nameNormalized}.html`), HTML_TEMPLATE.replaceAll("\n", "\r\n"));
