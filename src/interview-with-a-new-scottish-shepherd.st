@@ -83,4 +83,4 @@ I: Oh my [sleep 200]god![sleep 400][linebreak]
 
 S: [speed 70]Sorry lassie, gotta run.[sleep 600][linebreak]
 
-[sleep 700][function]
+[sleep 700][function "end"]
