@@ -11,6 +11,7 @@ typewriter: {
         "?": 600
     }
     wordWrap: 72
+    previewMode: true
 }
 
 [sleep 1000]
@@ -105,10 +106,11 @@ typewriter: {
     You a[sleep 200]re new to us.[sleep 1000][newline]
     We [sleep 182]wil[speed 120]l help[speed 160] you.[sleep 1000][newline]
     But [speed 195]do not[speed 180] fri[sleep 120]ghten us.[sleep 1000][newline]
-    H[speed 10]aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[speed 120][removelast 33]ppy.[sleep 1000][newline]
-    B[sleep 150]e happy.[sleep 1000][newline]
-    [speed 250]Ha[sleep 287]ppy.[sleep 1500][newline]
-    [speed 230]Goodbye.[sleep 1600][linebreak]
+
+    H[speed 7]aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa[removelast 33][speed 120]ppy.[sleep 1200][newline]
+    [speed 180]Be ha[sleep 80][speed 220]ppy.[sleep 1200][newline]
+    [speed 240]Ha[sleep 220]ppy.[sleep 1200][newline]
+    [speed 220]Go[speed 80]0[removelast 1][speed 230]odbye.[sleep 1100][linebreak]
 
     [sleep 700][function "end"]
 [page end]

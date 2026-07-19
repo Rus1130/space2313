@@ -60,6 +60,8 @@ const HTML_TEMPLATE =
         tw.start();
     })
 
+    let speedOverride = false;
+
     document.body.addEventListener("keydown", (e) => {
         if(e.key === " ") {
             tw.paused() ? tw.resume() : tw.pause();
@@ -67,6 +69,17 @@ const HTML_TEMPLATE =
 
         if(e.key === "i"){
             tw.header.instant = !tw.header.instant;
+        }
+
+        if(e.key === "ArrowRight") {
+            speedOverride = !speedOverride;
+            tw.state.userSpeedOverride = speedOverride ? 2 : null;
+        }
+
+        if(e.key === "r"){
+            tw.target.innerHTML = "";
+            tw.state.glitches = [];
+            tw.start(tw.state.page)
         }
     });
 </script>`
