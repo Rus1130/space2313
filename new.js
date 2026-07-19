@@ -75,7 +75,7 @@ const HTML_TEMPLATE =
 
         if(e.key === "ArrowRight") {
             speedOverride = !speedOverride;
-            tw.state.userSpeedOverride = speedOverride ? 5 : null;
+            tw.state.userSpeedOverride = speedOverride ? 2 : null;
         }
 
         if(e.key === "r"){
