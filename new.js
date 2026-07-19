@@ -56,7 +56,7 @@ const HTML_TEMPLATE =
         }
     })
 
-    await tw.load("/src/${nameNormalized}.st").then(() => {
+    await tw.load("./src/${nameNormalized}.st").then(() => {
         tw.start();
     })
 
