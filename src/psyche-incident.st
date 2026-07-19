@@ -45,4 +45,4 @@ Based upon the available evidence, the ITA officially classified the Psyche Inci
 
 In response to this incident, the ITA immediately suspended all active asteroid relocation and enacted Directive 2305\-17, permanently prohibiting the transfer of asteroids exceeding 1 billion kilograms to within 2[speed 1 override],[speeddefault]000 kilometers of Earth’s surface. The findings of this investigation remain the foundation of modern interplanetary planetary\-defense and asteroid\-transit safety regulations.[sleep 1000][linebreak]
 
-[sleep 700][function]
+[sleep 700][function "end"]
