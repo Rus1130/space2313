@@ -52,7 +52,9 @@ const HTML_TEMPLATE =
             returnButton.onclick = () => {
                 location.href = 'https://rus1130.github.io/space2313/';
             };
-            tw.target.appendChild(returnButton);
+            tw.appendToTarget(returnButton);
+            tw.target.style.overflowY = 'scroll';
+            tw.target.classList.add('hide-scrollbar');
         }
     })
 
@@ -73,7 +75,7 @@ const HTML_TEMPLATE =
 
         if(e.key === "ArrowRight") {
             speedOverride = !speedOverride;
-            tw.state.userSpeedOverride = speedOverride ? 2 : null;
+            tw.state.userSpeedOverride = speedOverride ? 5 : null;
         }
 
         if(e.key === "r"){
