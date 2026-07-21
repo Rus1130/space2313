@@ -244,6 +244,44 @@
         return stations[(targetIndex + stations.length) % stations.length];
     }
 
+    function closestBody2Orbits(orbitGroup1, orbitGroup2, numberOffset = 0){
+        const bodies1 = Object.values(bodies).filter(
+            candidate => candidate.orbit.name === orbitGroup1
+        );
+
+        const bodies2 = Object.values(bodies).filter(
+            candidate => candidate.orbit.name === orbitGroup2
+        );
+
+        if (bodies1.length === 0 || bodies2.length === 0) return null;
+
+        let closestBody1 = null;
+        let closestBody2 = null;
+        let closestDistance2 = Infinity;
+
+        for (const body1 of bodies1) {
+            for (const body2 of bodies2) {
+
+                const dx = body2.sprite.x - body1.sprite.x;
+                const dy = body2.sprite.y - body1.sprite.y;
+
+                const d2 = dx * dx + dy * dy;
+
+                if (d2 < closestDistance2) {
+                    closestDistance2 = d2;
+                    closestBody1 = body1;
+                    closestBody2 = body2;
+                }
+            }
+        }
+
+        // Wrap index around array length
+        const targetIndex = (bodies2.indexOf(closestBody2) + numberOffset) % bodies2.length;
+
+        // Handle negative offsets
+        return bodies2[(targetIndex + bodies2.length) % bodies2.length];
+    }
+
     function createOrbit(name, radiusKm, options = {}) {
 
         const radius = kmToPixels(radiusKm);
@@ -446,7 +484,11 @@
         };
     }
 
-    function updateLane(name, endingBody) {
+    function updateLane(name, endingBody, startingBody = null) {
+
+        if(startingBody !== null) {
+            lanes[name].startingBody = startingBody;
+        }
 
         const lane = lanes[name];
 
@@ -823,6 +865,13 @@
             distance: 671_100,
             color: 0xaaaaaa
         },
+        io: {
+            orbit: "ioOrbit",
+            centerBody: "jupiter",
+            period: 1.769137786,
+            distance: 421_700,
+            color: 0xaaaaaa
+        },
         titan: {
             orbit: "titanOrbit",
             centerBody: "saturn",
@@ -1029,6 +1078,8 @@
         createLane("46ToOuter1", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
         createLane("46ToOuter2", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
         createLane("46ToOuter3", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+
+        createLane("OuterToUranus", "caelusStation", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
     }
 
 
@@ -1118,8 +1169,10 @@
             updateLane(`4${i}ToOuter1`, closestBody(bodies[`4${i}`], "outerStations", -1));
             updateLane(`4${i}ToOuter2`, closestBody(bodies[`4${i}`], "outerStations"));
             updateLane(`4${i}ToOuter3`, closestBody(bodies[`4${i}`], "outerStations", 1));
-
         }
+
+
+        updateLane("OuterToUranus",  closestBody2Orbits("uranusStationOrbit", "outerStations"), closestBody2Orbits("outerStations", "uranusStationOrbit"));
     }
 
     function resetAll(){
