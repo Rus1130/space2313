@@ -44,8 +44,6 @@
 
     <div id="layers"></div>
 
-    <button onclick="calc()">Calculate</button>
-
     <pre id="out"></pre>
 </body>
 <script>
@@ -144,6 +142,7 @@
         document.getElementById("out").textContent = out;
     }
 
-    calc();
+    document.querySelectorAll("input, select").forEach(x=>x.addEventListener("input", calc));
+    calc()
     
 </script>
