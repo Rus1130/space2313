@@ -40,7 +40,7 @@
 
     <select id="presetSelect"></select>
 
-    <button onclick="loadPreset()">
+    <button onclick="loadPreset(presetSelect.value)">
         Load Preset
     </button>
 
@@ -50,7 +50,7 @@
 
     <label>Laser Power (MW)<br><input id="power" type="number" value="50"></label>
     <label>Beam Diameter (cm)<br><input id="diam" type="number" value="10"></label>
-    <label>Initial Temperature (°C)<br><input id="temp" type="number" value="20"></label>
+    <label>Initial Armor Temperature (°C)<br><input id="temp" type="number" value="20"></label>
 
     <div id="layers"></div>
 
@@ -140,9 +140,9 @@
         presetSelect.appendChild(option);
     }
 
-    function loadPreset(){
+    function loadPreset(presetName){
 
-        const preset = presets[presetSelect.value];
+        const preset = presets[presetName];
 
         power.value = preset.power;
         diam.value = preset.diameter;
@@ -247,7 +247,7 @@
 
             total+=t;
 
-            out += `Layer ${i}: ${layer.material}\n`+
+            out += `Layer ${i+1}: ${layer.material}\n`+
                     `Mass: ${m.toFixed(2)} kg\n`+
                     `Absorbed Power: ${(Pabs/1e6).toFixed(2)} MW\n`+
                     `Energy to Melt: ${(E/1e6).toFixed(2)} MJ\n`+
@@ -261,5 +261,7 @@
     }
 
     document.querySelectorAll("input, select").forEach(x=>x.addEventListener("input", calc));
+
+    loadPreset("armor");
     
 </script>
