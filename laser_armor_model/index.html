@@ -38,12 +38,23 @@
 <body>
     <h2>Laser vs. Layered Armor</h2>
 
+    <select id="presetSelect"></select>
+
+    <button onclick="loadPreset()">
+        Load Preset
+    </button>
+
+    <button onclick="exportPreset()">
+        Export Preset
+    </button>
+
     <label>Laser Power (MW)<br><input id="power" type="number" value="50"></label>
     <label>Beam Diameter (cm)<br><input id="diam" type="number" value="10"></label>
     <label>Initial Temperature (°C)<br><input id="temp" type="number" value="20"></label>
 
     <div id="layers"></div>
 
+    <button onclick="addLayer()">Add Layer</button>
     <pre id="out"></pre>
 </body>
 <script>
@@ -92,50 +103,157 @@
         }
     };
 
-    const container=document.getElementById("layers");
+    const presetSelect = document.getElementById("presetSelect");
 
-    for(let i = 1; i <= 3; i++){
-        const d = document.createElement("div");
-        d.className="layer";
-        d.innerHTML=`<b>Layer ${i}</b><br>
-        Material:
-        <select id="m${i}">${Object.keys(mats).map(x=>`<option>${x}</option>`).join("")}</select><br>
-        Thickness (cm):
-        <input id="t${i}" type="number" value="${i==1?10:5}">`;
-        container.appendChild(d);
+    const presets = {
+        "armor": {
+            "power": 1000,
+            "diameter": 50,
+            "initial_temp": -180,
+            layers: [
+                {material: "Tungsten Alloy", thickness: 2000},
+                {material: "Silicon Carbide", thickness: 2000},
+                {material: "Carbon Composite", thickness: 2000}
+            ]
+        }
+    }
+
+    function exportPreset(){
+
+        const preset = {
+            power: Number(power.value),
+            diameter: Number(diam.value),
+            initial_temp: Number(temp.value),
+            layers: getLayers()
+        };
+
+        console.log(JSON.stringify(preset, null, 4));
+    }
+
+    for(const name in presets){
+
+        const option = document.createElement("option");
+
+        option.value = name;
+        option.textContent = name;
+
+        presetSelect.appendChild(option);
+    }
+
+    function loadPreset(){
+
+        const preset = presets[presetSelect.value];
+
+        power.value = preset.power;
+        diam.value = preset.diameter;
+        temp.value = preset.initial_temp;
+
+        renderLayers(
+            structuredClone(preset.layers)
+        );
+
+        calc();
+    }
+
+
+    function addLayer() {
+        const layers = getLayers();
+
+        layers.push({
+            material: Object.keys(mats)[0],
+            thickness: 10
+        });
+
+        renderLayers(layers);
+        calc();
+    }
+
+    function removeLayer(index) {
+        const layers = getLayers();
+
+        layers.splice(index, 1);
+
+        renderLayers(layers);
+        calc();
+    }
+
+    function getLayers() {
+        return [...document.querySelectorAll(".layer")].map(layer => ({
+            material: layer.querySelector(".material").value,
+            thickness: Number(layer.querySelector(".thickness").value)
+        }));
+    }
+
+    const container = document.getElementById("layers");
+
+    function renderLayers(layers = []) {
+        container.innerHTML = "";
+
+        layers.forEach((layer, i) => {
+            const div = document.createElement("div");
+            div.className = "layer";
+
+            div.innerHTML =
+                `<b>Layer ${i + 1}</b><br>` +
+                `Material:` +
+                `<select class="material">` +
+                Object.keys(mats).map(mat =>
+                    `<option ${mat === layer.material ? "selected" : ""}>${mat}</option>`
+                ).join("") +
+                `</select><br>` +
+                `Thickness (cm):` +
+                `<input class="thickness" type="number" value="${layer.thickness}">` +
+                `<button type="button" onclick="removeLayer(${i})">Remove</button>`;
+
+            container.appendChild(div);
+        });
+
+        calc();
+    }
+
+    function bindInputs() {
+        document.querySelectorAll("input, select").forEach(el => {
+            el.addEventListener("input", calc);
+        });
     }
 
     function calc(){
         const P = +power.value * 1e6;
         const r = (+diam.value / 100) / 2;
-        const A= Math.PI * r * r;
-        const T0= +temp.value;
+        const A = Math.PI * r * r;
+        const T0 = +temp.value;
 
         let out="";
 
         let total = 0;
 
-        for(let i = 1; i <= 3; i++){
-        const mat = mats[document.getElementById("m"+i).value];
+        const layers = getLayers();
 
-        const d=+document.getElementById("t"+i).value/100;
+        layers.forEach((layer, i) => {
+            // const mat = mats[document.getElementById("m"+i).value];
 
-        const m= mat.rho * A * d;
-        const Pabs = P * (1 - mat.R);
-        const E = m * mat.c * (mat.Tm - T0) + m * mat.L;
-        const t = E / Pabs;
-        const e = mat.rho * (mat.c * (mat.Tm - T0) + mat.L);
-        const v = Pabs / (A * e);
+            // const d=+document.getElementById("t"+i).value/100;
 
-        total+=t;
+            const mat = mats[layer.material];
+            const d = layer.thickness / 100;
 
-        out += `Layer ${i}: ${document.getElementById("m"+i).value}\n`+
-                `Mass: ${m.toFixed(2)} kg\n`+
-                `Absorbed Power: ${(Pabs/1e6).toFixed(2)} MW\n`+
-                `Energy to Melt: ${(E/1e6).toFixed(2)} MJ\n`+
-                `Time to Penetrate: ${t.toFixed(2)} s\n`+
-                `Penetration Rate: ${(v*1000).toFixed(2)} mm/s\n\n`;
-        }
+
+            const m= mat.rho * A * d;
+            const Pabs = P * (1 - mat.R);
+            const E = m * mat.c * (mat.Tm - T0) + m * mat.L;
+            const t = E / Pabs;
+            const e = mat.rho * (mat.c * (mat.Tm - T0) + mat.L);
+            const v = Pabs / (A * e);
+
+            total+=t;
+
+            out += `Layer ${i}: ${layer.material}\n`+
+                    `Mass: ${m.toFixed(2)} kg\n`+
+                    `Absorbed Power: ${(Pabs/1e6).toFixed(2)} MW\n`+
+                    `Energy to Melt: ${(E/1e6).toFixed(2)} MJ\n`+
+                    `Time to Penetrate: ${t.toFixed(2)} s\n`+
+                    `Penetration Rate: ${(v*1000).toFixed(2)} mm/s\n\n`;
+        });
 
         out += "Total Penetration Time: "+total.toFixed(2)+" s";
 
@@ -143,6 +261,5 @@
     }
 
     document.querySelectorAll("input, select").forEach(x=>x.addEventListener("input", calc));
-    calc()
     
 </script>
