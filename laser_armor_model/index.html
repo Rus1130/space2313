@@ -59,61 +59,89 @@
 </body>
 <script>
     /*
-        rho: density
+        rho: density (kg/m^3)
         c: specific heat capacity (energy required to raise 1kg by 1°C)
-        Tm: melting temperature
+        Tm: melting temperature (°C)
         L: latent heat of fusion (energy required to melt 1kg after reaching melting point)
-        R: reflectivity
+        n: refractive index
+        k: extinction coefficient
     */
     const mats = {
         "Tungsten Alloy": {
-            rho: 19_300,
+            rho: 19300,
             c: 134,
-            Tm: 3_422,
-            L: 192_000,
-            R:0.45
+            Tm: 3422,
+            L: 192000,
+            n: 3.55,
+            k: 3.81
         },
         "Silicon Carbide": {
-            rho: 3_210,
+            rho: 3210,
             c: 750,
-            Tm: 2_730,
-            L: 350_000,
-            R: 0.20
+            Tm: 2730,
+            L: 350000,
+            n: 2.63,
+            k: 0.02
+        },
+        "Boron Carbide": {
+            rho: 2520,
+            c: 750,
+            Tm: 2350,
+            L: 300000,
+            n: 2.10,
+            k: 0.03
+        },
+        "Halfnium Carbide": {
+            rho: 12000,
+            c: 250,
+            Tm: 3890,
+            L: 400000,
+            n: 2.70,
+            k: 0.10
         },
         "Carbon Composite": {
-            rho: 1_800,
+            rho: 1800,
             c: 710,
-            Tm: 3_650,
-            L: 500_000,
-            R: 0.10
+            Tm: 3650,
+            L: 500000,
+            n: 2.00,
+            k: 1.10
         },
         "Titanium Alloy": {
-            rho: 4_430,
+            rho: 4430,
             c: 520,
-            Tm: 1_668,
-            L: 295_000,
-            R: 0.35
+            Tm: 1668,
+            L: 295000,
+            n: 3.46,
+            k: 3.31
         },
         "Steel": {
-            rho: 7_850,
-            c: 5_00,
-            Tm: 1_500,
-            L: 272_000,
-            R: 0.40
+            rho: 7850,
+            c: 500,
+            Tm: 1500,
+            L: 272000,
+            n: 2.85,
+            k: 3.15
         }
     };
 
+    function reflectivity(n, k) {
+        const numerator = (n - 1) ** 2 + k ** 2;
+        const denominator = (n + 1) ** 2 + k ** 2;
+        return numerator / denominator;
+    }
+        
     const presetSelect = document.getElementById("presetSelect");
 
     const presets = {
-        "armor": {
-            "power": 1000,
-            "diameter": 50,
+        "Light Armor & Laser": {
+            "power": 1,
+            "diameter": 5,
             "initial_temp": -180,
             layers: [
-                {material: "Tungsten Alloy", thickness: 200},
-                {material: "Silicon Carbide", thickness: 200},
-                {material: "Carbon Composite", thickness: 200}
+                {material: "Tungsten Alloy", thickness: 20},
+                {material: "Silicon Carbide", thickness: 20},
+                {material: "Carbon Composite", thickness: 20}
             ]
         }
     }
@@ -143,6 +171,8 @@
     function loadPreset(presetName){
 
         const preset = presets[presetName];
+
+        if(!preset) return console.error("Preset not found:", presetName);
 
         power.value = preset.power;
         diam.value = preset.diameter;
@@ -198,8 +228,8 @@
                 `Material:` +
                 `<select class="material">` +
                 Object.keys(mats).map(mat =>
-                    `<option ${mat === layer.material ? "selected" : ""}>${mat}</option>`
-                ).join("") +
+                    `<option value="${mat}"${mat === layer.material ? " selected" : ""}>${mat}</option>`
+                ).join("")+
                 `</select><br>` +
                 `Thickness (cm):` +
                 `<input class="thickness" type="number" value="${layer.thickness}">` +
@@ -208,6 +238,7 @@
             container.appendChild(div);
         });
 
+        bindInputs();
         calc();
     }
 
@@ -230,16 +261,15 @@
         const layers = getLayers();
 
         layers.forEach((layer, i) => {
-            // const mat = mats[document.getElementById("m"+i).value];
-
-            // const d=+document.getElementById("t"+i).value/100;
-
             const mat = mats[layer.material];
             const d = layer.thickness / 100;
 
 
             const m= mat.rho * A * d;
-            const Pabs = P * (1 - mat.R);
+
+            const R = reflectivity(mat.n, mat.k);
+            const Pabs = P * (1 - R);
+
             const E = m * mat.c * (mat.Tm - T0) + m * mat.L;
             const t = E / Pabs;
             const e = mat.rho * (mat.c * (mat.Tm - T0) + mat.L);
@@ -262,6 +292,6 @@
 
     document.querySelectorAll("input, select").forEach(x=>x.addEventListener("input", calc));
 
-    loadPreset("armor");
+    loadPreset("Light Armor & Laser");
     
 </script>
