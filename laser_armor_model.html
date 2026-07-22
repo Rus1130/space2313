@@ -1,0 +1,149 @@
+<style>
+    button:focus, input:focus, select:focus, textarea:focus, [contenteditable]:focus {
+        outline:none;
+    }
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 900px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+    label {
+        display: block;
+        margin-top: 10px
+    }
+    input, select {
+        padding: 6px;
+        width: 220px;
+    }
+    .layer {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 10px 0;
+    }
+    button {
+        margin-top: 15px;
+        padding: 10px 18px;
+    }
+    pre {
+        background: #f5f5f5;
+        padding: 10px;
+    }
+</style>
+<head>
+    <meta property="og:title" content="Laser Armor Model">
+    <meta property="og:description" content="umm lasers wow">
+    <meta property="og:url" content="https://rus1130.github.io/space2313/laser_armor_model.html">
+</head>
+<body>
+    <h2>Laser vs. Layered Armor</h2>
+    <p>Simple energy-balance model.</p>
+
+    <label>Laser Power (MW)<br><input id="power" type="number" value="50"></label>
+    <label>Beam Diameter (cm)<br><input id="diam" type="number" value="10"></label>
+    <label>Initial Temperature (°C)<br><input id="temp" type="number" value="20"></label>
+
+    <div id="layers"></div>
+
+    <button onclick="calc()">Calculate</button>
+
+    <pre id="out"></pre>
+</body>
+<script>
+    /*
+        rho: density
+        c: specific heat capacity (energy required to raise 1kg by 1°C)
+        Tm: melting temperature
+        L: latent heat of fusion (energy required to melt 1kg after reaching melting point)
+        R: reflectivity
+    */
+    const mats = {
+        "Tungsten Alloy": {
+            rho: 19_300,
+            c: 134,
+            Tm: 3_422,
+            L: 192_000,
+            R:0.45
+        },
+        "Silicon Carbide": {
+            rho: 3_210,
+            c: 750,
+            Tm: 2_730,
+            L: 350_000,
+            R: 0.20
+        },
+        "Carbon Composite": {
+            rho: 1_800,
+            c: 710,
+            Tm: 3_650,
+            L: 500_000,
+            R: 0.10
+        },
+        "Titanium Alloy": {
+            rho: 4_430,
+            c: 520,
+            Tm: 1_668,
+            L: 295_000,
+            R: 0.35
+        },
+        "Steel": {
+            rho: 7_850,
+            c: 5_00,
+            Tm: 1_500,
+            L: 272_000,
+            R: 0.40
+        }
+    };
+
+    const container=document.getElementById("layers");
+
+    for(let i = 1; i <= 3; i++){
+        const d = document.createElement("div");
+        d.className="layer";
+        d.innerHTML=`<b>Layer ${i}</b><br>
+        Material:
+        <select id="m${i}">${Object.keys(mats).map(x=>`<option>${x}</option>`).join("")}</select><br>
+        Thickness (cm):
+        <input id="t${i}" type="number" value="${i==1?10:5}">`;
+        container.appendChild(d);
+    }
+
+    function calc(){
+        const P = +power.value * 1e6;
+        const r = (+diam.value / 100) / 2;
+        const A= Math.PI * r * r;
+        const T0= +temp.value;
+
+        let out="";
+
+        let total = 0;
+
+        for(let i = 1; i <= 3; i++){
+        const mat = mats[document.getElementById("m"+i).value];
+
+        const d=+document.getElementById("t"+i).value/100;
+
+        const m= mat.rho * A * d;
+        const Pabs = P * (1 - mat.R);
+        const E = m * mat.c * (mat.Tm - T0) + m * mat.L;
+        const t = E / Pabs;
+        const e = mat.rho * (mat.c * (mat.Tm - T0) + mat.L);
+        const v = Pabs / (A * e);
+
+        total+=t;
+
+        out += `Layer ${i}: ${document.getElementById("m"+i).value}\n`+
+                `Mass: ${m.toFixed(2)} kg\n`+
+                `Absorbed Power: ${(Pabs/1e6).toFixed(2)} MW\n`+
+                `Energy to Melt: ${(E/1e6).toFixed(2)} MJ\n`+
+                `Time to Penetrate: ${t.toFixed(2)} s\n`+
+                `Penetration Rate: ${(v*1000).toFixed(2)} mm/s`;
+        }
+
+        out += "Total Penetration Time: "+total.toFixed(2)+" s";
+        document.getElementById("out").textContent = out;
+    }
+
+    calc();
+    
+</script>
