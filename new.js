@@ -11,12 +11,12 @@ if(!name) {
 const nameNormalized = name.replaceAll(/\W/g, "-").replaceAll(/-+/g, "-").toLowerCase();
 
 let day = new Date().getDate();
-let month = new Date().getMonth() + 1;
+let month = new Date().getMonth();
+let year = new Date().getFullYear();
 
 const months = ["jan", "feb", "mar", "apr", "may", "june", "july", "aug", "sept", "oct", "nov", "dec"];
 
-let year = new Date().getFullYear();
-const date = `${day} ${months[month-1]}, ${year}`;
+const date = `${day} ${months[month]}, ${year}`;
 
 let metaTitle = `<meta property="og:title"       content="${name}"`
 let metaDesc  = `<meta property="og:description" content=""`
