@@ -136,10 +136,11 @@
                 `Absorbed Power: ${(Pabs/1e6).toFixed(2)} MW\n`+
                 `Energy to Melt: ${(E/1e6).toFixed(2)} MJ\n`+
                 `Time to Penetrate: ${t.toFixed(2)} s\n`+
-                `Penetration Rate: ${(v*1000).toFixed(2)} mm/s`;
+                `Penetration Rate: ${(v*1000).toFixed(2)} mm/s\n\n`;
         }
 
         out += "Total Penetration Time: "+total.toFixed(2)+" s";
+
         document.getElementById("out").textContent = out;
     }
 
