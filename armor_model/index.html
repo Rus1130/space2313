@@ -1,0 +1,699 @@
+<style>
+    button:focus, input:focus, select:focus, textarea:focus, [contenteditable]:focus {
+        outline:none;
+    }
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+    label {
+        display: block;
+        margin-top: 10px
+    }
+    input, select {
+        padding: 6px;
+        width: 220px;
+    }
+    .layer {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 10px 0;
+    }
+    button {
+        margin-top: 15px;
+        padding: 10px 18px;
+    }
+    .mode-block {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-top: 10px;
+        background: #fafafa;
+    }
+    .note {
+        font-size: 12px;
+        color: #777;
+        margin-top: 4px;
+    }
+    .main-container {
+        display: flex;
+        gap: 30px;
+        align-items: flex-start;
+    }
+
+    .left-panel {
+        flex: 1;
+        min-width: 400px;
+    }
+
+    .right-panel {
+        flex: 1;
+        position: sticky;
+        top: 20px;
+    }
+
+    pre {
+        background: #f5f5f5;
+        padding: 10px;
+        white-space: pre-wrap;
+        min-height: 300px;
+    }
+</style>
+<head>
+    <meta property="og:title" content="Laser & Ballistics vs. Armor Model">
+    <meta property="og:description" content="umm lasers and bullets wow">
+    <meta property="og:url" content="https://rus1130.github.io/space2313/armor_model">
+</head>
+<body>
+    <h2>Laser / Kinetic Round vs. Layered Armor</h2>
+
+    <div class="main-container">
+
+        <div class="left-panel">
+
+            <select id="presetSelect"></select>
+
+            <button onclick="loadPreset(presetSelect.value)">
+                Load Preset
+            </button>
+
+            <button onclick="exportPreset()">
+                Export Preset
+            </button>
+
+            <label>
+                Attack Type<br>
+                <select id="weaponType">
+                    <option value="laser">Laser</option>
+                    <option value="kinetic">Kinetic Round</option>
+                </select>
+            </label>
+
+            <div id="laserInputs" class="mode-block">
+                <label>
+                    Laser Power (MW)<br>
+                    <input id="power" type="number" value="50">
+                </label>
+
+                <label>
+                    Beam Diameter (cm)<br>
+                    <input id="diam" type="number" value="10">
+                </label>
+            </div>
+
+            <div id="kineticInputs" class="mode-block" style="display:none">
+
+                <label>
+                    Round Preset<br>
+                    <select id="roundPreset" onchange="applyRoundPreset(this.value)">
+                        <option value="">Custom</option>
+                    </select>
+                </label>
+
+                <label>
+                    Caliber / Diameter (mm)<br>
+                    <input id="roundDiam" type="number" value="12.7">
+                </label>
+
+                <label>
+                    Projectile Mass (g)<br>
+                    <input id="roundMass" type="number" value="42">
+                </label>
+
+                <label>
+                    Muzzle / Impact Velocity (m/s)<br>
+                    <input id="roundVel" type="number" value="900">
+                </label>
+
+                <label>
+                    Round Material (penetrator core)<br>
+                    <select id="roundMaterial">
+                    </select>
+                </label>
+
+            </div>
+
+            <label>
+                Initial Armor Temperature (°C)<br>
+                <input id="temp" type="number" value="20">
+            </label>
+
+            <div id="layers"></div>
+
+            <button onclick="addLayer()">
+                Add Layer
+            </button>
+
+        </div>
+
+
+        <div class="right-panel">
+
+            <h3>Result</h3>
+
+            <pre id="out"></pre>
+
+        </div>
+
+    </div>
+</body>
+<script>
+    /*
+        density: density (kg/m^3)
+        specificHeat: specific heat capacity (energy required to raise 1kg by 1°C) (J/kg°C)
+        meltingPoint: melting temperature (°C)
+        latentHeatFusion: latent heat of fusion (energy required to melt 1kg after reaching melting point)
+
+        refractiveIndex: refractive index
+        extinctionCoefficient: extinction coefficient
+
+        yieldStrength: yield strength (Pa); tensile strength, yield
+        compressiveStrength: compressive strength (Pa); compressive yield strength
+    */
+    const materials = {
+        "Tungsten": {
+            density: 19_700,
+            specificHeat: 134,
+            meltingPoint: 3422,
+            latentHeatFusion: 192000,
+
+            refractiveIndex: 3.55,
+            extinctionCoefficient: 3.81,
+
+            yieldStrength: toPa(1350, "MPa"),
+            compressiveStrength: toPa((1350+3500)/2, "MPa")
+        },
+
+        "Silicon Carbide": {
+            density: 3210,
+            specificHeat: 750,
+            meltingPoint: 2730,
+            latentHeatFusion: 350000,
+
+            refractiveIndex: 2.63,
+            extinctionCoefficient: 0.02,
+
+            yieldStrength: 400e6,
+            compressiveStrength: 3.5e9
+        },
+
+        "Boron Carbide": {
+            density: 2520,
+            specificHeat: 750,
+            meltingPoint: 2350,
+            latentHeatFusion: 300000,
+
+            refractiveIndex: 2.10,
+            extinctionCoefficient: 0.03,
+
+            yieldStrength: 300e6,
+            compressiveStrength: 4e9
+        },
+
+        "Hafnium Carbide": {
+            density: 12000,
+            specificHeat: 250,
+            meltingPoint: 3890,
+            latentHeatFusion: 400000,
+
+            refractiveIndex: 2.70,
+            extinctionCoefficient: 0.10,
+
+            yieldStrength: 700e6,
+            compressiveStrength: 1.8e9
+        },
+
+        "Carbon Composite": {
+            density: 1800,
+            specificHeat: 710,
+            meltingPoint: 3650,
+            latentHeatFusion: 500000,
+
+            refractiveIndex: 2.00,
+            extinctionCoefficient: 1.10,
+
+            yieldStrength: 600e6,
+            compressiveStrength: 600e6
+        },
+
+        "Titanium Alloy": {
+            density: 4430,
+            specificHeat: 520,
+            meltingPoint: 1668,
+            latentHeatFusion: 295000,
+
+            refractiveIndex: 3.46,
+            extinctionCoefficient: 3.31,
+
+            yieldStrength: 900e6,
+            compressiveStrength: 1e9
+        },
+
+        "Steel": {
+            density: 7850,
+            specificHeat: 500,
+            meltingPoint: 1500,
+            latentHeatFusion: 272000,
+
+            refractiveIndex: 2.85,
+            extinctionCoefficient: 3.15,
+
+            yieldStrength: 500e6,
+            compressiveStrength: 1.2e9
+        },
+
+        "Lead": {
+            density: 11340,
+            specificHeat: 128,
+            meltingPoint: 327,
+            latentHeatFusion: 23000,
+
+            refractiveIndex: 2.0,
+            extinctionCoefficient: 3.0,
+
+            yieldStrength: 18e6,
+            compressiveStrength: 50e6
+        },
+
+        "Copper": {
+            density: 8960,
+            specificHeat: 385,
+            meltingPoint: 1085,
+            latentHeatFusion: 205000,
+
+            refractiveIndex: 1.1,
+            extinctionCoefficient: 2.6,
+
+            yieldStrength: 70e6,
+            compressiveStrength: 210e6
+        },
+
+        "Tungsten Carbide": {
+            density: 15600,
+            specificHeat: 250,
+            meltingPoint: 2870,
+            latentHeatFusion: 500000,
+
+            refractiveIndex: 2.7,
+            extinctionCoefficient: 0.1,
+
+            yieldStrength: 7000e6,
+            compressiveStrength: 7000e6
+        }
+    };
+
+    const roundMaterialSelect = document.getElementById("roundMaterial");
+
+    for (const name of [
+        "Lead",
+        "Copper",
+        "Steel",
+        "Tungsten Carbide"
+    ]) {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        roundMaterialSelect.appendChild(option);
+    }
+
+    roundMaterialSelect.value = "Tungsten Carbide";
+        
+
+    function toPa(value, unit) {
+        unit = unit.toLowerCase().replace(/\s+/g, "");
+
+        switch (unit) {
+            case "pa":
+                return value;
+
+            case "kpa":
+                return value * 1e3;
+
+            case "mpa":
+                return value * 1e6;
+
+            case "gpa":
+                return value * 1e9;
+
+            case "bar":
+                return value * 1e5;
+
+            case "psi":
+                return value * 6894.76;
+
+            default:
+                throw new Error(`Unknown pressure unit: ${unit}`);
+        }
+    }
+
+    // Illustrative round presets: [diameter mm, mass g, velocity m/s]
+    const roundPresets = {
+        "30mm Autocannon": { diam: 30.00, mass: 360, vel: 2000 }
+    };
+
+    function reflectivity(n, k) {
+        const numerator = (n - 1) ** 2 + k ** 2;
+        const denominator = (n + 1) ** 2 + k ** 2;
+        return numerator / denominator;
+    }
+
+    const presetSelect = document.getElementById("presetSelect");
+    const roundPresetSelect = document.getElementById("roundPreset");
+    const weaponTypeSelect = document.getElementById("weaponType");
+
+    for (const name in roundPresets) {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        roundPresetSelect.appendChild(option);
+    }
+
+    function applyRoundPreset(name) {
+        const p = roundPresets[name];
+        if (!p) return;
+        roundDiam.value = p.diam;
+        roundMass.value = p.mass;
+        roundVel.value = p.vel;
+        calc();
+    }
+
+    const presets = {
+        "Light Armor & Laser": {
+            weaponType: "laser",
+            power: 1,
+            diameter: 5,
+            initial_temp: -180,
+            layers: [
+                {material: "Tungsten", thickness: 20},
+                {material: "Silicon Carbide", thickness: 20},
+                {material: "Carbon Composite", thickness: 20}
+            ]
+        },
+    };
+
+    function currentWeaponType() {
+        return weaponType.value;
+    }
+
+    function exportPreset(){
+
+        const preset = {
+            weaponType: currentWeaponType(),
+            initial_temp: Number(temp.value),
+            layers: getLayers()
+        };
+
+        if (preset.weaponType === "laser") {
+            preset.power = Number(power.value);
+            preset.diameter = Number(diam.value);
+        } else {
+            preset.round = {
+                diam: Number(roundDiam.value),
+                mass: Number(roundMass.value),
+                vel: Number(roundVel.value),
+                material: roundMaterial.value
+            };
+        }
+
+        console.log(JSON.stringify(preset, null, 4));
+    }
+
+    for(const name in presets){
+
+        const option = document.createElement("option");
+
+        option.value = name;
+        option.textContent = name;
+
+        presetSelect.appendChild(option);
+    }
+
+    function setWeaponType(type) {
+        weaponType.value = type;
+        toggleModeInputs();
+    }
+
+    function toggleModeInputs() {
+        const isLaser = weaponType.value === "laser";
+        document.getElementById("laserInputs").style.display = isLaser ? "block" : "none";
+        document.getElementById("kineticInputs").style.display = isLaser ? "none" : "block";
+    }
+
+    function loadPreset(presetName){
+
+        const preset = presets[presetName];
+
+        if(!preset) return console.error("Preset not found:", presetName);
+
+        setWeaponType(preset.weaponType || "laser");
+        temp.value = preset.initial_temp;
+
+        if (preset.weaponType === "kinetic" && preset.round) {
+            roundDiam.value = preset.round.diam;
+            roundMass.value = preset.round.mass;
+            roundVel.value = preset.round.vel;
+            roundMaterial.value = preset.round.material;
+            roundPresetSelect.value = preset.round.preset || "";
+        } else {
+            power.value = preset.power;
+            diam.value = preset.diameter;
+        }
+
+        renderLayers(
+            structuredClone(preset.layers)
+        );
+
+        calc();
+    }
+
+
+    function addLayer() {
+        const layers = getLayers();
+
+        layers.push({
+            material: Object.keys(materials)[0],
+            thickness: 10
+        });
+
+        renderLayers(layers);
+        calc();
+    }
+
+    function removeLayer(index) {
+        const layers = getLayers();
+
+        layers.splice(index, 1);
+
+        renderLayers(layers);
+        calc();
+    }
+
+    function getLayers() {
+        return [...document.querySelectorAll(".layer")].map(layer => ({
+            material: layer.querySelector(".material").value,
+            thickness: Number(layer.querySelector(".thickness").value)
+        }));
+    }
+
+    const container = document.getElementById("layers");
+
+    function renderLayers(layers = []) {
+        container.innerHTML = "";
+
+        layers.forEach((layer, i) => {
+            const div = document.createElement("div");
+            div.className = "layer";
+
+            div.innerHTML =
+                `<b>Layer ${i + 1}</b><br>` +
+                `Material:` +
+                `<select class="material">` +
+                Object.keys(materials).map(mat =>
+                    `<option value="${mat}"${mat === layer.material ? " selected" : ""}>${mat}</option>`
+                ).join("")+
+                `</select><br>` +
+                `Thickness (cm):` +
+                `<input class="thickness" type="number" value="${layer.thickness}">` +
+                `<button type="button" onclick="removeLayer(${i})">Remove</button>`;
+
+            container.appendChild(div);
+        });
+
+        bindInputs();
+        calc();
+    }
+
+    function bindInputs() {
+        document.querySelectorAll("input, select").forEach(el => {
+            el.addEventListener("input", calc);
+            el.addEventListener("change", calc);
+        });
+    }
+
+    function calcLaser() {
+        const P = +power.value * 1e6;
+        const r = (+diam.value / 100) / 2;
+        const A = Math.PI * r * r;
+        const T0 = +temp.value;
+
+        let out = "";
+        let total = 0;
+
+        const layers = getLayers();
+
+        layers.forEach((layer, i) => {
+            const mat = materials[layer.material];
+            const d = layer.thickness / 100;
+
+            const m = mat.density * A * d;
+
+            const R = reflectivity(
+                mat.refractiveIndex,
+                mat.extinctionCoefficient
+            );
+
+            const Pabs = P * (1 - R);
+
+            const E =
+                m *
+                mat.specificHeat *
+                (mat.meltingPoint - T0)
+                +
+                m *
+                mat.latentHeatFusion;
+
+            const t = E / Pabs;
+
+            const energyDensity =
+                mat.density *
+                (
+                    mat.specificHeat *
+                    (mat.meltingPoint - T0)
+                    +
+                    mat.latentHeatFusion
+                );
+
+            const v = Pabs / (A * energyDensity);
+
+            total += t;
+
+            out +=
+                `Layer ${i+1}: ${layer.material}\n` +
+                `Mass: ${m.toFixed(2)} kg\n` +
+                `Absorbed Power: ${(Pabs/1e6).toFixed(2)} MW\n` +
+                `Energy to Melt: ${(E/1e6).toFixed(2)} MJ\n` +
+                `Time to Penetrate: ${t.toFixed(2)} s\n` +
+                `Penetration Rate: ${(v*1000).toFixed(2)} mm/s\n\n`;
+        });
+
+        out +=
+            "Total Penetration Time: " +
+            total.toFixed(2) +
+            " s";
+
+        return out;
+    }
+        
+    function calcKinetic() {
+        const dMM = +roundDiam.value;
+        const massKg = +roundMass.value / 1000;
+        let vel = +roundVel.value;
+
+        const roundMat = materials[roundMaterial.value];
+
+        const r = (dMM / 1000) / 2;
+        const A = Math.PI * r * r; // m^2
+
+        let out = "";
+        out += `Round: ${dMM} mm, ${(massKg*1000).toFixed(1)} g, ${vel.toFixed(0)} m/s ` +
+               `(${roundMaterial.value})\n`;
+
+        let KE = 0.5 * massKg * vel * vel;
+        out += `Impact Energy: ${(KE/1000).toFixed(2)} kJ\n\n`;
+
+        const layers = getLayers();
+        let stopped = false;
+        let stopLayerIndex = null;
+        let stopDepthCm = null;
+
+        layers.forEach((layer, i) => {
+            if (stopped) {
+                out += `Layer ${i+1}: ${layer.material} -- not reached (round already stopped)\n\n`;
+                return;
+            }
+
+            const mat = materials[layer.material];
+            const dM = layer.thickness / 100; // m
+            const volume = A * dM; // m^3
+
+            const penetratorFactor =
+                Math.sqrt(
+                    (
+                        roundMat.yieldStrength /
+                        mat.compressiveStrength
+                    )
+                    *
+                    (
+                        roundMat.density /
+                        mat.density
+                    )
+                );
+
+            const EnergyRequired =
+                mat.compressiveStrength * volume / penetratorFactor;
+
+            out += `Layer ${i+1}: ${layer.material} (${layer.thickness} cm)\n`;
+            out += `Energy to Fully Penetrate Layer: ${(EnergyRequired/1000).toFixed(2)} kJ\n`;
+            out += `Remaining Energy Before Layer: ${(KE/1000).toFixed(2)} kJ\n`;
+
+            if (KE <= EnergyRequired) {
+                const fraction = EnergyRequired > 0 ? KE / EnergyRequired : 0;
+                const depthCm = layer.thickness * Math.min(fraction, 1);
+                out += `Result: ROUND STOPPED, penetrated ~${depthCm.toFixed(2)} cm into this layer\n\n`;
+                stopped = true;
+                stopLayerIndex = i;
+                stopDepthCm = depthCm;
+                KE = 0;
+                vel = 0;
+                return;
+            }
+
+            KE -= EnergyRequired;
+            vel = Math.sqrt(2 * KE / massKg);
+
+            out += `Result: Layer defeated, exit velocity ${vel.toFixed(1)} m/s ` +
+                   `(${(KE/1000).toFixed(2)} kJ remaining)\n\n`;
+        });
+
+        if (stopped) {
+            out += `Outcome: Round stopped in Layer ${stopLayerIndex + 1} ` +
+                   `(${layers[stopLayerIndex].material}) at a depth of ${stopDepthCm.toFixed(2)} cm.`;
+        } else {
+            out += `Outcome: Round fully penetrated all layers.\n` +
+                   `Exit Velocity: ${vel.toFixed(1)} m/s\n` +
+                   `Remaining Energy: ${(KE/1000).toFixed(2)} kJ`;
+        }
+
+        return out;
+    }
+
+    function calc(){
+        const out = currentWeaponType() === "laser" ? calcLaser() : calcKinetic();
+        document.getElementById("out").textContent = out;
+    }
+
+    weaponTypeSelect.addEventListener("change", () => {
+        toggleModeInputs();
+        calc();
+    });
+
+    document.querySelectorAll("input, select").forEach(x => {
+        x.addEventListener("input", calc);
+        x.addEventListener("change", calc);
+    });
+
+    toggleModeInputs();
+    loadPreset("Light Armor & Laser");
+
+</script>
