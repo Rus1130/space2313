@@ -11,6 +11,7 @@ typewriter: {
     }
     instant: true
     wordWrap: 150
+    backToTop: true
 }
 
 *== Defensive ==*[newline]
