@@ -725,6 +725,8 @@
                    `Remaining Energy: ${(KE/1000).toFixed(2)} kJ`;
         }
 
+        out.replaceAll(/\n+$/g, "");
+
         return out;
     }
 
