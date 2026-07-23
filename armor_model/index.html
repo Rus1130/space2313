@@ -72,15 +72,14 @@
 
         <div class="left-panel">
 
-            <select id="presetSelect"></select>
-
-            <button onclick="loadPreset(presetSelect.value)">
-                Load Preset
-            </button>
-
             <button onclick="exportPreset()">
                 Export Preset
-            </button>
+            </button><br>
+
+            <label>
+                Armor Preset<br>
+                <select id="presetSelect"></select>
+            </label>
 
             <label>
                 Attack Type<br>
@@ -91,6 +90,12 @@
             </label>
 
             <div id="laserInputs" class="mode-block">
+                <label>
+                    Laser Preset<br>
+                    <select id="laserPreset" onchange="applyLaserPreset(this.value)">
+                        <option value="">Custom</option>
+                    </select>
+                </label>
                 <label>
                     Laser Power (MW)<br>
                     <input id="power" type="number" value="50">
@@ -309,6 +314,7 @@
         "Lead",
         "Copper",
         "Steel",
+        "Tungsten",
         "Tungsten Carbide"
     ]) {
         const option = document.createElement("option");
@@ -317,7 +323,7 @@
         roundMaterialSelect.appendChild(option);
     }
 
-    roundMaterialSelect.value = "Tungsten Carbide";
+    roundMaterialSelect.value = "Custom";
         
 
     function toPa(value, unit) {
@@ -349,7 +355,31 @@
 
     // Illustrative round presets: [diameter mm, mass g, velocity m/s]
     const roundPresets = {
-        "30mm Autocannon": { diam: 30.00, mass: 360, vel: 2000 }
+        "20mm Autocannon WC": { diam: 20.00, mass: 130, vel: 1050, core: "Tungsten Carbide" },
+        "30mm Autocannon WC": { diam: 30.00, mass: 360, vel: 2000, core: "Tungsten Carbide" },
+    };
+
+    const laserPresets = {
+        "Light Laser": { power: 1, diameter: 5 },
+    }
+
+    const presets = {
+        "Light Armor": {
+            initial_temp: -180,
+            layers: [
+                {material: "Titanium Alloy", thickness: 20},
+                {material: "Silicon Carbide", thickness: 20},
+                {material: "Carbon Composite", thickness: 20}
+            ]
+        },
+        "Medium Armor": {
+            initial_temp: -180,
+            layers: [
+                {material: "Copper", thickness: 30},
+                {material: "Silicon Carbide", thickness: 30},
+                {material: "Carbon Composite", thickness: 30}
+            ]
+        },
     };
 
     function reflectivity(n, k) {
@@ -358,7 +388,7 @@
         return numerator / denominator;
     }
 
-    const presetSelect = document.getElementById("presetSelect");
+    const armorPresetSelect = document.getElementById("presetSelect");
     const roundPresetSelect = document.getElementById("roundPreset");
     const weaponTypeSelect = document.getElementById("weaponType");
 
@@ -369,28 +399,42 @@
         roundPresetSelect.appendChild(option);
     }
 
-    function applyRoundPreset(name) {
-        const p = roundPresets[name];
+    const laserPresetSelect = document.getElementById("laserPreset");
+
+    for (const name in laserPresets) {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        laserPresetSelect.appendChild(option);
+    }
+
+    laserPresetSelect.value = "Custom";
+
+    function applyLaserPreset(name) {
+        const p = laserPresets[name];
+
         if (!p) return;
-        roundDiam.value = p.diam;
-        roundMass.value = p.mass;
-        roundVel.value = p.vel;
+
+        power.value = p.power;
+        diam.value = p.diameter;
+
         calc();
     }
 
-    const presets = {
-        "Light Armor & Laser": {
-            weaponType: "laser",
-            power: 1,
-            diameter: 5,
-            initial_temp: -180,
-            layers: [
-                {material: "Tungsten", thickness: 20},
-                {material: "Silicon Carbide", thickness: 20},
-                {material: "Carbon Composite", thickness: 20}
-            ]
-        },
-    };
+    function applyRoundPreset(name) {
+        const p = roundPresets[name];
+        if (!p) return;
+
+        roundDiam.value = p.diam;
+        roundMass.value = p.mass;
+        roundVel.value = p.vel;
+
+        if (p.core) {
+            roundMaterial.value = p.core;
+        }
+
+        calc();
+    }
 
     function currentWeaponType() {
         return weaponType.value;
@@ -398,17 +442,20 @@
 
     function exportPreset(){
 
-        const preset = {
-            weaponType: currentWeaponType(),
+        const armorPreset = {
             initial_temp: Number(temp.value),
             layers: getLayers()
         };
 
-        if (preset.weaponType === "laser") {
-            preset.power = Number(power.value);
-            preset.diameter = Number(diam.value);
+        const weaponPreset = {
+            weaponType: currentWeaponType()
+        };
+
+        if (weaponPreset.weaponType === "laser") {
+            weaponPreset.power = Number(power.value);
+            weaponPreset.diameter = Number(diam.value);
         } else {
-            preset.round = {
+            weaponPreset.round = {
                 diam: Number(roundDiam.value),
                 mass: Number(roundMass.value),
                 vel: Number(roundVel.value),
@@ -416,7 +463,8 @@
             };
         }
 
-        console.log(JSON.stringify(preset, null, 4));
+        console.log("Armor Preset:\n" + JSON.stringify(armorPreset, null, 4));
+        console.log("Weapon Preset:\n" + JSON.stringify(weaponPreset, null, 4));
     }
 
     for(const name in presets){
@@ -426,7 +474,7 @@
         option.value = name;
         option.textContent = name;
 
-        presetSelect.appendChild(option);
+        armorPresetSelect.appendChild(option);
     }
 
     function setWeaponType(type) {
@@ -446,19 +494,19 @@
 
         if(!preset) return console.error("Preset not found:", presetName);
 
-        setWeaponType(preset.weaponType || "laser");
+        // setWeaponType(preset.weaponType || "laser");
         temp.value = preset.initial_temp;
 
-        if (preset.weaponType === "kinetic" && preset.round) {
-            roundDiam.value = preset.round.diam;
-            roundMass.value = preset.round.mass;
-            roundVel.value = preset.round.vel;
-            roundMaterial.value = preset.round.material;
-            roundPresetSelect.value = preset.round.preset || "";
-        } else {
-            power.value = preset.power;
-            diam.value = preset.diameter;
-        }
+        // if (preset.weaponType === "kinetic" && preset.round) {
+        //     roundDiam.value = preset.round.diam;
+        //     roundMass.value = preset.round.mass;
+        //     roundVel.value = preset.round.vel;
+        //     roundMaterial.value = preset.round.material;
+        //     roundPresetSelect.value = preset.round.preset || "";
+        // } else {
+        //     power.value = preset.power;
+        //     diam.value = preset.diameter;
+        // }
 
         renderLayers(
             structuredClone(preset.layers)
@@ -688,12 +736,16 @@
         calc();
     });
 
+    armorPresetSelect.addEventListener("change", () => {
+        loadPreset(armorPresetSelect.value);
+    });
+
     document.querySelectorAll("input, select").forEach(x => {
         x.addEventListener("input", calc);
         x.addEventListener("change", calc);
     });
 
     toggleModeInputs();
-    loadPreset("Light Armor & Laser");
+    loadPreset("Light Armor");
 
 </script>
