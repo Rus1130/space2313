@@ -1198,6 +1198,7 @@
         //createLane("OuterToJupiter")
         createLane("OuterToUranus", "caelusStation", { color: planets.uranus.color, width: 1, dash: minorLaneDash });
         createLane("OuterToJupiter", "fontanaStation", { color: planets.jupiter.color, width: 1, dash: minorLaneDash });
+        createLane("OuterToSaturn", "fontanaStation", { color: planets.saturn.color, width: 1, dash: minorLaneDash });
     }
 
 
@@ -1347,6 +1348,7 @@
 
         updateLane("OuterToUranus",  closestBody2Orbits("uranusStationOrbit", "outerStations"), closestBody2Orbits("outerStations", "uranusStationOrbit"));
         updateLane("OuterToJupiter", closestBody2Orbits("jupiterStationOrbit", "outerStations"), closestBody2Orbits("outerStations", "jupiterStationOrbit"));
+        updateLane("OuterToSaturn",  closestBody2Orbits("saturnStationOrbit", "outerStations"), closestBody2Orbits("outerStations", "saturnStationOrbit"));
     }
 
     function resetAll(){
