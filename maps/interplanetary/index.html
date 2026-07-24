@@ -880,6 +880,8 @@
 
         world.scale.set(camera.zoom);
 
+        console.log(camera.zoom)
+
         for (const body of Object.values(bodies)) {
             body.sprite.scale.set(Math.max(1 / camera.zoom, 1.1));
 
@@ -889,6 +891,14 @@
             //     Math.max(1 / camera.zoom, 0.5),
             //     3
             // );
+
+            // make the label transparent if the zoom is less than 5
+            // exclude main bodies, and ITA 0-5, O stations
+            if(camera.zoom < 0.6 && !["mercury", "venus", "earth", "mars", "jupiter", "saturn", "uranus", "neptune"].includes(body.name) && !body.name.startsWith("O") && !body.name.startsWith("0") && !body.name.startsWith("1") && !body.name.startsWith("2") && !body.name.startsWith("3") && !body.name.startsWith("4") && !body.name.startsWith("5")) {
+                body.label.alpha = 0;
+            } else {
+                body.label.alpha = 1;
+            }
 
             body.label.scale.set(labelScale);
 
