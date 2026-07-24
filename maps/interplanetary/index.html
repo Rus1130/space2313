@@ -714,6 +714,15 @@
         lastMouse.x = e.clientX;
         lastMouse.y = e.clientY;
 
+    if (e.target === app.canvas && bodyClicked) {
+        const body = bodies[bodyClicked];
+
+        camera.x = body.sprite.x;
+        camera.y = body.sprite.y;
+
+        bodyClicked = null;
+    }
+
         app.canvas.setPointerCapture(e.pointerId);
 
     });
@@ -1209,7 +1218,10 @@
         createOrbit("huygensStationOrbit", (117_680 + ((285+400)/2)), { color: 0x7A84B6, width: 1, centerBody: "saturn" });
 
         createOrbit("saturnStationOrbit", (moons.iapetus.distance + 100_000), { color: 0x7A84B6, width: 1, centerBody: "saturn" });
+
         createOrbit("titanStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "titan" });
+        createOrbit("titanStationOrbit2", 15_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "titan" });
+
         createOrbit("rheaStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "rhea" });
         createOrbit("dioneStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "dione" });
         createOrbit("tethysStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "tethys" });
@@ -1226,6 +1238,10 @@
         createBody("keelerStation", "keelerStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ORRI Keeler Station" });
         createBody("enckeStation", "enckeStationOrbit", 10, { offset: 0.1, color: colors.layerStation, radius: stationSize, label: "ORRI Encke Station" });
         createBody("huygensStation", "huygensStationOrbit", 10, { offset: 0.2, color: colors.layerStation, radius: stationSize, label: "ORRI Huygens Station" });
+
+        createBody("krakenStation", "titanStationOrbit", moons.titan.period / 3, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Kraken Station" });
+        createBody("ontarioStation", "titanStationOrbit2", moons.titan.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Ontario Station" });
+        createBody("chusukStation", "titanStationOrbit2", moons.titan.period, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "Chusuk Station" });
 
         createBody("ridgeStation", "iapetusStationOrbit", moons.iapetus.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Ridge Station" });
         createBody("cassiniStation", "iapetusStationOrbit2", moons.iapetus.period/2, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "Cassini Station" });
