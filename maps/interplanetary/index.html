@@ -8,6 +8,45 @@
         overflow: hidden;
         background: black;
     }
+
+    #controls {
+        position: fixed;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        padding: 8px 12px;
+
+        background: rgba(0,0,0,.65);
+        backdrop-filter: blur(8px);
+
+        border-radius: 12px;
+
+        z-index: 100;
+    }
+
+    #controls button{
+        width:42px;
+        height:42px;
+
+        border:none;
+        border-radius:8px;
+
+        background:#333;
+        color:white;
+
+        font-size:20px;
+    }
+
+    #controls span{
+        color:white;
+        font-family:monospace;
+        min-width:70px;
+        text-align:center;
+    }
 </style>
 <head>
     <meta property="og:title" content="Interplanetary Map"                                     >
@@ -16,8 +55,13 @@
     <script src="https://pixijs.download/release/pixi.min.js"></script>
 </head>
 <body>
-    
-    
+    <div id="controls">
+    <button id="slower">⏪</button>
+    <button id="pause">▶</button>
+    <button id="faster">⏩</button>
+
+    <span id="speed">10 d/s</span>
+</div>
 </body>
 <script type="module">
     const app = new PIXI.Application();
@@ -56,6 +100,29 @@
     let days = 0;
     let paused = true;
     let updateBodiesAndLanes = true;
+
+    const pauseButton = document.getElementById("pause");
+    const speedText = document.getElementById("speed");
+
+    function refreshControls(){
+
+        pauseButton.textContent = paused ? "▶" : "⏸";
+        speedText.textContent = `${DAYS_PER_SECOND} d/s`;
+    }
+
+    pauseButton.onclick = () => {
+        togglePause();
+    };
+
+    document.getElementById("faster").onclick = () => {
+        increaseSpeed();
+    };
+
+    document.getElementById("slower").onclick = () => {
+        decreaseSpeed();
+    };
+
+    refreshControls();
 
 
     // let PIXELS_PER_AU = 200
@@ -597,29 +664,40 @@
 
     let moonMode = false;
 
+    function togglePause(){
+        paused = !paused;
+        refreshControls()
+        console.log(`Simulation ${paused ? "paused" : "resumed"}`);
+    }
+
+    function increaseSpeed(faster = false){
+        DAYS_PER_SECOND += faster ? 10 : 1;
+        refreshControls()
+        console.log(`Days per second: ${DAYS_PER_SECOND}`);
+    }
+
+    function decreaseSpeed(faster){
+        DAYS_PER_SECOND -= faster ? 10 : 1;
+        DAYS_PER_SECOND = Math.max(1, DAYS_PER_SECOND);
+        refreshControls()
+        console.log(`Days per second: ${DAYS_PER_SECOND}`);
+    }
+
     window.addEventListener("keydown", e => {
         switch (e.code) {
             case "Space": {
                 e.preventDefault();
-                paused = !paused;
-                console.log(`Simulation ${paused ? "paused" : "resumed"}`);
+                togglePause();
             } break;
 
             case "ArrowUp": {
                 e.preventDefault();
-                DAYS_PER_SECOND += e.shiftKey ? 10 : 1;
-                console.log(`Days per second: ${DAYS_PER_SECOND}`);
+                increaseSpeed(e.shiftKey);
             } break;
 
             case "ArrowDown": {
                 e.preventDefault();
-                DAYS_PER_SECOND -= e.shiftKey ? 10 : 1;
-                DAYS_PER_SECOND = Math.max(1, DAYS_PER_SECOND);
-                console.log(`Days per second: ${DAYS_PER_SECOND}`);
-            } break;
-
-            case "KeyE": {
-                moonMode = !moonMode;
+                decreaseSpeed(e.shiftKey);
             } break;
         }
     });
@@ -627,31 +705,29 @@
     let dragging = false;
     let lastMouse = { x: 0, y: 0 };
 
-    app.canvas.addEventListener("mousedown", e => {
-        dragging = true;
+    let pointerDown = false;
+
+    app.canvas.addEventListener("pointerdown", e => {
+
+        pointerDown = true;
+
         lastMouse.x = e.clientX;
         lastMouse.y = e.clientY;
 
-        if (bodyClicked) {
-            const body = bodies[bodyClicked];
+        app.canvas.setPointerCapture(e.pointerId);
 
-            camera.x = body.sprite.x;
-            camera.y = body.sprite.y;
-
-            console.log(`${bodyClicked} was unfocused`);
-            bodyClicked = null;
-            moonMode = false;
-
-            updateCamera();
-        }
     });
 
-    window.addEventListener("mouseup", () => {
-        dragging = false;
+    app.canvas.addEventListener("pointerup", (e) => {
+        pointerDown = false;
+
+        touches.delete(e.pointerId);
+        previousDistance = 0;
     });
 
-    window.addEventListener("mousemove", e => {
-        if (!dragging) return;
+    app.canvas.addEventListener("pointermove", e => {
+
+        if(!pointerDown) return;
 
         const dx = e.clientX - lastMouse.x;
         const dy = e.clientY - lastMouse.y;
@@ -684,7 +760,7 @@
 
         camera.zoom *= factor;
 
-        camera.zoom = Math.max(0.01, Math.min(100, camera.zoom));
+        camera.zoom = Math.max(0.0025, Math.min(100, camera.zoom));
 
         // Keep mouse pointing at same world location
         camera.x =
@@ -698,6 +774,46 @@
         updateCamera();
 
     }, { passive: false });
+
+    const touches = new Map();
+
+    function distance(a,b){
+        return Math.hypot(
+            a.clientX-b.clientX,
+            a.clientY-b.clientY
+        );
+    }
+
+    let previousDistance = 0;
+
+    app.canvas.addEventListener("pointerdown", e => {
+        if(e.pointerType==="touch") touches.set(e.pointerId, e);
+    });
+
+    app.canvas.addEventListener("pointermove", e => {
+        if(e.pointerType!=="touch") return;
+
+        touches.set(e.pointerId, e);
+
+        if(touches.size!==2) return;
+
+        const [a, b] = [...touches.values()];
+
+        const d = distance(a, b);
+
+        if(previousDistance){
+
+            const factor = d / previousDistance;
+
+            camera.zoom *= factor;
+
+            camera.zoom = Math.max(.0025, Math.min(100, camera.zoom));
+
+            updateCamera();
+        }
+
+        previousDistance = d;
+    });
 
     function updateBodies() {
         for (const body of Object.values(bodies)) {
@@ -982,28 +1098,28 @@
     function createStations(size) {
         for(let i = 0; i < stations.layer1.count; i++) {
             const offset = i / stations.layer1.count;
-            createBody(`1${i+1}`, "layer1Stations", stations.layer1.period, { offset, radius: size, color: colors.layerStation });
+            createBody(`1${i+1}`, "layer1Stations", stations.layer1.period, { offset, radius: size, color: colors.layerStation, label: `ITA Station 1${i+1}` });
         }
 
         for(let i = 0; i < stations.layer2.count; i++) {
             const offset = i / stations.layer2.count;
-            createBody(`2${i+1}`, "layer2Stations", stations.layer2.period, { offset, radius: size, color: colors.layerStation });
+            createBody(`2${i+1}`, "layer2Stations", stations.layer2.period, { offset, radius: size, color: colors.layerStation, label: `ITA Station 2${i+1}` });
         }
 
         for(let i = 0; i < stations.layer3.count; i++) {
             const offset = i / stations.layer3.count;
-            createBody(`3${i+1}`, "layer3Stations", stations.layer3.period, { offset, radius: size, color: colors.layerStation });
+            createBody(`3${i+1}`, "layer3Stations", stations.layer3.period, { offset, radius: size, color: colors.layerStation, label: `ITA Station 3${i+1}` });
         }
 
         for(let i = 0; i < stations.layer4.count; i++) {
             const offset = i / stations.layer4.count;
-            createBody(`4${i+1}`, "layer4Stations", stations.layer4.period, { offset, radius: size, color: colors.layerStation });
+            createBody(`4${i+1}`, "layer4Stations", stations.layer4.period, { offset, radius: size, color: colors.layerStation, label: `ITA Station 4${i+1}` });
         }
 
 
         for(let i = 0; i < stations.outer.count; i++) {
             const offset = i / stations.outer.count;
-            createBody(`O${i+1}`, "outerStations", stations.outer.period, { offset, radius: size, color: colors.layerStation });
+            createBody(`O${i+1}`, "outerStations", stations.outer.period, { offset, radius: size, color: colors.layerStation, label: `ITA Station O${i+1}` });
         }
     }
 
@@ -1079,22 +1195,79 @@
         createLane("46ToOuter2", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
         createLane("46ToOuter3", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
 
-        createLane("OuterToUranus", "caelusStation", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        //createLane("OuterToJupiter")
+        createLane("OuterToUranus", "caelusStation", { color: planets.uranus.color, width: 1, dash: minorLaneDash });
+        createLane("OuterToJupiter", "fontanaStation", { color: planets.jupiter.color, width: 1, dash: minorLaneDash });
     }
 
 
     function realisticModeOnly(stationSize){
-        createOrbit("uranusStationOrbit", (moons.oberon.distance + 100_000) * MOON_SCALAR, { color: 0x7A84B6, width: 1, centerBody: "uranus" });
+        // saturn
+        createOrbit("keelerStationOrbit", (136_505 + (35/2)), { color: 0x7A84B6, width: 1, centerBody: "saturn" });
+        createOrbit("enckeStationOrbit", (133_589 + (325/2)), { color: 0x7A84B6, width: 1, centerBody: "saturn" });
+        createOrbit("huygensStationOrbit", (117_680 + ((285+400)/2)), { color: 0x7A84B6, width: 1, centerBody: "saturn" });
 
-        createOrbit("titaniaStationOrbit", 5_000 * MOON_SCALAR, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "titania" });
-        createOrbit("oberonStationOrbit", 5_000 * MOON_SCALAR, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "oberon" });      
-        createOrbit("umbrielStationOrbit", 5_000 * MOON_SCALAR, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "umbriel" });
-        createOrbit("arielStationOrbit", 5_000 * MOON_SCALAR, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "ariel" });
-        createOrbit("mirandaStationOrbit", 5_000 * MOON_SCALAR, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "miranda" });  
+        createOrbit("saturnStationOrbit", (moons.iapetus.distance + 100_000), { color: 0x7A84B6, width: 1, centerBody: "saturn" });
+        createOrbit("titanStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "titan" });
+        createOrbit("rheaStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "rhea" });
+        createOrbit("dioneStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "dione" });
+        createOrbit("tethysStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "tethys" });
+        createOrbit("enceladusStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "enceladus" });
 
-        createBody("herschelStation", "uranusStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Herschel Station" });
-        createBody("caelusStation", "uranusStationOrbit", 10, { offset: 1/3, color: colors.layerStation, radius: stationSize, label: "Caelus Station" });
-        createBody("georgiaStation", "uranusStationOrbit", 10, { offset: 2/3, color: colors.layerStation, radius: stationSize, label: "Georgia Station" });
+        createOrbit("iapetusStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "iapetus" });
+        createOrbit("iapetusStationOrbit2", 15_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "iapetus" });
+
+        createBody("kappaStation", "saturnStationOrbit", 15, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Kappa Station" });
+        createBody("dragonflyStation", "saturnStationOrbit", 15, { offset: 0.25, color: colors.layerStation, radius: stationSize, label: "ITA Dragonfly Station" });
+        createBody("rhoStation", "saturnStationOrbit", 15, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "ITA Rho Station" });
+        createBody("etaStation", "saturnStationOrbit", 15, { offset: 0.75, color: colors.layerStation, radius: stationSize, label: "ITA Eta Station" });
+
+        createBody("keelerStation", "keelerStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ORRI Keeler Station" });
+        createBody("enckeStation", "enckeStationOrbit", 10, { offset: 0.1, color: colors.layerStation, radius: stationSize, label: "ORRI Encke Station" });
+        createBody("huygensStation", "huygensStationOrbit", 10, { offset: 0.2, color: colors.layerStation, radius: stationSize, label: "ORRI Huygens Station" });
+
+        createBody("ridgeStation", "iapetusStationOrbit", moons.iapetus.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Ridge Station" });
+        createBody("cassiniStation", "iapetusStationOrbit2", moons.iapetus.period/2, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "Cassini Station" });
+        createBody("roncevauxStation", "iapetusStationOrbit2", moons.iapetus.period/2, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Roncevaux Station" });
+
+        // jupiter
+        createOrbit("jupiterStationOrbit", (moons.callisto.distance + 100_000), { color: 0x7A84B6, width: 1, centerBody: "jupiter" });
+
+        createOrbit("ganymedeStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "ganymede" });
+        createOrbit("callistoStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "callisto" });
+        createOrbit("europaStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "europa" });
+        createOrbit("europaStationOrbit2", 15_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "europa" });
+        createOrbit("ioStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "io" });
+
+        createBody("troyStation", "ganymedeStationOrbit", moons.ganymede.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Troy Station" });
+        createBody("perrineStation", "ganymedeStationOrbit", moons.ganymede.period, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "Perrine Station" });
+
+        createBody("tawhakiStation", "ioStationOrbit", moons.io.period, { offset: 0.15, color: colors.layerStation, radius: stationSize, label: "Tawhaki Station" });
+        createBody("amaterasuStation", "ioStationOrbit", moons.io.period, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "Amaterasu Station" });
+        createBody("oteneStation", "ioStationOrbit", moons.io.period, { offset: 0.85, color: colors.layerStation, radius: stationSize, label: "Otene Station" });
+
+
+        createBody("sidonStation", "europaStationOrbit", moons.europa.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Sidon Station" });
+        createBody("theraStation", "europaStationOrbit", moons.europa.period, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "Thera Station" });
+        createBody("conamaraStation", "europaStationOrbit2", moons.europa.period * 2, { offset: 0.25, color: colors.layerStation, radius: stationSize, label: "Conamara Station" });
+        createBody("arranStation", "europaStationOrbit2", moons.europa.period * 2, { offset: 0.75, color: colors.layerStation, radius: stationSize, label: "Arran Station" });
+
+        createBody("copernicusStation", "jupiterStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Copernicus Station" });
+        createBody("fontanaStation", "jupiterStationOrbit", 10, { offset: 1/3, color: colors.layerStation, radius: stationSize, label: "ITA Fontana Station" });
+        createBody("hookeStation", "jupiterStationOrbit", 10, { offset: 2/3, color: colors.layerStation, radius: stationSize, label: "ITA Hooke Station" });
+
+        // uranus
+        createOrbit("uranusStationOrbit", (moons.oberon.distance + 100_000), { color: 0x7A84B6, width: 1, centerBody: "uranus" });
+
+        createOrbit("titaniaStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "titania" });
+        createOrbit("oberonStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "oberon" });      
+        createOrbit("umbrielStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "umbriel" });
+        createOrbit("arielStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "ariel" });
+        createOrbit("mirandaStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "miranda" });  
+
+        createBody("herschelStation", "uranusStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Herschel Station" });
+        createBody("caelusStation", "uranusStationOrbit", 10, { offset: 1/3, color: colors.layerStation, radius: stationSize, label: "ITA Caelus Station" });
+        createBody("georgiaStation", "uranusStationOrbit", 10, { offset: 2/3, color: colors.layerStation, radius: stationSize, label: "ITA Georgia Station" });
 
         createBody("imogenStation", "titaniaStationOrbit", moons.titania.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Imogen Station" });
         createBody("calphurniaStation", "titaniaStationOrbit", moons.titania.period, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "Calphurnia Station" });
@@ -1173,6 +1346,7 @@
 
 
         updateLane("OuterToUranus",  closestBody2Orbits("uranusStationOrbit", "outerStations"), closestBody2Orbits("outerStations", "uranusStationOrbit"));
+        updateLane("OuterToJupiter", closestBody2Orbits("jupiterStationOrbit", "outerStations"), closestBody2Orbits("outerStations", "jupiterStationOrbit"));
     }
 
     function resetAll(){
