@@ -880,8 +880,6 @@
 
         world.scale.set(camera.zoom);
 
-        console.log(camera.zoom)
-
         for (const body of Object.values(bodies)) {
             body.sprite.scale.set(Math.max(1 / camera.zoom, 1.1));
 
