@@ -147,6 +147,9 @@
 
     const TAU = Math.PI * 2;
 
+    const maxZoom = 250;
+    const minZoom = 0.0025;
+
     const camera = {
         x: 0,
         y: 0,
@@ -769,7 +772,7 @@
 
         camera.zoom *= factor;
 
-        camera.zoom = Math.max(0.0025, Math.min(100, camera.zoom));
+        camera.zoom = Math.max(minZoom, Math.min(maxZoom, camera.zoom));
 
         // Keep mouse pointing at same world location
         camera.x =
@@ -816,7 +819,7 @@
 
             camera.zoom *= factor;
 
-            camera.zoom = Math.max(.0025, Math.min(100, camera.zoom));
+            camera.zoom = Math.max(minZoom, Math.min(maxZoom, camera.zoom));
 
             updateCamera();
         }
