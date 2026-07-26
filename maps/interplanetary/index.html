@@ -1114,33 +1114,34 @@
     function createStations(size) {
         for(let i = 0; i < stations.layer1.count; i++) {
             const offset = i / stations.layer1.count;
-            createBody(`1${i+1}`, "layer1Stations", stations.layer1.period, { offset, radius: size, color: colors.layerStation, label: `ITA Station 1${i+1}` });
+            createBody(`1${i+1}`, "layer1Stations", stations.layer1.period, { offset, radius: size, color: colors.layerStation, label: `ITA Station 1${i+1}`, labelDistance: ITALaneStationLabelDistance });
         }
 
         for(let i = 0; i < stations.layer2.count; i++) {
             const offset = i / stations.layer2.count;
-            createBody(`2${i+1}`, "layer2Stations", stations.layer2.period, { offset, radius: size, color: colors.layerStation, label: `ITA Station 2${i+1}` });
+            createBody(`2${i+1}`, "layer2Stations", stations.layer2.period, { offset, radius: size, color: colors.layerStation, label: `ITA Station 2${i+1}`, labelDistance: ITALaneStationLabelDistance });
         }
 
         for(let i = 0; i < stations.layer3.count; i++) {
             const offset = i / stations.layer3.count;
-            createBody(`3${i+1}`, "layer3Stations", stations.layer3.period, { offset, radius: size, color: colors.layerStation, label: `ITA Station 3${i+1}` });
+            createBody(`3${i+1}`, "layer3Stations", stations.layer3.period, { offset, radius: size, color: colors.layerStation, label: `ITA Station 3${i+1}`, labelDistance: ITALaneStationLabelDistance });
         }
 
         for(let i = 0; i < stations.layer4.count; i++) {
             const offset = i / stations.layer4.count;
-            createBody(`4${i+1}`, "layer4Stations", stations.layer4.period, { offset, radius: size, color: colors.layerStation, label: `ITA Station 4${i+1}` });
+            createBody(`4${i+1}`, "layer4Stations", stations.layer4.period, { offset, radius: size, color: colors.layerStation, label: `ITA Station 4${i+1}`, labelDistance: ITALaneStationLabelDistance });
         }
 
 
         for(let i = 0; i < stations.outer.count; i++) {
             const offset = i / stations.outer.count;
-            createBody(`O${i+1}`, "outerStations", stations.outer.period, { offset, radius: size, color: colors.layerStation, label: `ITA Station O${i+1}` });
+            createBody(`O${i+1}`, "outerStations", stations.outer.period, { offset, radius: size, color: colors.layerStation, label: `ITA Station O${i+1}`, labelDistance: ITALaneStationLabelDistance });
         }
     }
 
     const stationLabelDistance = 12;
-    const ITAstationLabelDistance = 0.29;
+    const ITAPlanetStationLabelDistance = 0.29;
+    const ITALaneStationLabelDistance = 0.02;
     const moonLabelDistance = 0.29;
 
     function createLanes(minorLaneDash, majorLaneDash) {
@@ -1241,10 +1242,10 @@
         createOrbit("iapetusStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "iapetus" });
         createOrbit("iapetusStationOrbit2", 15_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "iapetus" });
 
-        createBody("kappaStation", "saturnStationOrbit", 15, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Kappa Station", labelDistance: ITAstationLabelDistance });
-        createBody("dragonflyStation", "saturnStationOrbit", 15, { offset: 0.25, color: colors.layerStation, radius: stationSize, label: "ITA Dragonfly Station", labelDistance: ITAstationLabelDistance  });
-        createBody("rhoStation", "saturnStationOrbit", 15, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "ITA Rho Station", labelDistance: ITAstationLabelDistance  });
-        createBody("etaStation", "saturnStationOrbit", 15, { offset: 0.75, color: colors.layerStation, radius: stationSize, label: "ITA Eta Station", labelDistance: ITAstationLabelDistance  });
+        createBody("kappaStation", "saturnStationOrbit", 15, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Kappa Station", labelDistance: ITAPlanetStationLabelDistance });
+        createBody("dragonflyStation", "saturnStationOrbit", 15, { offset: 0.25, color: colors.layerStation, radius: stationSize, label: "ITA Dragonfly Station", labelDistance: ITAPlanetStationLabelDistance  });
+        createBody("rhoStation", "saturnStationOrbit", 15, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "ITA Rho Station", labelDistance: ITAPlanetStationLabelDistance  });
+        createBody("etaStation", "saturnStationOrbit", 15, { offset: 0.75, color: colors.layerStation, radius: stationSize, label: "ITA Eta Station", labelDistance: ITAPlanetStationLabelDistance  });
 
         createBody("keelerStation", "keelerStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ORRI Keeler Station", labelDistance: stationLabelDistance });
         createBody("enckeStation", "enckeStationOrbit", 10, { offset: 0.1, color: colors.layerStation, radius: stationSize, label: "ORRI Encke Station", labelDistance: stationLabelDistance  });
@@ -1294,9 +1295,9 @@
         createBody("conamaraStation", "europaStationOrbit2", moons.europa.period * 2, { offset: 0.25, color: colors.layerStation, radius: stationSize, label: "Conamara Station", labelDistance: stationLabelDistance });
         createBody("arranStation", "europaStationOrbit2", moons.europa.period * 2, { offset: 0.75, color: colors.layerStation, radius: stationSize, label: "Arran Station", labelDistance: stationLabelDistance });
 
-        createBody("copernicusStation", "jupiterStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Copernicus Station", labelDistance: ITAstationLabelDistance  });
-        createBody("fontanaStation", "jupiterStationOrbit", 10, { offset: 1/3, color: colors.layerStation, radius: stationSize, label: "ITA Fontana Station", labelDistance: ITAstationLabelDistance  });
-        createBody("hookeStation", "jupiterStationOrbit", 10, { offset: 2/3, color: colors.layerStation, radius: stationSize, label: "ITA Hooke Station", labelDistance: ITAstationLabelDistance  });
+        createBody("copernicusStation", "jupiterStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Copernicus Station", labelDistance: ITAPlanetStationLabelDistance  });
+        createBody("fontanaStation", "jupiterStationOrbit", 10, { offset: 1/3, color: colors.layerStation, radius: stationSize, label: "ITA Fontana Station", labelDistance: ITAPlanetStationLabelDistance  });
+        createBody("hookeStation", "jupiterStationOrbit", 10, { offset: 2/3, color: colors.layerStation, radius: stationSize, label: "ITA Hooke Station", labelDistance: ITAPlanetStationLabelDistance  });
 
         // uranus
         createOrbit("uranusStationOrbit", (moons.oberon.distance + 100_000), { color: 0x7A84B6, width: 1, centerBody: "uranus" });
@@ -1307,9 +1308,9 @@
         createOrbit("arielStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "ariel" });
         createOrbit("mirandaStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "miranda" });  
 
-        createBody("herschelStation", "uranusStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Herschel Station", labelDistance: ITAstationLabelDistance  });
-        createBody("caelusStation", "uranusStationOrbit", 10, { offset: 1/3, color: colors.layerStation, radius: stationSize, label: "ITA Caelus Station", labelDistance: ITAstationLabelDistance  });
-        createBody("georgiaStation", "uranusStationOrbit", 10, { offset: 2/3, color: colors.layerStation, radius: stationSize, label: "ITA Georgia Station", labelDistance: ITAstationLabelDistance  });
+        createBody("herschelStation", "uranusStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Herschel Station", labelDistance: ITAPlanetStationLabelDistance  });
+        createBody("caelusStation", "uranusStationOrbit", 10, { offset: 1/3, color: colors.layerStation, radius: stationSize, label: "ITA Caelus Station", labelDistance: ITAPlanetStationLabelDistance  });
+        createBody("georgiaStation", "uranusStationOrbit", 10, { offset: 2/3, color: colors.layerStation, radius: stationSize, label: "ITA Georgia Station", labelDistance: ITAPlanetStationLabelDistance  });
 
         createBody("imogenStation", "titaniaStationOrbit", moons.titania.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Imogen Station", labelDistance: stationLabelDistance });
         createBody("calphurniaStation", "titaniaStationOrbit", moons.titania.period, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "Calphurnia Station", labelDistance: stationLabelDistance });
