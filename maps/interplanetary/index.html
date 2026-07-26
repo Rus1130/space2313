@@ -88,9 +88,11 @@
     const bodyLayer = new PIXI.Container();
     const labelLayer = new PIXI.Container();
     const laneLayer = new PIXI.Container();
+    const shipLayer = new PIXI.Container();
 
     world.addChild(orbitLayer);
     world.addChild(laneLayer);
+    world.addChild(shipLayer);
     world.addChild(bodyLayer);
     world.addChild(labelLayer);
 
@@ -100,29 +102,10 @@
     let days = 0;
     let paused = true;
     let updateBodiesAndLanes = true;
+    let speedUnit = "day";
+    let speedValue = 10;
 
-    const pauseButton = document.getElementById("pause");
-    const speedText = document.getElementById("speed");
 
-    function refreshControls(){
-
-        pauseButton.textContent = paused ? "▶" : "⏸";
-        speedText.textContent = `${DAYS_PER_SECOND} d/s`;
-    }
-
-    pauseButton.onclick = () => {
-        togglePause();
-    };
-
-    document.getElementById("faster").onclick = () => {
-        increaseSpeed();
-    };
-
-    document.getElementById("slower").onclick = () => {
-        decreaseSpeed();
-    };
-
-    refreshControls();
 
 
     // let PIXELS_PER_AU = 200
@@ -144,6 +127,8 @@
     let minorLaneDash = [100, 100];
     let startingZoom = 0.01
     let moonOrbitWidth = 0.5
+    let LANE_FLIP_COOLDOWN_DAYS = 0;
+    let shipIdCounter = 0;
 
     const TAU = Math.PI * 2;
 
@@ -159,11 +144,16 @@
     const paths = {};
     const bodies = {};
     const lanes = {};
+    const ships = {};
 
     const kmToAU = km => km / 149597870.7;
     const kmToPixels = km => kmToAU(km) * PIXELS_PER_AU;
     const AUToPixels = au => au * PIXELS_PER_AU;
     const AUToKM = au => au * 149597870.7;
+    const pixelsToKm = px => (px / PIXELS_PER_AU) * 149597870.7;
+
+    const MAX_SHIP_SPEED_KMH = 1_000_000;
+    const MAX_SHIP_SPEED_KM_PER_DAY = MAX_SHIP_SPEED_KMH * 24; // ships move on the same "days" clock as everything else
 
     const orbitsKM = {
         mercury: AUToKM(0.387099),
@@ -278,6 +268,79 @@
         }
     };
 
+    function togglePause(){
+        paused = !paused;
+        refreshControls()
+        console.log(`Simulation ${paused ? "paused" : "resumed"}`);
+    }
+
+    function recomputeDaysPerSecond() {
+        DAYS_PER_SECOND = speedUnit === "hour" ? speedValue / 24 : speedValue;
+    }
+
+    recomputeDaysPerSecond();
+
+    function refreshControls(){
+        pauseButton.textContent = paused ? "▶" : "⏸";
+
+        speedText.textContent = speedUnit === "hour"
+            ? `${speedValue} h/s`
+            : `${speedValue} d/s`;
+    }
+
+    function increaseSpeed(faster = false){
+        if (speedUnit === "hour") {
+            speedValue += 1;
+            if (speedValue >= 24) {   // was: > 24
+                speedUnit = "day";
+                speedValue = 1;
+            }
+        } else {
+            speedValue += faster ? 10 : 1;
+        }
+
+        recomputeDaysPerSecond();
+        refreshControls();
+        console.log(`Days per second: ${DAYS_PER_SECOND}`);
+    }
+
+    function decreaseSpeed(faster){
+        if (speedUnit === "day") {
+            speedValue -= faster ? 10 : 1;
+            if (speedValue < 1) {
+                // dropped below a full day
+                speedUnit = "hour";
+                speedValue = 23;
+            }
+        } else {
+            speedValue -= 1;
+            if (speedValue < 1) speedValue = 1; // floor at 1 hour/s
+        }
+
+        recomputeDaysPerSecond();
+        refreshControls();
+        console.log(`Days per second: ${DAYS_PER_SECOND}`);
+    }
+
+
+
+    const pauseButton = document.getElementById("pause");
+    const speedText = document.getElementById("speed");
+
+    pauseButton.onclick = () => {
+        togglePause();
+    };
+
+    document.getElementById("faster").onclick = () => {
+        increaseSpeed();
+    };
+
+    document.getElementById("slower").onclick = () => {
+        decreaseSpeed();
+    };
+
+    refreshControls();
+
     function closestBody(body, orbitGroup, numberOffset = 0) {
 
         const stations = Object.values(bodies).filter(
@@ -352,6 +415,246 @@
         return bodies2[(targetIndex + bodies2.length) % bodies2.length];
     }
 
+    function laneArcPoint(A, B, t) {
+        const r1 = Math.hypot(A.x, A.y);
+        const r2 = Math.hypot(B.x, B.y);
+
+        const a1 = Math.atan2(A.y, A.x);
+        const a2 = Math.atan2(B.y, B.x);
+
+        let delta = a2 - a1;
+        while (delta > Math.PI) delta -= TAU;
+        while (delta < -Math.PI) delta += TAU;
+
+        const dr = r2 - r1;
+
+        const r = r1 + dr * t;
+        const a = a1 + delta * t;
+
+        return {
+            x: r * Math.cos(a),
+            y: r * Math.sin(a)
+        };
+    }
+
+    function buildArcLengthTable(pts) {
+        const table = [{ t: 0, dist: 0, x: pts[0].x, y: pts[0].y }];
+        let total = 0;
+
+        for (let i = 1; i < pts.length; i++) {
+            const a = pts[i - 1];
+            const b = pts[i];
+
+            total += Math.hypot(b.x - a.x, b.y - a.y);
+            table.push({ t: i / (pts.length - 1), dist: total, x: b.x, y: b.y });
+        }
+
+        return { table, total };
+    }
+
+    function positionAtDistance(table, totalDist, targetDist) {
+        if (targetDist <= 0) return { x: table[0].x, y: table[0].y };
+        if (targetDist >= totalDist) return { x: table.at(-1).x, y: table.at(-1).y };
+
+        for (let i = 1; i < table.length; i++) {
+            if (table[i].dist >= targetDist) {
+                const a = table[i - 1], b = table[i];
+                const segLen = b.dist - a.dist;
+                const frac = segLen === 0 ? 0 : (targetDist - a.dist) / segLen;
+
+                return {
+                    x: a.x + (b.x - a.x) * frac,
+                    y: a.y + (b.y - a.y) * frac
+                };
+            }
+        }
+    }
+
+    function bodyPositionAtDay(body, day) {
+        const angle = TAU * (day / body.period + body.offset);
+
+        let centerX = 0;
+        let centerY = 0;
+
+        if (body.orbit.centerBody) {
+            const c = bodyPositionAtDay(body.orbit.centerBody, day);
+            centerX = c.x;
+            centerY = c.y;
+        }
+
+        return {
+            x: centerX + body.orbit.radius * Math.cos(angle),
+            y: centerY + body.orbit.radius * Math.sin(angle)
+        };
+    }
+
+    function closestBodyAtDay(body, orbitGroup, day, numberOffset = 0) {
+        const candidates = Object.values(bodies).filter(c => c.orbit.name === orbitGroup);
+        if (candidates.length === 0) return null;
+
+        const pos = bodyPositionAtDay(body, day);
+
+        let closestIndex = 0;
+        let closestDist2 = Infinity;
+
+        for (let i = 0; i < candidates.length; i++) {
+            const cp = bodyPositionAtDay(candidates[i], day);
+            const dx = cp.x - pos.x, dy = cp.y - pos.y;
+            const d2 = dx * dx + dy * dy;
+
+            if (d2 < closestDist2) { closestDist2 = d2; closestIndex = i; }
+        }
+
+        const targetIndex = (closestIndex + numberOffset) % candidates.length;
+        return candidates[(targetIndex + candidates.length) % candidates.length];
+    }
+
+    function closestBody2OrbitsAtDay(orbitGroup1, orbitGroup2, day, numberOffset = 0) {
+        const bodies1 = Object.values(bodies).filter(c => c.orbit.name === orbitGroup1);
+        const bodies2 = Object.values(bodies).filter(c => c.orbit.name === orbitGroup2);
+        if (bodies1.length === 0 || bodies2.length === 0) return null;
+
+        let closestBody1 = null, closestBody2 = null, closestDist2 = Infinity;
+
+        for (const b1 of bodies1) {
+            const p1 = bodyPositionAtDay(b1, day);
+            for (const b2 of bodies2) {
+                const p2 = bodyPositionAtDay(b2, day);
+                const dx = p2.x - p1.x, dy = p2.y - p1.y;
+                const d2 = dx * dx + dy * dy;
+
+                if (d2 < closestDist2) { closestDist2 = d2; closestBody1 = b1; closestBody2 = b2; }
+            }
+        }
+
+        const targetIndex = (bodies2.indexOf(closestBody2) + numberOffset) % bodies2.length;
+        return bodies2[(targetIndex + bodies2.length) % bodies2.length];
+    }
+
+    function createShip(lane) {
+        if (!lane.endingBody) return;
+        if (!lane.pts || lane.pts.length < 2) return;
+
+        const totalDistKm = pixelsToKm(buildArcLengthTable(lane.pts).total);
+        if (totalDistKm <= 0) return;
+
+        const estimatedTravelDays = (2 * totalDistKm) / MAX_SHIP_SPEED_KM_PER_DAY;
+
+        if (lane.predictEndpoints) {
+            const future = lane.predictEndpoints(days + estimatedTravelDays);
+
+            const futureEndingName = future.endingBody?.name ?? lane.endingBody.name;
+            const futureStartingName = future.startingBody?.name ?? lane.startingBody.name;
+
+            if (futureEndingName !== lane.endingBody.name || futureStartingName !== lane.startingBody.name) {
+                console.log(`Lane "${lane.name}" will retarget before a ship could arrive — launch blocked.`);
+                return;
+            }
+        }
+
+        const id = `ship${shipIdCounter++}`;
+
+        const startPt = lane.pts[0];
+        const sprite = new PIXI.Graphics().circle(0, 0, 2).fill(0xff0000);
+        sprite.position.set(startPt.x, startPt.y);
+
+        sprite.eventMode = "static";   // ADD
+        sprite.cursor = "pointer";     // ADD
+        sprite.on("pointerup", () => {   // ADD
+            shipClicked = id;
+            bodyClicked = null;           // ships and bodies are mutually exclusive focus targets
+            console.log(`Ship "${id}" focused`);
+        });
+
+        shipLayer.addChild(sprite);
+
+        const label = new PIXI.Text({
+            text: "0%\n0 km/h",
+            style: { fontFamily: "Monospace", fontSize: 9, fill: 0xff0000 },
+            resolution: 10
+        });
+        label.anchor.set(0.5, 1.5);
+        labelLayer.addChild(label);
+
+        ships[id] = {
+            id,
+            lane,
+            traveledKm: 0,
+            velocityKmPerDay: 0,   // ADD
+            elapsedDays: 0,
+            sprite,
+            label,
+            arrived: false
+        };
+
+        console.log(`Ship "${id}" launched on lane "${lane.name}"`);
+        shipClicked = id;
+        bodyClicked = null;
+    }
+
+    function updateShips(deltaDays) {
+        for (const ship of Object.values(ships)) {
+            if (ship.arrived) continue;
+
+            const lane = ship.lane;
+            if (!lane.pts || lane.pts.length < 2) continue;
+
+            const { table, total: totalPx } = buildArcLengthTable(lane.pts);
+            const totalDistKm = pixelsToKm(totalPx);
+
+            if (totalDistKm <= 0) continue;
+
+            const accel = (MAX_SHIP_SPEED_KM_PER_DAY ** 2) / totalDistKm; // km/day^2
+
+            const remainingKm = Math.max(0, totalDistKm - ship.traveledKm);
+            const stoppingDistanceKm = (ship.velocityKmPerDay ** 2) / (2 * accel);
+
+            // Bang-bang control: decelerate only when we NEED to in order to stop exactly at the target.
+            // This is re-evaluated live every frame, so it self-corrects if the target drifts
+            // and can never get stuck at v=0 short of arrival.
+            if (remainingKm > stoppingDistanceKm) {
+                ship.velocityKmPerDay = Math.min(
+                    ship.velocityKmPerDay + accel * deltaDays,
+                    MAX_SHIP_SPEED_KM_PER_DAY
+                );
+            } else {
+                ship.velocityKmPerDay = Math.max(
+                    ship.velocityKmPerDay - accel * deltaDays,
+                    0
+                );
+            }
+
+            ship.traveledKm += ship.velocityKmPerDay * deltaDays;
+            ship.elapsedDays += deltaDays;
+
+            // Rough live ETA: time to cover what's left at current speed (updates every frame)
+            const etaDays = ship.velocityKmPerDay > 0
+                ? remainingKm / ship.velocityKmPerDay
+                : Infinity;
+
+            if (ship.traveledKm >= totalDistKm) {
+                const finalPos = table.at(-1);
+                ship.sprite.position.set(finalPos.x, finalPos.y);
+                ship.label.position.set(finalPos.x, finalPos.y);
+
+                ship.arrived = true;
+                const hours = ship.elapsedDays * 24;
+                ship.label.text = `arrived: ${hours.toFixed(2)}h\n0 km/h`;
+                console.log(`Ship "${ship.id}" arrived. Total travel time: ${hours.toFixed(2)} hours (${ship.elapsedDays.toFixed(4)} days)`);
+                shipClicked = null;
+                continue;
+            }
+
+            const pos = positionAtDistance(table, totalPx, kmToPixels(ship.traveledKm));
+            ship.sprite.position.set(pos.x, pos.y);
+            ship.label.position.set(pos.x, pos.y);
+
+            const speedKmh = ship.velocityKmPerDay / 24; // convert km/day back to km/h for display
+            const etaText = Number.isFinite(etaDays) ? `ETA ${(etaDays * 24).toFixed(1)}h` : `ETA --`;
+            ship.label.text = `${etaText}\n${speedKmh.toLocaleString(undefined, { maximumFractionDigits: 0 })} km/h`;
+        }
+    }
+        
     function createOrbit(name, radiusKm, options = {}) {
 
         const radius = kmToPixels(radiusKm);
@@ -428,6 +731,7 @@
     }
 
     let bodyClicked = null;
+    let shipClicked = null;
 
     function createBody(name, orbitName, periodDays, options = {}) {
 
@@ -445,7 +749,6 @@
 
         body.interactive = true;
         body.on("pointerup", () => {
-            moonMode = false;
             bodyClicked = name;
             console.log(`Body "${name}" focused`);
         });
@@ -483,7 +786,15 @@
     function createLane(name, startingBody, options = {}) {
         const graphics = new PIXI.Graphics();
 
+        graphics.eventMode = "static";   // ADD
+        graphics.cursor = "pointer";      // ADD
+
         laneLayer.addChild(graphics);
+
+        graphics.on("pointerup", () => {   // ADD
+            const lane = lanes[name];
+            if (lane) createShip(lane);
+        });
 
         const [dashlength, gapLength] = options.dash ?? [0, 0];
 
@@ -493,26 +804,25 @@
             ts[i] = i / (ts.length - 1);
         }
 
+        const resolvedStart = typeof startingBody === "string"
+            ? bodies[startingBody]
+            : startingBody;
+
         lanes[name] = {
             name,
-
             graphics,
-
-            startingBody: typeof startingBody === "string"
-                ? bodies[startingBody]
-                : startingBody,
-
+            startingBody: resolvedStart,
             endingBody: null,
-
             color: options.color ?? 0x44ffff,
-
             width: options.width ?? 1,
-
             dashLength: dashlength,
-
             gapLength: gapLength,
-
             ts,
+
+            // NEW: flip tracking
+            lastStartingName: resolvedStart?.name ?? null,
+            lastEndingName: null,
+            disabledUntil: -Infinity,
         };
 
         return lanes[name];
@@ -555,20 +865,45 @@
         };
     }
 
-    function updateLane(name, endingBody, startingBody = null) {
-
-        if(startingBody !== null) {
-            lanes[name].startingBody = startingBody;
-        }
+    function updateLane(name, endingBody, options = {}) {
 
         const lane = lanes[name];
 
         if(!lane) throw new Error(`Lane "${name}" does not exist.`);
         if(!endingBody) throw new Error(`Ending body for lane "${name}" does not exist.`);
 
-        const g = lane.graphics;
+        options.startingBody = options.startingBody ?? lane.startingBody;
+        options.laneCooldown = options.laneCooldown ?? LANE_FLIP_COOLDOWN_DAYS;
 
+        lane.startingBody = options.startingBody;
+        lane.endingBody = endingBody;
+        lane.predictEndpoints = options.predict ?? null;
+
+        const endingChanged = lane.lastEndingName !== null
+            && lane.lastEndingName !== endingBody.name;
+
+        const startingChanged = lane.lastStartingName !== null
+            && lane.lastStartingName !== lane.startingBody.name;
+
+        if (endingChanged || startingChanged) {
+            lane.disabledUntil = days + options.laneCooldown;
+        }
+
+        lane.lastEndingName = endingBody.name;
+        lane.lastStartingName = lane.startingBody.name;
+
+        const g = lane.graphics;
         g.clear();
+
+        if (days < lane.disabledUntil) {
+            return {
+                startingBody: lane.startingBody,
+                endingBody,
+                delta: null,
+                travelled: 0,
+                disabled: true
+            };
+        }
 
         const p1 = lane.startingBody.sprite.position;
         const p2 = endingBody.sprite.position;
@@ -602,6 +937,7 @@
         const dash = lane.dashLength;
         const gap = lane.gapLength;
         const pattern = dash + gap;
+        lane.pts = pts;
 
         let travelled = 0;
 
@@ -664,27 +1000,16 @@
             color: lane.color,
             width: lane.width / camera.zoom
         });
-    }
 
-    let moonMode = false;
-
-    function togglePause(){
-        paused = !paused;
-        refreshControls()
-        console.log(`Simulation ${paused ? "paused" : "resumed"}`);
-    }
-
-    function increaseSpeed(faster = false){
-        DAYS_PER_SECOND += faster ? 10 : 1;
-        refreshControls()
-        console.log(`Days per second: ${DAYS_PER_SECOND}`);
-    }
-
-    function decreaseSpeed(faster){
-        DAYS_PER_SECOND -= faster ? 10 : 1;
-        DAYS_PER_SECOND = Math.max(1, DAYS_PER_SECOND);
-        refreshControls()
-        console.log(`Days per second: ${DAYS_PER_SECOND}`);
+        g.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) {
+            g.lineTo(pts[i].x, pts[i].y);
+        }
+        g.stroke({
+            color: lane.color,
+            width: Math.max(10 / camera.zoom, 6),
+            alpha: 0.001   // near-zero alpha; some PIXI versions skip hit-testing on true 0 alpha
+        });
     }
 
     window.addEventListener("keydown", e => {
@@ -718,14 +1043,27 @@
         lastMouse.x = e.clientX;
         lastMouse.y = e.clientY;
 
-    if (e.target === app.canvas && bodyClicked) {
-        const body = bodies[bodyClicked];
+        if (e.target === app.canvas && bodyClicked) {
+            const body = bodies[bodyClicked];
 
-        camera.x = body.sprite.x;
-        camera.y = body.sprite.y;
+            camera.x = body.sprite.x;
+            camera.y = body.sprite.y;
 
-        bodyClicked = null;
-    }
+            bodyClicked = null;
+            console.log(`Body "${body.name}" unfocused`);
+        }
+
+        if (e.target === app.canvas && shipClicked) {   // ADD
+            const ship = ships[shipClicked];
+
+            if (ship) {
+                camera.x = ship.sprite.x;
+                camera.y = ship.sprite.y;
+            }
+
+            shipClicked = null;
+            console.log(`Ship "${shipClicked}" unfocused`);
+        }
 
         app.canvas.setPointerCapture(e.pointerId);
 
@@ -875,6 +1213,17 @@
             }
         }
 
+        if (shipClicked) {   // ADD
+            const ship = ships[shipClicked];
+
+            if (ship) {
+                pivotX = ship.sprite.x;
+                pivotY = ship.sprite.y;
+            } else {
+                shipClicked = null; // ship arrived/removed — stop trying to follow it
+            }
+        }
+
         world.pivot.set(pivotX, pivotY);
 
         world.position.set(
@@ -905,6 +1254,11 @@
             );
         }
 
+        for (const ship of Object.values(ships)) {
+            ship.sprite.scale.set(Math.max(1 / camera.zoom, 0.5));
+            ship.label.scale.set(Math.max(1 / camera.zoom, 0.5));
+        }
+
         for (const orbit of Object.values(paths)) {
             redrawOrbit(orbit);
         }
@@ -913,14 +1267,16 @@
     app.ticker.add(() => {
 
         const deltaSeconds = app.ticker.deltaMS / 1000;
+        const deltaDays = paused ? 0 : deltaSeconds * DAYS_PER_SECOND;
 
         if (!paused) {
             days += deltaSeconds * DAYS_PER_SECOND;
-        }
+        }   
 
         if (updateBodiesAndLanes) {
             updateBodies();
             updateLanes();
+            updateShips(deltaDays);
         }
 
         updateCamera();
@@ -1087,6 +1443,20 @@
             period: -5.877,
             distance: 354_800,
             color: 0xaaaaaa
+        },
+        phobos: {
+            orbit: "phobosOrbit",
+            centerBody: "mars",
+            period: 0.31891,
+            distance: 9_376 * 3,
+            color: 0xaaaaaa
+        },
+        deimos: {
+            orbit: "deimosOrbit",
+            centerBody: "mars",
+            period: 1.26244,
+            distance: 23_460 * 3,
+            color: 0xaaaaaa
         }
 
     }
@@ -1141,7 +1511,7 @@
 
     const stationLabelDistance = 12;
     const ITAPlanetStationLabelDistance = 0.29;
-    const ITALaneStationLabelDistance = 0.02;
+    const ITALaneStationLabelDistance = 0.01;
     const moonLabelDistance = 0.29;
 
     function createLanes(minorLaneDash, majorLaneDash) {
@@ -1330,8 +1700,12 @@
 
 
     function updateLanes(){
-        updateLane("earthMars", closestBody(bodies.earth, "mars"));
-        updateLane("mercuryVenus", closestBody(bodies.mercury, "venus"));
+        updateLane("earthMars", closestBody(bodies.earth, "mars"), {
+            predict: (day) => ({ endingBody: closestBodyAtDay(bodies.earth, "mars", day) })
+        });
+        updateLane("mercuryVenus", closestBody(bodies.mercury, "venus"), {
+            predict: (day) => ({ endingBody: closestBodyAtDay(bodies.mercury, "venus", day) })
+        });
 
         [
             ["mercury", "layer1Stations", "mercury1"],
@@ -1342,55 +1716,129 @@
             ["mars",    "layer3Stations", "mars1"],
             ["mars",    "layer4Stations", "mars2"],
         ].forEach(([from, group, lane]) => {
-            updateLane(lane, closestBody(bodies[from], group));
+            updateLane(lane, closestBody(bodies[from], group), {
+                predict: (day) => ({ endingBody: closestBodyAtDay(bodies[from], group, day) })
+            });
         });
 
+
+        
         for (let i = 1; i <= 6; i++) {
             updateLane(
                 `2${i}To1`,
-                closestBody(bodies[`2${i}`], "layer1Stations")
+                closestBody(bodies[`2${i}`], "layer1Stations"), {
+                    predict: (day) => ({ endingBody: closestBodyAtDay(bodies[`2${i}`], "layer1Stations", day) })
+                }
             );
         }
 
         for (let i = 1; i <= 6; i++) {
             updateLane(
                 `3${i}To2`,
-                closestBody(bodies[`3${i}`], "layer2Stations")
+                closestBody(bodies[`3${i}`], "layer2Stations"), {
+                    predict: (day) => ({ endingBody: closestBodyAtDay(bodies[`3${i}`], "layer2Stations", day) })
+                }
             );
         };
 
-        for(let i = 1; i <= 6; i++) {
+        for (let i = 1; i <= 6; i++) {
             updateLane(
                 `4${i}To3`,
-                closestBody(bodies[`4${i}`], "layer3Stations")
+                closestBody(bodies[`4${i}`], "layer3Stations"), {
+                    predict: (day) => ({ endingBody: closestBodyAtDay(bodies[`4${i}`], "layer3Stations", day) })
+                }
             );
         };
 
-        for(let i = 1; i <= 6; i++) {
+        for (let i = 1; i <= 6; i++) {
             updateLane(
                 `3${i}To2Offset`,
-                closestBody(bodies[`3${i}`], "layer2Stations", -1)
+                closestBody(bodies[`3${i}`], "layer2Stations", -1), {
+                    predict: (day) => ({ endingBody: closestBodyAtDay(bodies[`3${i}`], "layer2Stations", day, -1) })
+                }
             );
         }
 
-        for(let i = 1; i <= 6; i++) {
+        for (let i = 1; i <= 6; i++) {
             updateLane(
                 `4${i}To3Offset`,
-                closestBody(bodies[`4${i}`], "layer3Stations", -1)
+                closestBody(bodies[`4${i}`], "layer3Stations", -1), {
+                    predict: (day) => ({ endingBody: closestBodyAtDay(bodies[`4${i}`], "layer3Stations", day, -1) })
+                }
             );
         }
 
-
         for(let i = 1; i <= 6; i++) {
-            updateLane(`4${i}ToOuter1`, closestBody(bodies[`4${i}`], "outerStations", -1));
-            updateLane(`4${i}ToOuter2`, closestBody(bodies[`4${i}`], "outerStations"));
-            updateLane(`4${i}ToOuter3`, closestBody(bodies[`4${i}`], "outerStations", 1));
+            updateLane(`4${i}ToOuter1`, closestBody(bodies[`4${i}`], "outerStations", -1), {
+                predict: (day) => ({ endingBody: closestBodyAtDay(bodies[`4${i}`], "outerStations", day, -1) })
+            });
+            updateLane(`4${i}ToOuter2`, closestBody(bodies[`4${i}`], "outerStations"), {
+                predict: (day) => ({ endingBody: closestBodyAtDay(bodies[`4${i}`], "outerStations", day) })
+            });
+            updateLane(`4${i}ToOuter3`, closestBody(bodies[`4${i}`], "outerStations", 1), {
+                predict: (day) => ({ endingBody: closestBodyAtDay(bodies[`4${i}`], "outerStations", day, 1) })
+            });
         }
 
+        updateLane("OuterToUranus",  closestBody2Orbits("uranusStationOrbit", "outerStations"), {
+            laneCooldown: 0,
+            startingBody: closestBody2Orbits("outerStations", "uranusStationOrbit"),
+            predict: (day) => (
+                { endingBody: closestBody2OrbitsAtDay("uranusStationOrbit", "outerStations", day) }
+            )
+        });
 
-        updateLane("OuterToUranus",  closestBody2Orbits("uranusStationOrbit", "outerStations"), closestBody2Orbits("outerStations", "uranusStationOrbit"));
-        updateLane("OuterToJupiter", closestBody2Orbits("jupiterStationOrbit", "outerStations"), closestBody2Orbits("outerStations", "jupiterStationOrbit"));
-        updateLane("OuterToSaturn",  closestBody2Orbits("saturnStationOrbit", "outerStations"), closestBody2Orbits("outerStations", "saturnStationOrbit"));
+        updateLane("OuterToJupiter", closestBody2Orbits("jupiterStationOrbit", "outerStations"), {
+            laneCooldown: 0,
+            startingBody: closestBody2Orbits("outerStations", "jupiterStationOrbit"),
+            predict: (day) => (
+                { endingBody: closestBody2OrbitsAtDay("jupiterStationOrbit", "outerStations", day) }
+            )
+        });
+
+        updateLane("OuterToSaturn",  closestBody2Orbits("saturnStationOrbit", "outerStations"), {
+            laneCooldown: 0,
+            startingBody: closestBody2Orbits("outerStations", "saturnStationOrbit"),
+            predict: (day) => (
+                { endingBody: closestBody2OrbitsAtDay("saturnStationOrbit", "outerStations", day) }
+            )
+        });
+
+
+
+
+        // for(let i = 1; i <= 6; i++) {
+        //     updateLane(
+        //         `4${i}To3`,
+        //         closestBody(bodies[`4${i}`], "layer3Stations")
+        //     );
+        // };
+
+        // for(let i = 1; i <= 6; i++) {
+        //     updateLane(
+        //         `3${i}To2Offset`,
+        //         closestBody(bodies[`3${i}`], "layer2Stations", -1)
+        //     );
+        // }
+
+        // for(let i = 1; i <= 6; i++) {
+        //     updateLane(
+        //         `4${i}To3Offset`,
+        //         closestBody(bodies[`4${i}`], "layer3Stations", -1)
+        //     );
+        // }
+
+
+        // for(let i = 1; i <= 6; i++) {
+        //     updateLane(`4${i}ToOuter1`, closestBody(bodies[`4${i}`], "outerStations", -1));
+        //     updateLane(`4${i}ToOuter2`, closestBody(bodies[`4${i}`], "outerStations"));
+        //     updateLane(`4${i}ToOuter3`, closestBody(bodies[`4${i}`], "outerStations", 1));
+        // }
+
+
+        // updateLane("OuterToUranus",  closestBody2Orbits("uranusStationOrbit", "outerStations"), {laneCooldown: 0, startingBody: closestBody2Orbits("outerStations", "uranusStationOrbit")});
+        // updateLane("OuterToJupiter", closestBody2Orbits("jupiterStationOrbit", "outerStations"), {laneCooldown: 0, startingBody: closestBody2Orbits("outerStations", "jupiterStationOrbit")});
+        // updateLane("OuterToSaturn",  closestBody2Orbits("saturnStationOrbit", "outerStations"), {laneCooldown: 0, startingBody: closestBody2Orbits("outerStations", "saturnStationOrbit")});
     }
 
     function resetAll(){
