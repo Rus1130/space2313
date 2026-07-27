@@ -162,7 +162,9 @@
 
     const CRUISE_ACCEL_KM_PER_DAY2 = ms2ToKmDay2(G * 1);   // 0.1
     const BOOST_ACCEL_KM_PER_DAY2  = ms2ToKmDay2(G * 1.2);  // 0.25
+    const TRIANGULAR_ACCEL_KM_PER_DAY2 = ms2ToKmDay2(G * 0.4);  // 0.1
     const LANE_STYLE = "straight"; // "curve" or "straight"
+    const TRIP_TYPE = "triangular"; // "BCB" or "triangular"
 
     const BOOST_TIME_DAYS = 1;
     const BRAKE_TIME_DAYS = 1;
@@ -757,8 +759,20 @@
     let bodyClicked = null;
     let shipClicked = null;
 
-    function computeFlightProfile(totalDistKm) {
-        const a1 = BOOST_ACCEL_KM_PER_DAY2;
+    function computeFlightProfile(totalDistKm, accel) {
+        const a1 = accel ?? TRIANGULAR_ACCEL_KM_PER_DAY2;
+
+        if (TRIP_TYPE === "triangular") {
+            // Accelerate for the first half of the trip, decelerate for the
+            // second half, using the same rate both ways.
+            const peakVel = Math.sqrt(totalDistKm * a1);
+            const tPeak = peakVel / a1;
+
+            return { kind: "triangular", tPeak, a1, peakVel, total: totalDistKm };
+        }
+
+        // "boost-cruise-brake": fixed-duration boost and brake, with however
+        // much 1g cruise in between is needed to cover the remaining distance.
         const g  = CRUISE_ACCEL_KM_PER_DAY2;
         const t1 = BOOST_TIME_DAYS;
         const t3 = BRAKE_TIME_DAYS;
@@ -766,7 +780,7 @@
         const v1 = a1 * t1;             // velocity at end of boost
         const s1 = 0.5 * a1 * t1 * t1;  // distance covered during boost
 
-        // Solve for cruise duration t2 so boost + cruise(1g) + brake(fixed t3,
+        // Solve for cruise duration t2 so boost + cruise(g) + brake(fixed t3,
         // decel chosen so v hits exactly 0 at arrival) covers totalDistKm:
         //   0.5*g*t2² + (v1 + 0.5*g*t3)*t2 + (s1 + 0.5*v1*t3 - totalDistKm) = 0
         const A = 0.5 * g;
@@ -783,20 +797,20 @@
             const s3 = 0.5 * v2End * t3;
 
             return {
-                kind: "boost-cruise-brake",
+                kind: "BCB",
                 t1, t2, t3, a1, g, d3, v1, v2End, s1, s2, s3,
                 total: s1 + s2 + s3
             };
         }
 
-        // Route too short to fit a full 24h boost + 24h brake with any cruise
-        // in between — fall back to a symmetric triangular burn (no plateau),
-        // using the boost rate as both accel and decel.
+        // Route too short to fit a full boost + brake with any cruise in
+        // between — fall back to a symmetric triangular burn (no plateau).
         const peakVel = Math.sqrt(totalDistKm * a1);
         const tPeak = peakVel / a1;
 
         return { kind: "triangular", tPeak, a1, peakVel, total: totalDistKm };
     }
+
 
     function flightPositionAtElapsed(profile, elapsedDays) {
         if (profile.kind === "triangular") {
@@ -1700,15 +1714,24 @@
 
         createLane("OuterToJupiter", "fontanaStation", { color: planets.jupiter.color, width: 1, dash: minorLaneDash });
 
-        createLane("OdysseusToUranus", "ITAOdysseus", { color: planets.uranus.color, width: 1, dash: minorLaneDash });
+        createLane("OdysseusToIthaca", "ITAOdysseus", { color: planets.uranus.color, width: 1, dash: minorLaneDash });
         createLane("TelemachusToOdysseus", "ITATelemachus", { color: planets.uranus.color, width: 1, dash: minorLaneDash });
         createLane("TelemachusToOuter", "ITATelemachus", { color: planets.uranus.color, width: 1, dash: minorLaneDash });
+
+        createLane("OuterToHekatombaion", "ITAHekatombaion", { color: planets.saturn.color, width: 1, dash: minorLaneDash });
+        createLane("HekatombaionToTartarus", "ITAHekatombaion", { color: planets.saturn.color, width: 1, dash: minorLaneDash });
     }
 
 
     function realisticModeOnly(stationSize){
 
         // saturn
+        createOrbit("ITATartarusOrbit", (moons.iapetus.distance + 200_000), {opacity: 0, color: 0x7A84B6, width: 1, centerBody: "saturn" });
+        createOrbit("ITAHekatombaionOrbit", (orbitsKM.jupiter + orbitsKM.saturn) / 2, {opacity: 0, color: 0x7A84B6, width: 1 });
+
+        createBody("ITATartarus", "ITATartarusOrbit", planets.saturn.period, { offset: 4/7, color: colors.layerStation, radius: stationSize, label: "ITA Tartarus Station", labelDistance: ITAPlanetStationLabelDistance });
+        createBody("ITAHekatombaion", "ITAHekatombaionOrbit", planets.saturn.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Hekatombaion Station", labelDistance: 0 });
+
         createOrbit("keelerStationOrbit", (136_505 + (35/2)), { color: 0x7A84B6, width: 1, centerBody: "saturn" });
         createOrbit("enckeStationOrbit", (133_589 + (325/2)), { color: 0x7A84B6, width: 1, centerBody: "saturn" });
         createOrbit("huygensStationOrbit", (117_680 + ((285+400)/2)), { color: 0x7A84B6, width: 1, centerBody: "saturn" });
@@ -1726,16 +1749,10 @@
         createOrbit("iapetusStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "iapetus" });
         createOrbit("iapetusStationOrbit2", 15_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "iapetus" });
 
-        createOrbit("ITAOdysseusOrbit", (orbitsKM.uranus + orbitsKM.saturn) / 2, { color: 0x7A84B6, width: 1, opacity: 0 });
-        createOrbit("ITATelemachusOrbit", (orbitsKM.jupiter + orbitsKM.saturn) / 2, { color: 0x7A84B6, width: 1, opacity: 0 });
-
-        createBody("ITAOdysseus", "ITAOdysseusOrbit", planets.uranus.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Odysseus Station", labelDistance: 0 });
-        createBody("ITATelemachus", "ITATelemachusOrbit", planets.uranus.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Telemachus Station", labelDistance: 0});
-
-        createBody("kappaStation", "saturnStationOrbit", 15, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Kappa Station", labelDistance: ITAPlanetStationLabelDistance });
-        createBody("dragonflyStation", "saturnStationOrbit", 15, { offset: 0.25, color: colors.layerStation, radius: stationSize, label: "ITA Dragonfly Station", labelDistance: ITAPlanetStationLabelDistance  });
-        createBody("rhoStation", "saturnStationOrbit", 15, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "ITA Rho Station", labelDistance: ITAPlanetStationLabelDistance  });
-        createBody("etaStation", "saturnStationOrbit", 15, { offset: 0.75, color: colors.layerStation, radius: stationSize, label: "ITA Eta Station", labelDistance: ITAPlanetStationLabelDistance  });
+        createBody("kappaStation", "saturnStationOrbit", 15, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Kappa Station", labelDistance: ITAPlanetStationLabelDistance });
+        createBody("dragonflyStation", "saturnStationOrbit", 15, { offset: 0.25, color: colors.layerStation, radius: stationSize, label: "Dragonfly Station", labelDistance: ITAPlanetStationLabelDistance  });
+        createBody("rhoStation", "saturnStationOrbit", 15, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "Rho Station", labelDistance: ITAPlanetStationLabelDistance  });
+        createBody("etaStation", "saturnStationOrbit", 15, { offset: 0.75, color: colors.layerStation, radius: stationSize, label: "Eta Station", labelDistance: ITAPlanetStationLabelDistance  });
 
         createBody("keelerStation", "keelerStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ORRI Keeler Station", labelDistance: stationLabelDistance });
         createBody("enckeStation", "enckeStationOrbit", 10, { offset: 0.1, color: colors.layerStation, radius: stationSize, label: "ORRI Encke Station", labelDistance: stationLabelDistance  });
@@ -1764,6 +1781,9 @@
         // jupiter
         createOrbit("jupiterStationOrbit", (moons.callisto.distance + 100_000), { color: 0x7A84B6, width: 1, centerBody: "jupiter" });
 
+        createOrbit("ITAPanOrbit", (moons.callisto.distance + 200_000), { color: 0x7A84B6, width: 1, centerBody: "jupiter", opacity: 0 });
+        createBody("ITAPanStation", "ITAPanOrbit", planets.jupiter.period, { offset: 4/7, color: colors.layerStation, radius: stationSize, label: "ITA Pan Station", labelDistance: ITAPlanetStationLabelDistance });
+
         createOrbit("ganymedeStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "ganymede" });
         createOrbit("callistoStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "callisto" });
         createOrbit("europaStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "europa" });
@@ -1785,11 +1805,19 @@
         createBody("conamaraStation", "europaStationOrbit2", moons.europa.period * 2, { offset: 0.25, color: colors.layerStation, radius: stationSize, label: "Conamara Station", labelDistance: stationLabelDistance });
         createBody("arranStation", "europaStationOrbit2", moons.europa.period * 2, { offset: 0.75, color: colors.layerStation, radius: stationSize, label: "Arran Station", labelDistance: stationLabelDistance });
 
-        createBody("copernicusStation", "jupiterStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Copernicus Station", labelDistance: ITAPlanetStationLabelDistance  });
-        createBody("fontanaStation", "jupiterStationOrbit", 10, { offset: 1/3, color: colors.layerStation, radius: stationSize, label: "ITA Fontana Station", labelDistance: ITAPlanetStationLabelDistance  });
-        createBody("hookeStation", "jupiterStationOrbit", 10, { offset: 2/3, color: colors.layerStation, radius: stationSize, label: "ITA Hooke Station", labelDistance: ITAPlanetStationLabelDistance  });
+        createBody("copernicusStation", "jupiterStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Copernicus Station", labelDistance: ITAPlanetStationLabelDistance  });
+        createBody("fontanaStation", "jupiterStationOrbit", 10, { offset: 1/3, color: colors.layerStation, radius: stationSize, label: "Fontana Station", labelDistance: ITAPlanetStationLabelDistance  });
+        createBody("hookeStation", "jupiterStationOrbit", 10, { offset: 2/3, color: colors.layerStation, radius: stationSize, label: "Hooke Station", labelDistance: ITAPlanetStationLabelDistance  });
 
         // uranus
+        createOrbit("ITAOdysseusOrbit", (orbitsKM.uranus + orbitsKM.saturn) / 2, { color: 0x7A84B6, width: 1, opacity: 0 });
+        createOrbit("ITATelemachusOrbit", (orbitsKM.jupiter + orbitsKM.saturn) / 2, { color: 0x7A84B6, width: 1, opacity: 0 });
+        createOrbit("ITAIthacaOrbit", (moons.oberon.distance + 150_000), { opacity: 0, color: 0x7A84B6, width: 1, centerBody: "uranus" });
+
+        createBody("ITAOdysseusStation", "ITAOdysseusOrbit", planets.uranus.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Odysseus Station", labelDistance: 0 });
+        createBody("ITATelemachusStation", "ITATelemachusOrbit", planets.uranus.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Telemachus Station", labelDistance: 0});
+        createBody("ITAIthacaStation", "ITAIthacaOrbit", planets.uranus.period, { offset: 4/7, color: colors.layerStation, radius: stationSize, label: "ITA Ithaca Station", labelDistance: ITAPlanetStationLabelDistance});
+
         createOrbit("uranusStationOrbit", (moons.oberon.distance + 100_000), { color: 0x7A84B6, width: 1, centerBody: "uranus" });
 
         createOrbit("titaniaStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "titania" });
@@ -1798,9 +1826,9 @@
         createOrbit("arielStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "ariel" });
         createOrbit("mirandaStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "miranda" });  
 
-        createBody("herschelStation", "uranusStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Herschel Station", labelDistance: ITAPlanetStationLabelDistance  });
-        createBody("caelusStation", "uranusStationOrbit", 10, { offset: 1/3, color: colors.layerStation, radius: stationSize, label: "ITA Caelus Station", labelDistance: ITAPlanetStationLabelDistance  });
-        createBody("georgiaStation", "uranusStationOrbit", 10, { offset: 2/3, color: colors.layerStation, radius: stationSize, label: "ITA Georgia Station", labelDistance: ITAPlanetStationLabelDistance  });
+        createBody("herschelStation", "uranusStationOrbit", 10, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Herschel Station", labelDistance: ITAPlanetStationLabelDistance  });
+        createBody("caelusStation", "uranusStationOrbit", 10, { offset: 1/3, color: colors.layerStation, radius: stationSize, label: "Caelus Station", labelDistance: ITAPlanetStationLabelDistance  });
+        createBody("georgiaStation", "uranusStationOrbit", 10, { offset: 2/3, color: colors.layerStation, radius: stationSize, label: "Georgia Station", labelDistance: ITAPlanetStationLabelDistance  });
 
         createBody("imogenStation", "titaniaStationOrbit", moons.titania.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "Imogen Station", labelDistance: stationLabelDistance });
         createBody("calphurniaStation", "titaniaStationOrbit", moons.titania.period, { offset: 0.5, color: colors.layerStation, radius: stationSize, label: "Calphurnia Station", labelDistance: stationLabelDistance });
@@ -1900,13 +1928,14 @@
             });
         }
 
-        updateLane("OdysseusToUranus",  closestBody2Orbits("ITAOdysseusOrbit", "uranusStationOrbit"), {
+        updateLane("OdysseusToIthaca",  closestBody2Orbits("ITAOdysseusOrbit", "ITAIthacaOrbit"), {
             laneCooldown: 0,
-            startingBody: closestBody2Orbits("uranusStationOrbit", "ITAOdysseusOrbit"),
+            startingBody: closestBody2Orbits("ITAIthacaOrbit", "ITAOdysseusOrbit"),
             predict: (day) => (
-                { endingBody: closestBody2OrbitsAtDay("ITAOdysseusOrbit", "uranusStationOrbit", day) }
+                { endingBody: closestBody2OrbitsAtDay("ITAOdysseusOrbit", "ITAIthacaOrbit", day) }
             )
         });
+
 
         updateLane("TelemachusToOdysseus",  closestBody2Orbits("ITATelemachusOrbit", "ITAOdysseusOrbit"), {
             laneCooldown: 0,
@@ -1924,37 +1953,30 @@
             )
         });
 
-        updateLane("OuterToJupiter", closestBody2Orbits("jupiterStationOrbit", "outerStations"), {
+        updateLane("OuterToJupiter", closestBody2Orbits("ITAPanOrbit", "outerStations"), {
             laneCooldown: 0,
-            startingBody: closestBody2Orbits("outerStations", "jupiterStationOrbit"),
+            startingBody: closestBody2Orbits("outerStations", "ITAPanOrbit"),
             predict: (day) => (
-                { endingBody: closestBody2OrbitsAtDay("jupiterStationOrbit", "outerStations", day) }
+                { endingBody: closestBody2OrbitsAtDay("ITAPanOrbit", "outerStations", day) }
             )
         });
 
-        // updateLane("OuterToUranus",  closestBody2Orbits("uranusStationOrbit", "outerStations"), {
-        //     laneCooldown: 0,
-        //     startingBody: closestBody2Orbits("outerStations", "uranusStationOrbit"),
-        //     predict: (day) => (
-        //         { endingBody: closestBody2OrbitsAtDay("uranusStationOrbit", "outerStations", day) }
-        //     )
-        // });
 
-        // updateLane("OuterToJupiter", closestBody2Orbits("jupiterStationOrbit", "outerStations"), {
-        //     laneCooldown: 0,
-        //     startingBody: closestBody2Orbits("outerStations", "jupiterStationOrbit"),
-        //     predict: (day) => (
-        //         { endingBody: closestBody2OrbitsAtDay("jupiterStationOrbit", "outerStations", day) }
-        //     )
-        // });
+        updateLane("OuterToHekatombaion", closestBody2Orbits("ITAHekatombaionOrbit", "outerStations"), {
+            laneCooldown: 0,
+            startingBody: closestBody2Orbits("outerStations", "ITAHekatombaionOrbit"),
+            predict: (day) => (
+                { endingBody: closestBody2OrbitsAtDay("ITAHekatombaionOrbit", "outerStations", day) }
+            )
+        });
 
-        // updateLane("OuterToSaturn",  closestBody2Orbits("saturnStationOrbit", "outerStations"), {
-        //     laneCooldown: 0,
-        //     startingBody: closestBody2Orbits("outerStations", "saturnStationOrbit"),
-        //     predict: (day) => (
-        //         { endingBody: closestBody2OrbitsAtDay("saturnStationOrbit", "outerStations", day) }
-        //     )
-        // });
+        updateLane("HekatombaionToTartarus", closestBody2Orbits("ITAHekatombaionOrbit", "ITATartarusOrbit"), {
+            laneCooldown: 0,
+            startingBody: closestBody2Orbits("ITATartarusOrbit", "ITAHekatombaionOrbit"),
+            predict: (day) => (
+                { endingBody: closestBody2OrbitsAtDay("ITAHekatombaionOrbit", "ITATartarusOrbit", day) }
+            )
+        });
     }
 
     function resetAll(){
