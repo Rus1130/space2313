@@ -277,7 +277,7 @@
         },
         outer: {
             radius: kmToPixels(orbitsKM.outerStations),
-            period: 250,
+            period: planets.earth.period * 2,
             count: 14
         }
     };
@@ -560,10 +560,12 @@
         const totalDistKm = pixelsToKm(buildArcLengthTable(lane.pts).total);
         if (totalDistKm <= 0) return;
 
-        const accel = lane.accelKmPerDay2 ?? BOOST_ACCEL_KM_PER_DAY2;
-        const decel = lane.decelKmPerDay2 ?? BOOST_ACCEL_KM_PER_DAY2;
-
-        const estimatedTravelDays = estimateTravelTimeDays(totalDistKm, accel, decel);
+        // use the same profile math the ship will actually fly under,
+        // instead of the old accel/decel-only estimate that didn't match
+        // triangular or boost-cruise-brake physics.
+        const accel = lane.accelKmPerDay2 ?? defaultAccelForTripType();
+        const profile = computeFlightProfile(totalDistKm, accel);
+        const estimatedTravelDays = getProfileTotalDays(profile);
 
         if (lane.predictEndpoints && !lane.skipRetargetGuard) {
             const future = lane.predictEndpoints(days + estimatedTravelDays);
@@ -572,8 +574,8 @@
             const futureStartingName = future.startingBody?.name ?? lane.startingBody.name;
 
             if (futureEndingName !== lane.endingBody.name || futureStartingName !== lane.startingBody.name) {
-                alert(`Lane "${lane.name}" will retarget before the ship would arrive. Launch blocked.`);
-                console.log(`Lane "${lane.name}" will retarget before the ship would arrive. launch blocked.`);
+                console.log(`Lane "${lane.name}" will retarget ship would arrive - launch blocked.`);
+                alert(`lane "${lane.name}" will retarget before ship would arrive. launch blocked.`);
                 return;
             }
         }
@@ -649,7 +651,7 @@
             const { table, total: totalPx } = buildArcLengthTable(pts);
             const totalDistKm = pixelsToKm(totalPx);
 
-            const profile = computeFlightProfile(totalDistKm);
+            const profile = computeFlightProfile(totalDistKm, lane.accelKmPerDay2 ?? defaultAccelForTripType())
 
             const { traveledKm, velocityKmPerDay, arrived } = flightPositionAtElapsed(profile, ship.elapsedDays);
 
@@ -760,8 +762,17 @@
     let bodyClicked = null;
     let shipClicked = null;
 
+    function defaultAccelForTripType() {
+        return TRIP_TYPE === "triangular" ? TRIANGULAR_ACCEL_KM_PER_DAY2 : BOOST_ACCEL_KM_PER_DAY2;
+    }
+
+    function getProfileTotalDays(profile) {
+        if (profile.kind === "triangular") return profile.tPeak * 2;
+        return profile.t1 + profile.t2 + profile.t3;
+    }
+
     function computeFlightProfile(totalDistKm, accel) {
-        const a1 = accel ?? TRIANGULAR_ACCEL_KM_PER_DAY2;
+        const a1 = accel ?? defaultAccelForTripType();
 
         if (TRIP_TYPE === "triangular") {
             // Accelerate for the first half of the trip, decelerate for the
@@ -1399,7 +1410,7 @@
 
             if(days % 30 > 0 && Math.floor(days / 30) > monthsPassed){
                 monthsPassed = Math.floor(days / 30);
-                console.log(`Month ${monthsPassed} passed. Total days: ${days.toFixed(2)}`);
+                // console.log(`Month ${monthsPassed} passed. Total days: ${days.toFixed(2)}`);
             }
         }   
 
