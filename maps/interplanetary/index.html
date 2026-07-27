@@ -162,7 +162,9 @@
 
     const CRUISE_ACCEL_KM_PER_DAY2 = ms2ToKmDay2(G * 1);   // 0.1
     const BOOST_ACCEL_KM_PER_DAY2  = ms2ToKmDay2(G * 1.2);  // 0.25
-    const TRIANGULAR_ACCEL_KM_PER_DAY2 = ms2ToKmDay2(G * 0.4);  // 0.1
+
+    const TRIANGULAR_ACCEL_KM_PER_DAY2 = ms2ToKmDay2(G * 0.1);  // 0.1
+    
     const LANE_STYLE = "straight"; // "curve" or "straight"
     const TRIP_TYPE = "triangular"; // "BCB" or "triangular"
 
@@ -277,8 +279,8 @@
         },
         outer: {
             radius: kmToPixels(orbitsKM.outerStations),
-            period: planets.earth.period * 2,
-            count: 14
+            period: planets.earth.period * 1.5,
+            count: 12
         }
     };
 
@@ -772,7 +774,7 @@
     }
 
     function computeFlightProfile(totalDistKm, accel) {
-        const a1 = accel ?? defaultAccelForTripType();
+        const a1 = defaultAccelForTripType();
 
         if (TRIP_TYPE === "triangular") {
             // Accelerate for the first half of the trip, decelerate for the
@@ -1187,7 +1189,7 @@
             console.log(`Body "${body.name}" unfocused`);
         }
 
-        if (e.target === app.canvas && shipClicked) {   // ADD
+        if (e.target === app.canvas && shipClicked) {
             const ship = ships[shipClicked];
 
             if (ship) {
@@ -1347,7 +1349,7 @@
             }
         }
 
-        if (shipClicked) {   // ADD
+        if (shipClicked) {
             const ship = ships[shipClicked];
 
             if (ship) {
@@ -1705,31 +1707,28 @@
 
         createLane("41ToOuter1", "41", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
         createLane("41ToOuter2", "41", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
-        createLane("41ToOuter3", "41", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        // createLane("41ToOuter3", "41", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
 
         createLane("42ToOuter1", "42", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
         createLane("42ToOuter2", "42", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
-        createLane("42ToOuter3", "42", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        // createLane("42ToOuter3", "42", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
 
         createLane("43ToOuter1", "43", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
         createLane("43ToOuter2", "43", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
-        createLane("43ToOuter3", "43", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        // createLane("43ToOuter3", "43", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
 
         createLane("44ToOuter1", "44", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
         createLane("44ToOuter2", "44", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
-        createLane("44ToOuter3", "44", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        // createLane("44ToOuter3", "44", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
 
         createLane("45ToOuter1", "45", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
         createLane("45ToOuter2", "45", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
-        createLane("45ToOuter3", "45", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        // createLane("45ToOuter3", "45", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
 
         createLane("46ToOuter1", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
         createLane("46ToOuter2", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
-        createLane("46ToOuter3", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
+        // createLane("46ToOuter3", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
 
-        // createLane("OuterToUranus", "caelusStation", { color: planets.uranus.color, width: 1, dash: minorLaneDash });
-        // createLane("OuterToJupiter", "fontanaStation", { color: planets.jupiter.color, width: 1, dash: minorLaneDash });
-        // createLane("OuterToSaturn", "fontanaStation", { color: planets.saturn.color, width: 1, dash: minorLaneDash });
 
         createLane("OuterToJupiter", "fontanaStation", { color: planets.jupiter.color, width: 1, dash: minorLaneDash });
 
@@ -1942,9 +1941,9 @@
             updateLane(`4${i}ToOuter2`, closestBody(bodies[`4${i}`], "outerStations"), {
                 predict: (day) => ({ endingBody: closestBodyAtDay(bodies[`4${i}`], "outerStations", day) })
             });
-            updateLane(`4${i}ToOuter3`, closestBody(bodies[`4${i}`], "outerStations", 1), {
-                predict: (day) => ({ endingBody: closestBodyAtDay(bodies[`4${i}`], "outerStations", day, 1) })
-            });
+            // updateLane(`4${i}ToOuter3`, closestBody(bodies[`4${i}`], "outerStations", 1), {
+            //     predict: (day) => ({ endingBody: closestBodyAtDay(bodies[`4${i}`], "outerStations", day, 1) })
+            // });
         }
 
         updateLane("OdysseusToIthaca",  closestBody2Orbits("ITAOdysseusOrbit", "ITAIthacaOrbit"), {
