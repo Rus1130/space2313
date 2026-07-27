@@ -160,12 +160,12 @@
 
     const G = 9.8
 
-    const CRUISE_ACCEL_KM_PER_DAY2 = ms2ToKmDay2(G * 0.1);   // constant 1g cruise burn
-    const BOOST_ACCEL_KM_PER_DAY2  = ms2ToKmDay2(G * 0.25);  // "ridiculous" boost accel — tune to taste
+    const CRUISE_ACCEL_KM_PER_DAY2 = ms2ToKmDay2(G * 1);   // 0.1
+    const BOOST_ACCEL_KM_PER_DAY2  = ms2ToKmDay2(G * 1.2);  // 0.25
     const LANE_STYLE = "straight"; // "curve" or "straight"
 
-    const BOOST_TIME_DAYS = 2;
-    const BRAKE_TIME_DAYS = 2;
+    const BOOST_TIME_DAYS = 1;
+    const BRAKE_TIME_DAYS = 1;
 
     const orbitsKM = {
         mercury: AUToKM(0.387099),
@@ -313,7 +313,7 @@
 
         recomputeDaysPerSecond();
         refreshControls();
-        console.log(`Days per second: ${DAYS_PER_SECOND}`);
+        // console.log(`Days per second: ${DAYS_PER_SECOND}`);
     }
 
     function decreaseSpeed(faster){
@@ -331,7 +331,7 @@
 
         recomputeDaysPerSecond();
         refreshControls();
-        console.log(`Days per second: ${DAYS_PER_SECOND}`);
+        // console.log(`Days per second: ${DAYS_PER_SECOND}`);
     }
 
 
@@ -571,13 +571,9 @@
 
             if (futureEndingName !== lane.endingBody.name || futureStartingName !== lane.startingBody.name) {
                 console.log(`Lane "${lane.name}" will retarget before a ship could arrive — launch blocked.`);
-                // lane.disabledUntil = days + estimatedTravelDays;
                 return;
             }
         }
-
-        // flight profile that updateShips/flightPositionAtElapsed rely on.
-        const profile = computeFlightProfile(totalDistKm);
 
         const id = `ship${shipIdCounter++}`;
 
@@ -606,7 +602,6 @@
         ships[id] = {
             id,
             lane,
-            profile,
             elapsedDays: 0,
             sprite,
             label,
@@ -616,17 +611,44 @@
         console.log(`Ship "${id}" launched on lane "${lane.name}"`);
     }
 
+    function buildPathPoints(p1, p2, ts) {
+        const pts = [];
+
+        if (LANE_STYLE === "straight") {
+            for (const t of ts) {
+                pts.push({
+                    x: p1.x + (p2.x - p1.x) * t,
+                    y: p1.y + (p2.y - p1.y) * t
+                });
+            }
+        } else {
+            for (const t of ts) {
+                pts.push(laneArcPoint(p1, p2, t));
+            }
+        }
+
+        return pts;
+    }
+
     function updateShips(deltaDays) {
         for (const ship of Object.values(ships)) {
             if (ship.arrived) continue;
 
             const lane = ship.lane;
-            if (!lane.pts || lane.pts.length < 2) continue;
+            if (!lane.startingBody || !lane.endingBody) continue;
 
             ship.elapsedDays += deltaDays;
 
-            const { table, total: totalPx } = buildArcLengthTable(lane.pts);
-            const { traveledKm, velocityKmPerDay, arrived } = flightPositionAtElapsed(ship.profile, ship.elapsedDays);
+            const startPos = lane.startingBody.sprite.position;
+            const endPos = lane.endingBody.sprite.position;
+            const pts = buildPathPoints(startPos, endPos, lane.ts);
+
+            const { table, total: totalPx } = buildArcLengthTable(pts);
+            const totalDistKm = pixelsToKm(totalPx);
+
+            const profile = computeFlightProfile(totalDistKm);
+
+            const { traveledKm, velocityKmPerDay, arrived } = flightPositionAtElapsed(profile, ship.elapsedDays);
 
             const traveledPx = kmToPixels(traveledKm);
             const reachedDestination = arrived || traveledPx >= totalPx;
@@ -639,7 +661,7 @@
                 ship.arrived = true;
                 const hours = ship.elapsedDays * 24;
                 ship.label.text = `arrived: ${hours.toFixed(2)}h`;
-                console.log(`Ship "${ship.id}" arrived. Total travel time: ${hours.toFixed(2)} hours (${ship.elapsedDays.toFixed(4)} days), distance: ${ship.profile.total.toLocaleString(undefined, { maximumFractionDigits: 0 })} km`);
+                console.log(`Ship "${ship.id}" arrived. Total travel time: ${hours.toFixed(2)} hours (${ship.elapsedDays.toFixed(4)} days), distance: ${profile.total.toLocaleString(undefined, { maximumFractionDigits: 0 })} km`);
                 continue;
             }
 
@@ -647,12 +669,12 @@
             ship.sprite.position.set(pos.x, pos.y);
             ship.label.position.set(pos.x, pos.y);
 
-            const remainingKm = Math.max(0, ship.profile.total - traveledKm);
+            const remainingKm = Math.max(0, profile.total - traveledKm);
             const etaDays = velocityKmPerDay > 0 ? remainingKm / velocityKmPerDay : Infinity;
 
             const speedKmh = velocityKmPerDay / 24;
             const etaText = Number.isFinite(etaDays) ? `ETA ${(etaDays * 24).toFixed(1)}h` : `ETA --`;
-            const phase = getFlightPhase(ship.profile, ship.elapsedDays);
+            const phase = getFlightPhase(profile, ship.elapsedDays);
             ship.label.text = `${etaText}\n${speedKmh.toLocaleString(undefined, { maximumFractionDigits: 0 })} km/h\n${phase}`;
         }
     }
