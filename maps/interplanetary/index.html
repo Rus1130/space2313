@@ -606,7 +606,7 @@
         ships[id] = {
             id,
             lane,
-            profile,             // NEW: stash the profile on the ship
+            profile,
             elapsedDays: 0,
             sprite,
             label,
@@ -629,7 +629,7 @@
             const { traveledKm, velocityKmPerDay, arrived } = flightPositionAtElapsed(ship.profile, ship.elapsedDays);
 
             const traveledPx = kmToPixels(traveledKm);
-            const reachedDestination = arrived || traveledPx >= totalPx; // NEW: catch early arrival too
+            const reachedDestination = arrived || traveledPx >= totalPx;
 
             if (reachedDestination) {
                 const finalPos = table.at(-1);
@@ -877,12 +877,12 @@
     function createLane(name, startingBody, options = {}) {
         const graphics = new PIXI.Graphics();
 
-        graphics.eventMode = "static";   // ADD
-        graphics.cursor = "pointer";      // ADD
+        graphics.eventMode = "static";
+        graphics.cursor = "pointer";
 
         laneLayer.addChild(graphics);
 
-        graphics.on("pointerup", () => {   // ADD
+        graphics.on("pointerup", () => {
             const lane = lanes[name];
             if (lane) createShip(lane);
         });
@@ -917,7 +917,7 @@
                 ? options.decelKmh2 * 576
                 : BOOST_ACCEL_KM_PER_DAY2,
 
-            // NEW: skip the retarget-prediction launch guard for lanes whose
+            // skip the retarget-prediction launch guard for lanes whose
             // endpoints are chosen among near-equidistant candidates, where a
             // "wrong" guess barely changes real travel distance/time.
             skipRetargetGuard: options.skipRetargetGuard ?? false,
