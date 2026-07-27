@@ -151,9 +151,20 @@
     const AUToPixels = au => au * PIXELS_PER_AU;
     const AUToKM = au => au * 149597870.7;
     const pixelsToKm = px => (px / PIXELS_PER_AU) * 149597870.7;
+    const lyToAu = ly => ly * 63241.077;
+    const lyToKm = ly => AUToKM(lyToAu(ly))
 
-    const MAX_SHIP_SPEED_KMH = 1_000_000;
-    const MAX_SHIP_SPEED_KM_PER_DAY = MAX_SHIP_SPEED_KMH * 24; // ships move on the same "days" clock as everything else
+    function ms2ToKmDay2(ms2) {
+        return ms2 * 86400 * 86400 / 1000;
+    }
+
+    const G = 9.8
+
+    const CRUISE_ACCEL_KM_PER_DAY2 = ms2ToKmDay2(G * 0.25);   // constant 1g cruise burn
+    const BOOST_ACCEL_KM_PER_DAY2  = ms2ToKmDay2(G * 0.25);  // "ridiculous" boost accel — tune to taste
+
+    const BOOST_TIME_DAYS = 2;
+    const BRAKE_TIME_DAYS = 2;
 
     const orbitsKM = {
         mercury: AUToKM(0.387099),
@@ -531,6 +542,14 @@
         return bodies2[(targetIndex + bodies2.length) % bodies2.length];
     }
 
+    function estimateTravelTimeDays(distanceKm, accel, decel) {
+        if (distanceKm <= 0) return 0;
+
+        const peakVel = Math.sqrt((2 * distanceKm * accel * decel) / (accel + decel));
+
+        return peakVel * (1 / accel + 1 / decel);
+    }
+
     function createShip(lane) {
         if (!lane.endingBody) return;
         if (!lane.pts || lane.pts.length < 2) return;
@@ -538,9 +557,12 @@
         const totalDistKm = pixelsToKm(buildArcLengthTable(lane.pts).total);
         if (totalDistKm <= 0) return;
 
-        const estimatedTravelDays = (2 * totalDistKm) / MAX_SHIP_SPEED_KM_PER_DAY;
+        const accel = lane.accelKmPerDay2 ?? BOOST_ACCEL_KM_PER_DAY2;
+        const decel = lane.decelKmPerDay2 ?? BOOST_ACCEL_KM_PER_DAY2;
 
-        if (lane.predictEndpoints) {
+        const estimatedTravelDays = estimateTravelTimeDays(totalDistKm, accel, decel);
+
+        if (lane.predictEndpoints && !lane.skipRetargetGuard) {
             const future = lane.predictEndpoints(days + estimatedTravelDays);
 
             const futureEndingName = future.endingBody?.name ?? lane.endingBody.name;
@@ -548,9 +570,13 @@
 
             if (futureEndingName !== lane.endingBody.name || futureStartingName !== lane.startingBody.name) {
                 console.log(`Lane "${lane.name}" will retarget before a ship could arrive — launch blocked.`);
+                // lane.disabledUntil = days + estimatedTravelDays;
                 return;
             }
         }
+
+        // flight profile that updateShips/flightPositionAtElapsed rely on.
+        const profile = computeFlightProfile(totalDistKm);
 
         const id = `ship${shipIdCounter++}`;
 
@@ -558,11 +584,11 @@
         const sprite = new PIXI.Graphics().circle(0, 0, 2).fill(0xff0000);
         sprite.position.set(startPt.x, startPt.y);
 
-        sprite.eventMode = "static";   // ADD
-        sprite.cursor = "pointer";     // ADD
-        sprite.on("pointerup", () => {   // ADD
+        sprite.eventMode = "static";
+        sprite.cursor = "pointer";
+        sprite.on("pointerup", () => {
             shipClicked = id;
-            bodyClicked = null;           // ships and bodies are mutually exclusive focus targets
+            bodyClicked = null;
             console.log(`Ship "${id}" focused`);
         });
 
@@ -579,8 +605,7 @@
         ships[id] = {
             id,
             lane,
-            traveledKm: 0,
-            velocityKmPerDay: 0,   // ADD
+            profile,             // NEW: stash the profile on the ship
             elapsedDays: 0,
             sprite,
             label,
@@ -588,8 +613,6 @@
         };
 
         console.log(`Ship "${id}" launched on lane "${lane.name}"`);
-        shipClicked = id;
-        bodyClicked = null;
     }
 
     function updateShips(deltaDays) {
@@ -599,40 +622,12 @@
             const lane = ship.lane;
             if (!lane.pts || lane.pts.length < 2) continue;
 
-            const { table, total: totalPx } = buildArcLengthTable(lane.pts);
-            const totalDistKm = pixelsToKm(totalPx);
-
-            if (totalDistKm <= 0) continue;
-
-            const accel = (MAX_SHIP_SPEED_KM_PER_DAY ** 2) / totalDistKm; // km/day^2
-
-            const remainingKm = Math.max(0, totalDistKm - ship.traveledKm);
-            const stoppingDistanceKm = (ship.velocityKmPerDay ** 2) / (2 * accel);
-
-            // Bang-bang control: decelerate only when we NEED to in order to stop exactly at the target.
-            // This is re-evaluated live every frame, so it self-corrects if the target drifts
-            // and can never get stuck at v=0 short of arrival.
-            if (remainingKm > stoppingDistanceKm) {
-                ship.velocityKmPerDay = Math.min(
-                    ship.velocityKmPerDay + accel * deltaDays,
-                    MAX_SHIP_SPEED_KM_PER_DAY
-                );
-            } else {
-                ship.velocityKmPerDay = Math.max(
-                    ship.velocityKmPerDay - accel * deltaDays,
-                    0
-                );
-            }
-
-            ship.traveledKm += ship.velocityKmPerDay * deltaDays;
             ship.elapsedDays += deltaDays;
 
-            // Rough live ETA: time to cover what's left at current speed (updates every frame)
-            const etaDays = ship.velocityKmPerDay > 0
-                ? remainingKm / ship.velocityKmPerDay
-                : Infinity;
+            const { table, total: totalPx } = buildArcLengthTable(lane.pts);
+            const { traveledKm, velocityKmPerDay, arrived } = flightPositionAtElapsed(ship.profile, ship.elapsedDays);
 
-            if (ship.traveledKm >= totalDistKm) {
+            if (arrived) {
                 const finalPos = table.at(-1);
                 ship.sprite.position.set(finalPos.x, finalPos.y);
                 ship.label.position.set(finalPos.x, finalPos.y);
@@ -640,16 +635,18 @@
                 ship.arrived = true;
                 const hours = ship.elapsedDays * 24;
                 ship.label.text = `arrived: ${hours.toFixed(2)}h\n0 km/h`;
-                console.log(`Ship "${ship.id}" arrived. Total travel time: ${hours.toFixed(2)} hours (${ship.elapsedDays.toFixed(4)} days)`);
-                shipClicked = null;
+                console.log(`Ship "${ship.id}" arrived. Total travel time: ${hours.toFixed(2)} hours (${ship.elapsedDays.toFixed(4)} days), distance: ${ship.profile.total.toLocaleString(undefined, { maximumFractionDigits: 0 })} km`);
                 continue;
             }
 
-            const pos = positionAtDistance(table, totalPx, kmToPixels(ship.traveledKm));
+            const pos = positionAtDistance(table, totalPx, kmToPixels(traveledKm));
             ship.sprite.position.set(pos.x, pos.y);
             ship.label.position.set(pos.x, pos.y);
 
-            const speedKmh = ship.velocityKmPerDay / 24; // convert km/day back to km/h for display
+            const remainingKm = Math.max(0, ship.profile.total - traveledKm);
+            const etaDays = velocityKmPerDay > 0 ? remainingKm / velocityKmPerDay : Infinity;
+
+            const speedKmh = velocityKmPerDay / 24;
             const etaText = Number.isFinite(etaDays) ? `ETA ${(etaDays * 24).toFixed(1)}h` : `ETA --`;
             ship.label.text = `${etaText}\n${speedKmh.toLocaleString(undefined, { maximumFractionDigits: 0 })} km/h`;
         }
@@ -732,6 +729,95 @@
 
     let bodyClicked = null;
     let shipClicked = null;
+
+    function computeFlightProfile(totalDistKm) {
+        const a1 = BOOST_ACCEL_KM_PER_DAY2;
+        const g  = CRUISE_ACCEL_KM_PER_DAY2;
+        const t1 = BOOST_TIME_DAYS;
+        const t3 = BRAKE_TIME_DAYS;
+
+        const v1 = a1 * t1;             // velocity at end of boost
+        const s1 = 0.5 * a1 * t1 * t1;  // distance covered during boost
+
+        // Solve for cruise duration t2 so boost + cruise(1g) + brake(fixed t3,
+        // decel chosen so v hits exactly 0 at arrival) covers totalDistKm:
+        //   0.5*g*t2² + (v1 + 0.5*g*t3)*t2 + (s1 + 0.5*v1*t3 - totalDistKm) = 0
+        const A = 0.5 * g;
+        const B = v1 + 0.5 * g * t3;
+        const C = s1 + 0.5 * v1 * t3 - totalDistKm;
+
+        const discriminant = B * B - 4 * A * C;
+        const t2 = discriminant >= 0 ? (-B + Math.sqrt(discriminant)) / (2 * A) : -1;
+
+        if (t2 >= 0) {
+            const v2End = v1 + g * t2;
+            const s2 = v1 * t2 + 0.5 * g * t2 * t2;
+            const d3 = v2End / t3;        // decel needed to stop in exactly t3
+            const s3 = 0.5 * v2End * t3;
+
+            return {
+                kind: "boost-cruise-brake",
+                t1, t2, t3, a1, g, d3, v1, v2End, s1, s2, s3,
+                total: s1 + s2 + s3
+            };
+        }
+
+        // Route too short to fit a full 24h boost + 24h brake with any cruise
+        // in between — fall back to a symmetric triangular burn (no plateau),
+        // using the boost rate as both accel and decel.
+        const peakVel = Math.sqrt(totalDistKm * a1);
+        const tPeak = peakVel / a1;
+
+        return { kind: "triangular", tPeak, a1, peakVel, total: totalDistKm };
+    }
+
+    function flightPositionAtElapsed(profile, elapsedDays) {
+        if (profile.kind === "triangular") {
+            const { tPeak, a1, peakVel, total } = profile;
+            const totalTime = tPeak * 2;
+
+            if (elapsedDays >= totalTime) return { traveledKm: total, velocityKmPerDay: 0, arrived: true };
+
+            if (elapsedDays <= tPeak) {
+                const t = elapsedDays;
+                return { traveledKm: 0.5 * a1 * t * t, velocityKmPerDay: a1 * t, arrived: false };
+            } else {
+                const t = elapsedDays - tPeak;
+                return {
+                    traveledKm: 0.5 * a1 * tPeak * tPeak + peakVel * t - 0.5 * a1 * t * t,
+                    velocityKmPerDay: Math.max(peakVel - a1 * t, 0),
+                    arrived: false
+                };
+            }
+        }
+
+        const { t1, t2, t3, a1, g, d3, v1, v2End, s1, s2, total } = profile;
+
+        if (elapsedDays <= t1) {
+            const t = elapsedDays;
+            return { traveledKm: 0.5 * a1 * t * t, velocityKmPerDay: a1 * t, arrived: false };
+        }
+
+        if (elapsedDays <= t1 + t2) {
+            const t = elapsedDays - t1;
+            return {
+                traveledKm: s1 + v1 * t + 0.5 * g * t * t,
+                velocityKmPerDay: v1 + g * t,
+                arrived: false
+            };
+        }
+
+        if (elapsedDays <= t1 + t2 + t3) {
+            const t = elapsedDays - (t1 + t2);
+            return {
+                traveledKm: s1 + s2 + (v2End * t - 0.5 * d3 * t * t),
+                velocityKmPerDay: Math.max(v2End - d3 * t, 0),
+                arrived: false
+            };
+        }
+
+        return { traveledKm: total, velocityKmPerDay: 0, arrived: true };
+    }
 
     function createBody(name, orbitName, periodDays, options = {}) {
 
@@ -819,50 +905,24 @@
             gapLength: gapLength,
             ts,
 
-            // NEW: flip tracking
+            accelKmPerDay2: options.accelKmh2
+                ? options.accelKmh2 * 576
+                : BOOST_ACCEL_KM_PER_DAY2,
+            decelKmPerDay2: options.decelKmh2
+                ? options.decelKmh2 * 576
+                : BOOST_ACCEL_KM_PER_DAY2,
+
+            // NEW: skip the retarget-prediction launch guard for lanes whose
+            // endpoints are chosen among near-equidistant candidates, where a
+            // "wrong" guess barely changes real travel distance/time.
+            skipRetargetGuard: options.skipRetargetGuard ?? false,
+
             lastStartingName: resolvedStart?.name ?? null,
             lastEndingName: null,
             disabledUntil: -Infinity,
         };
 
         return lanes[name];
-    }
-
-    function lanePoint(A, B, t) {
-
-        const dx = B.x - A.x;
-        const dy = B.y - A.y;
-
-        const distance = Math.hypot(dx, dy);
-
-        if (distance === 0)
-            return { x: A.x, y: A.y };
-
-        // Curves naturally more as distance increases.
-        const curve = 0.35 * (1 - Math.exp(-distance / 250));
-
-        const mx = (A.x + B.x) * 0.5;
-        const my = (A.y + B.y) * 0.5;
-
-        const nx = -dy / distance;
-        const ny = dx / distance;
-
-        const cx = mx + nx * distance * curve;
-        const cy = my + ny * distance * curve;
-
-        const u = 1 - t;
-
-        return {
-            x:
-                u*u*A.x +
-                2*u*t*cx +
-                t*t*B.x,
-
-            y:
-                u*u*A.y +
-                2*u*t*cy +
-                t*t*B.y
-        };
     }
 
     function updateLane(name, endingBody, options = {}) {
@@ -905,6 +965,7 @@
             };
         }
 
+        // curve 
         const p1 = lane.startingBody.sprite.position;
         const p2 = endingBody.sprite.position;
 
@@ -933,6 +994,21 @@
                 y: r * Math.sin(a)
             });
         }
+        // ==
+
+        // straight line
+        // const start = lane.startingBody.sprite.position;
+        // const end = endingBody.sprite.position;
+
+        // const pts = [];
+
+        // for (const t of lane.ts) {
+        //     pts.push({
+        //         x: start.x + (end.x - start.x) * t,
+        //         y: start.y + (end.y - start.y) * t
+        //     });
+        // }
+        // == 
 
         const dash = lane.dashLength;
         const gap = lane.gapLength;
@@ -1586,14 +1662,18 @@
         createLane("46ToOuter2", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
         createLane("46ToOuter3", "46", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
 
-        //createLane("OuterToJupiter")
-        createLane("OuterToUranus", "caelusStation", { color: planets.uranus.color, width: 1, dash: minorLaneDash });
-        createLane("OuterToJupiter", "fontanaStation", { color: planets.jupiter.color, width: 1, dash: minorLaneDash });
-        createLane("OuterToSaturn", "fontanaStation", { color: planets.saturn.color, width: 1, dash: minorLaneDash });
+        // createLane("OuterToUranus", "caelusStation", { color: planets.uranus.color, width: 1, dash: minorLaneDash });
+        // createLane("OuterToJupiter", "fontanaStation", { color: planets.jupiter.color, width: 1, dash: minorLaneDash });
+        // createLane("OuterToSaturn", "fontanaStation", { color: planets.saturn.color, width: 1, dash: minorLaneDash });
+
+        createLane("OdysseusToUranus", "ITAOdysseus", { color: planets.uranus.color, width: 1, dash: minorLaneDash });
+        createLane("TelemachusToOdysseus", "ITATelemachus", { color: planets.uranus.color, width: 1, dash: minorLaneDash });
+        createLane("TelemachusToOuter", "ITATelemachus", { color: planets.uranus.color, width: 1, dash: minorLaneDash });
     }
 
 
     function realisticModeOnly(stationSize){
+
         // saturn
         createOrbit("keelerStationOrbit", (136_505 + (35/2)), { color: 0x7A84B6, width: 1, centerBody: "saturn" });
         createOrbit("enckeStationOrbit", (133_589 + (325/2)), { color: 0x7A84B6, width: 1, centerBody: "saturn" });
@@ -1611,6 +1691,13 @@
 
         createOrbit("iapetusStationOrbit", 5_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "iapetus" });
         createOrbit("iapetusStationOrbit2", 15_000, { color: 0x7A84B6, width: moonOrbitWidth, centerBody: "iapetus" });
+
+
+        createOrbit("ITAOdysseusOrbit", (orbitsKM.uranus + orbitsKM.saturn) / 2, { color: 0x7A84B6, width: 1, opacity: 0 });
+        createOrbit("ITATelemachusOrbit", (orbitsKM.jupiter + orbitsKM.saturn) / 2, { color: 0x7A84B6, width: 1, opacity: 0 });
+
+        createBody("ITAOdysseus", "ITAOdysseusOrbit", planets.uranus.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Odysseus Station", labelDistance: 0 });
+        createBody("ITATelemachus", "ITATelemachusOrbit", planets.uranus.period, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Telemachus Station", labelDistance: 0});
 
         createBody("kappaStation", "saturnStationOrbit", 15, { offset: 0, color: colors.layerStation, radius: stationSize, label: "ITA Kappa Station", labelDistance: ITAPlanetStationLabelDistance });
         createBody("dragonflyStation", "saturnStationOrbit", 15, { offset: 0.25, color: colors.layerStation, radius: stationSize, label: "ITA Dragonfly Station", labelDistance: ITAPlanetStationLabelDistance  });
@@ -1780,65 +1867,53 @@
             });
         }
 
-        updateLane("OuterToUranus",  closestBody2Orbits("uranusStationOrbit", "outerStations"), {
+        updateLane("OdysseusToUranus",  closestBody2Orbits("ITAOdysseusOrbit", "uranusStationOrbit"), {
             laneCooldown: 0,
-            startingBody: closestBody2Orbits("outerStations", "uranusStationOrbit"),
+            startingBody: closestBody2Orbits("uranusStationOrbit", "ITAOdysseusOrbit"),
             predict: (day) => (
-                { endingBody: closestBody2OrbitsAtDay("uranusStationOrbit", "outerStations", day) }
+                { endingBody: closestBody2OrbitsAtDay("ITAOdysseusOrbit", "uranusStationOrbit", day) }
             )
         });
 
-        updateLane("OuterToJupiter", closestBody2Orbits("jupiterStationOrbit", "outerStations"), {
+        updateLane("TelemachusToOdysseus",  closestBody2Orbits("ITATelemachusOrbit", "ITAOdysseusOrbit"), {
             laneCooldown: 0,
-            startingBody: closestBody2Orbits("outerStations", "jupiterStationOrbit"),
+            startingBody: closestBody2Orbits("ITAOdysseusOrbit", "ITATelemachusOrbit"),
             predict: (day) => (
-                { endingBody: closestBody2OrbitsAtDay("jupiterStationOrbit", "outerStations", day) }
+                { endingBody: closestBody2OrbitsAtDay("ITATelemachusOrbit", "ITAOdysseusOrbit", day) }
             )
         });
 
-        updateLane("OuterToSaturn",  closestBody2Orbits("saturnStationOrbit", "outerStations"), {
+        updateLane("TelemachusToOuter",  closestBody2Orbits("ITATelemachusOrbit", "outerStations"), {
             laneCooldown: 0,
-            startingBody: closestBody2Orbits("outerStations", "saturnStationOrbit"),
+            startingBody: closestBody2Orbits("outerStations", "ITATelemachusOrbit"),
             predict: (day) => (
-                { endingBody: closestBody2OrbitsAtDay("saturnStationOrbit", "outerStations", day) }
+                { endingBody: closestBody2OrbitsAtDay("ITATelemachusOrbit", "outerStations", day) }
             )
         });
 
+        // updateLane("OuterToUranus",  closestBody2Orbits("uranusStationOrbit", "outerStations"), {
+        //     laneCooldown: 0,
+        //     startingBody: closestBody2Orbits("outerStations", "uranusStationOrbit"),
+        //     predict: (day) => (
+        //         { endingBody: closestBody2OrbitsAtDay("uranusStationOrbit", "outerStations", day) }
+        //     )
+        // });
 
+        // updateLane("OuterToJupiter", closestBody2Orbits("jupiterStationOrbit", "outerStations"), {
+        //     laneCooldown: 0,
+        //     startingBody: closestBody2Orbits("outerStations", "jupiterStationOrbit"),
+        //     predict: (day) => (
+        //         { endingBody: closestBody2OrbitsAtDay("jupiterStationOrbit", "outerStations", day) }
+        //     )
+        // });
 
-
-        // for(let i = 1; i <= 6; i++) {
-        //     updateLane(
-        //         `4${i}To3`,
-        //         closestBody(bodies[`4${i}`], "layer3Stations")
-        //     );
-        // };
-
-        // for(let i = 1; i <= 6; i++) {
-        //     updateLane(
-        //         `3${i}To2Offset`,
-        //         closestBody(bodies[`3${i}`], "layer2Stations", -1)
-        //     );
-        // }
-
-        // for(let i = 1; i <= 6; i++) {
-        //     updateLane(
-        //         `4${i}To3Offset`,
-        //         closestBody(bodies[`4${i}`], "layer3Stations", -1)
-        //     );
-        // }
-
-
-        // for(let i = 1; i <= 6; i++) {
-        //     updateLane(`4${i}ToOuter1`, closestBody(bodies[`4${i}`], "outerStations", -1));
-        //     updateLane(`4${i}ToOuter2`, closestBody(bodies[`4${i}`], "outerStations"));
-        //     updateLane(`4${i}ToOuter3`, closestBody(bodies[`4${i}`], "outerStations", 1));
-        // }
-
-
-        // updateLane("OuterToUranus",  closestBody2Orbits("uranusStationOrbit", "outerStations"), {laneCooldown: 0, startingBody: closestBody2Orbits("outerStations", "uranusStationOrbit")});
-        // updateLane("OuterToJupiter", closestBody2Orbits("jupiterStationOrbit", "outerStations"), {laneCooldown: 0, startingBody: closestBody2Orbits("outerStations", "jupiterStationOrbit")});
-        // updateLane("OuterToSaturn",  closestBody2Orbits("saturnStationOrbit", "outerStations"), {laneCooldown: 0, startingBody: closestBody2Orbits("outerStations", "saturnStationOrbit")});
+        // updateLane("OuterToSaturn",  closestBody2Orbits("saturnStationOrbit", "outerStations"), {
+        //     laneCooldown: 0,
+        //     startingBody: closestBody2Orbits("outerStations", "saturnStationOrbit"),
+        //     predict: (day) => (
+        //         { endingBody: closestBody2OrbitsAtDay("saturnStationOrbit", "outerStations", day) }
+        //     )
+        // });
     }
 
     function resetAll(){
