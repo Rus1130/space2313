@@ -277,8 +277,8 @@
         },
         outer: {
             radius: kmToPixels(orbitsKM.outerStations),
-            period: (planets.mars.period + planets.jupiter.period) / 2,
-            count: 24
+            period: 250,
+            count: 14
         }
     };
 
@@ -572,7 +572,8 @@
             const futureStartingName = future.startingBody?.name ?? lane.startingBody.name;
 
             if (futureEndingName !== lane.endingBody.name || futureStartingName !== lane.startingBody.name) {
-                console.log(`Lane "${lane.name}" will retarget before a ship could arrive — launch blocked.`);
+                alert(`Lane "${lane.name}" will retarget before the ship would arrive. Launch blocked.`);
+                console.log(`Lane "${lane.name}" will retarget before the ship would arrive. launch blocked.`);
                 return;
             }
         }
@@ -1396,10 +1397,10 @@
         if (!paused) {
             days += deltaSeconds * DAYS_PER_SECOND;
 
-            // if(days % 30 > 0 && Math.floor(days / 30) > monthsPassed){
-            //     monthsPassed = Math.floor(days / 30);
-            //     console.log(`Month ${monthsPassed} passed. Total days: ${days.toFixed(2)}`);
-            // }
+            if(days % 30 > 0 && Math.floor(days / 30) > monthsPassed){
+                monthsPassed = Math.floor(days / 30);
+                console.log(`Month ${monthsPassed} passed. Total days: ${days.toFixed(2)}`);
+            }
         }   
 
         if (updateBodiesAndLanes) {
