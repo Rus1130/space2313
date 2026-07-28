@@ -2157,37 +2157,37 @@
     };
 }
 
-    setTimeout(() => {
-        const outerToJupiter = simulateTripStats("OuterToJupiter", 100, 45.625);
+    // setTimeout(() => {
+    //     const outerToJupiter = simulateTripStats("OuterToJupiter", 100, 45.625);
 
-        const outerToOdysseus = simulateTripStats("OuterToOdysseus", 100, 45.625);
-        const odysseusToTelemachus = simulateTripStats("OdysseusToTelemachus", 100, 45.625);
-        const telemachusToIthaca = simulateTripStats("TelemachusToIthaca", 100, 45.625);
+    //     const outerToOdysseus = simulateTripStats("OuterToOdysseus", 100, 45.625);
+    //     const odysseusToTelemachus = simulateTripStats("OdysseusToTelemachus", 100, 45.625);
+    //     const telemachusToIthaca = simulateTripStats("TelemachusToIthaca", 100, 45.625);
 
-        const outerToHekatombaion = simulateTripStats("OuterToHekatombaion", 100, 45.625);
-        const hekatombaionToTartarus = simulateTripStats("HekatombaionToTartarus", 100, 45.625);
+    //     const outerToHekatombaion = simulateTripStats("OuterToHekatombaion", 100, 45.625);
+    //     const hekatombaionToTartarus = simulateTripStats("HekatombaionToTartarus", 100, 45.625);
 
-        const outerToOpis = simulateTripStats("OuterToOpis", 100, 45.625);
-        const opisToBascilica = simulateTripStats("OpisToBascilica", 100, 45.625);
-        const bascilicaToActium = simulateTripStats("BascilicaToActium", 100, 45.625);
+    //     const outerToOpis = simulateTripStats("OuterToOpis", 100, 45.625);
+    //     const opisToBascilica = simulateTripStats("OpisToBascilica", 100, 45.625);
+    //     const bascilicaToActium = simulateTripStats("BascilicaToActium", 100, 45.625);
 
-        const jupiterTrips = [outerToJupiter];
-        const saturnTrips = [outerToHekatombaion, hekatombaionToTartarus];
-        const uranusTrips = [outerToOdysseus, odysseusToTelemachus, telemachusToIthaca];
-        const neptuneTrips = [outerToOpis, opisToBascilica, bascilicaToActium];
+    //     const jupiterTrips = [outerToJupiter];
+    //     const saturnTrips = [outerToHekatombaion, hekatombaionToTartarus];
+    //     const uranusTrips = [outerToOdysseus, odysseusToTelemachus, telemachusToIthaca];
+    //     const neptuneTrips = [outerToOpis, opisToBascilica, bascilicaToActium];
 
-        const jupiterTotal = combineLegStats(jupiterTrips);
-        const saturnTotal = combineLegStats(saturnTrips);
-        const uranusTotal = combineLegStats(uranusTrips);
-        const neptuneTotal = combineLegStats(neptuneTrips);
+    //     const jupiterTotal = combineLegStats(jupiterTrips);
+    //     const saturnTotal = combineLegStats(saturnTrips);
+    //     const uranusTotal = combineLegStats(uranusTrips);
+    //     const neptuneTotal = combineLegStats(neptuneTrips);
 
-        console.table({
-            Jupiter: { avgDays: jupiterTotal.avgTravelDays.toFixed(2), avgHours: jupiterTotal.avgTravelHours.toFixed(1), minDays: jupiterTotal.minTravelDays.toFixed(2), maxDays: jupiterTotal.maxTravelDays.toFixed(2) },
-            Saturn:  { avgDays: saturnTotal.avgTravelDays.toFixed(2),  avgHours: saturnTotal.avgTravelHours.toFixed(1),  minDays: saturnTotal.minTravelDays.toFixed(2),  maxDays: saturnTotal.maxTravelDays.toFixed(2) },
-            Uranus:  { avgDays: uranusTotal.avgTravelDays.toFixed(2),  avgHours: uranusTotal.avgTravelHours.toFixed(1),  minDays: uranusTotal.minTravelDays.toFixed(2),  maxDays: uranusTotal.maxTravelDays.toFixed(2) },
-            Neptune: { avgDays: neptuneTotal.avgTravelDays.toFixed(2), avgHours: neptuneTotal.avgTravelHours.toFixed(1), minDays: neptuneTotal.minTravelDays.toFixed(2), maxDays: neptuneTotal.maxTravelDays.toFixed(2) },
-        });
-    }, 2000);
+    //     console.table({
+    //         Jupiter: { avgDays: jupiterTotal.avgTravelDays.toFixed(2), avgHours: jupiterTotal.avgTravelHours.toFixed(1), minDays: jupiterTotal.minTravelDays.toFixed(2), maxDays: jupiterTotal.maxTravelDays.toFixed(2) },
+    //         Saturn:  { avgDays: saturnTotal.avgTravelDays.toFixed(2),  avgHours: saturnTotal.avgTravelHours.toFixed(1),  minDays: saturnTotal.minTravelDays.toFixed(2),  maxDays: saturnTotal.maxTravelDays.toFixed(2) },
+    //         Uranus:  { avgDays: uranusTotal.avgTravelDays.toFixed(2),  avgHours: uranusTotal.avgTravelHours.toFixed(1),  minDays: uranusTotal.minTravelDays.toFixed(2),  maxDays: uranusTotal.maxTravelDays.toFixed(2) },
+    //         Neptune: { avgDays: neptuneTotal.avgTravelDays.toFixed(2), avgHours: neptuneTotal.avgTravelHours.toFixed(1), minDays: neptuneTotal.minTravelDays.toFixed(2), maxDays: neptuneTotal.maxTravelDays.toFixed(2) },
+    //     });
+    // }, 50);
 
 
     updateCamera();
