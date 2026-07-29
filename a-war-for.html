@@ -1,0 +1,55 @@
+<!-- written 29 july, 2026 -->
+<head>
+    <link rel="stylesheet" href="./src/css.css">
+    <meta property="og:title"       content="A War For"                                      />
+    <meta property="og:description" content="What was it all for again?"                     />
+    <meta property="og:url"         content="https://rus1130.github.io/space2313/a-war-for/" />
+    <title>A War For</title>
+</head>
+<body>
+</body>
+<script type="module">
+    import { SuperType } from 'https://rus1130.github.io/supertype/index.js';
+
+    const tw = new SuperType(document.body, {
+        "end": function() {
+            const returnButton = document.createElement("div");
+            returnButton.classList.add("button");
+            returnButton.id = "return";
+            returnButton.textContent = "▌< Return";
+            returnButton.onclick = () => {
+                location.href = 'https://rus1130.github.io/space2313/';
+            };
+            tw.appendToTarget(returnButton);
+            tw.target.style.overflowY = 'scroll';
+            tw.target.classList.add('hide-scrollbar');
+        }
+    })
+
+    await tw.load("./src/a-war-for.st").then(() => {
+        tw.start();
+    })
+
+    let speedOverride = false;
+
+    document.body.addEventListener("keydown", (e) => {
+        if(e.key === " ") {
+            tw.paused() ? tw.resume() : tw.pause();
+        }
+
+        if(e.key === "i"){
+            tw.header.instant = !tw.header.instant;
+        }
+
+        if(e.key === "ArrowRight") {
+            speedOverride = !speedOverride;
+            tw.state.userSpeedOverride = speedOverride ? 2 : null;
+        }
+
+        if(e.key === "r"){
+            tw.target.innerHTML = "";
+            tw.state.glitches = [];
+            tw.start(tw.state.page)
+        }
+    });
+</script>
