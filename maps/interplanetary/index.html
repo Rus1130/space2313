@@ -618,25 +618,6 @@
         console.log(`Ship "${id}" launched on lane "${lane.name}"`);
     }
 
-    function buildPathPoints(p1, p2, ts) {
-        const pts = [];
-
-        if (LANE_STYLE === "straight") {
-            for (const t of ts) {
-                pts.push({
-                    x: p1.x + (p2.x - p1.x) * t,
-                    y: p1.y + (p2.y - p1.y) * t
-                });
-            }
-        } else {
-            for (const t of ts) {
-                pts.push(laneArcPoint(p1, p2, t));
-            }
-        }
-
-        return pts;
-    }
-
     function updateShips(deltaDays) {
         for (const ship of Object.values(ships)) {
             if (ship.arrived) continue;
@@ -684,6 +665,167 @@
             const phase = getFlightPhase(profile, ship.elapsedDays);
             ship.label.text = `${etaText}\n${speedKmh.toLocaleString(undefined, { maximumFractionDigits: 0 })} km/h\n${phase}`;
         }
+    }
+
+    /*
+    function createShip(lane) {
+        if (!lane.endingBody) return;
+        if (!lane.pts || lane.pts.length < 2) return;
+
+        // First-pass distance estimate using current (live) endpoints, just to
+        // get a ballpark travel time so we can predict where the target body
+        // will actually be when the ship arrives.
+        const initialDistKm = pixelsToKm(buildArcLengthTable(lane.pts).total);
+        if (initialDistKm <= 0) return;
+
+        const accel = lane.accelKmPerDay2 ?? defaultAccelForTripType();
+        let profile = computeFlightProfile(initialDistKm, accel);
+        let estimatedTravelDays = getProfileTotalDays(profile);
+
+        // Resolve the actual bodies the lane will be connecting at arrival time
+        // (retargeting guard uses this same prediction).
+        let startBody = lane.startingBody;
+        let endBody = lane.endingBody;
+
+        if (lane.predictEndpoints && !lane.skipRetargetGuard) {
+            const future = lane.predictEndpoints(days + estimatedTravelDays);
+
+            const futureEndingName = future.endingBody?.name ?? lane.endingBody.name;
+            const futureStartingName = future.startingBody?.name ?? lane.startingBody.name;
+
+            if (futureEndingName !== lane.endingBody.name || futureStartingName !== lane.startingBody.name) {
+                console.log(`Lane "${lane.name}" will retarget ship would arrive - launch blocked.`);
+                alert(`lane "${lane.name}" will retarget before ship would arrive. launch blocked.`);
+                return;
+            }
+        }
+
+        // Launch point is fixed in space right now.
+        const launchPos = { x: lane.pts[0].x, y: lane.pts[0].y };
+
+        // Rendezvous point: where the ending body will actually be once the
+        // ship's estimated travel time has elapsed. A couple of fixed-point
+        // iterations tightens this up, since a longer/shorter distance changes
+        // the travel time, which changes where the target will be.
+        let rendezvousPos = { x: lane.pts.at(-1).x, y: lane.pts.at(-1).y };
+
+        for (let i = 0; i < 3; i++) {
+            if (lane.predictEndpoints) {
+                const future = lane.predictEndpoints(days + estimatedTravelDays);
+                const futureEndBody = future.endingBody ?? endBody;
+                rendezvousPos = bodyPositionAtDay(futureEndBody, days + estimatedTravelDays);
+            }
+
+            const [fixedStart] = buildPathPoints(launchPos, rendezvousPos, [0]);
+            const distKm = pixelsToKm(
+                buildArcLengthTable(buildPathPoints(launchPos, rendezvousPos, lane.ts)).total
+            );
+
+            profile = computeFlightProfile(distKm, accel);
+            estimatedTravelDays = getProfileTotalDays(profile);
+        }
+
+        // Fixed path points for the whole flight — built once, never touched
+        // again by updateShips.
+        const fixedPts = buildPathPoints(launchPos, rendezvousPos, lane.ts);
+        const { table, total: totalPx } = buildArcLengthTable(fixedPts);
+
+        const id = `ship${shipIdCounter++}`;
+
+        const sprite = new PIXI.Graphics().circle(0, 0, 2).fill(0xff0000);
+        sprite.position.set(launchPos.x, launchPos.y);
+
+        sprite.eventMode = "static";
+        sprite.cursor = "pointer";
+        sprite.on("pointerup", () => {
+            shipClicked = id;
+            bodyClicked = null;
+            console.log(`Ship "${id}" focused`);
+        });
+
+        shipLayer.addChild(sprite);
+
+        const label = new PIXI.Text({
+            text: "0%\n0 km/h",
+            style: { fontFamily: "Monospace", fontSize: 9, fill: 0xff0000 },
+            resolution: 10
+        });
+        label.anchor.set(0.5, 1.5);
+        labelLayer.addChild(label);
+
+        ships[id] = {
+            id,
+            lane,
+            elapsedDays: 0,
+            sprite,
+            label,
+            arrived: false,
+
+            // Locked at launch — physics and path no longer depend on the
+            // live/current position of the moving endpoint.
+            profile,
+            table,
+            totalPx,
+        };
+
+        console.log(`Ship "${id}" launched on lane "${lane.name}", predicted travel: ${estimatedTravelDays.toFixed(3)} days`);
+    }
+
+    function updateShips(deltaDays) {
+        for (const ship of Object.values(ships)) {
+            if (ship.arrived) continue;
+
+            ship.elapsedDays += deltaDays;
+
+            const { traveledKm, velocityKmPerDay, arrived } = flightPositionAtElapsed(ship.profile, ship.elapsedDays);
+            const traveledPx = kmToPixels(traveledKm);
+            const reachedDestination = arrived || traveledPx >= ship.totalPx;
+
+            if (reachedDestination) {
+                const finalPos = ship.table.at(-1);
+                ship.sprite.position.set(finalPos.x, finalPos.y);
+                ship.label.position.set(finalPos.x, finalPos.y);
+
+                ship.arrived = true;
+                const hours = ship.elapsedDays * 24;
+                ship.label.text = `arrived: ${hours.toFixed(2)}h`;
+                console.log(`Ship "${ship.id}" on lane "${ship.lane.name}" arrived. Total travel time: ${hours.toFixed(2)} hours (${ship.elapsedDays.toFixed(4)} days), distance: ${ship.profile.total.toLocaleString(undefined, { maximumFractionDigits: 0 })} km`);
+                continue;
+            }
+
+            const pos = positionAtDistance(ship.table, ship.totalPx, traveledPx);
+            ship.sprite.position.set(pos.x, pos.y);
+            ship.label.position.set(pos.x, pos.y);
+
+            const remainingKm = Math.max(0, ship.profile.total - traveledKm);
+            const etaDays = velocityKmPerDay > 0 ? remainingKm / velocityKmPerDay : Infinity;
+
+            const speedKmh = velocityKmPerDay / 24;
+            const etaText = Number.isFinite(etaDays) ? `ETA ${(etaDays * 24).toFixed(1)}h` : `ETA --`;
+            const phase = getFlightPhase(ship.profile, ship.elapsedDays);
+            ship.label.text = `${etaText}\n${speedKmh.toLocaleString(undefined, { maximumFractionDigits: 0 })} km/h\n${phase}`;
+        }
+    }
+
+    */
+
+    function buildPathPoints(p1, p2, ts) {
+        const pts = [];
+
+        if (LANE_STYLE === "straight") {
+            for (const t of ts) {
+                pts.push({
+                    x: p1.x + (p2.x - p1.x) * t,
+                    y: p1.y + (p2.y - p1.y) * t
+                });
+            }
+        } else {
+            for (const t of ts) {
+                pts.push(laneArcPoint(p1, p2, t));
+            }
+        }
+
+        return pts;
     }
         
     function createOrbit(name, radiusKm, options = {}) {
