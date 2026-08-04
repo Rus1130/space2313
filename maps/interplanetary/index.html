@@ -1704,6 +1704,9 @@
         createLane("45To3Offset", "45", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
         createLane("46To3Offset", "46", { color: laneColors.station3To4Offset, width: 1, dash: minorLaneDash });
 
+        // create earth-moon lane
+        createLane("earthToMoon", "earth", { color: laneColors.earthMars, width: 1, dash: minorLaneDash });
+
 
         createLane("41ToOuter1", "41", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
         createLane("41ToOuter2", "41", { color: laneColors.station3To4, width: 1, dash: minorLaneDash });
@@ -1905,6 +1908,12 @@
                 predict: (day) => ({ endingBody: closestBodyAtDay(bodies[from], group, day) })
             });
         });
+
+        // updateLane("earthToMoon", closestBody(bodies.earth, "moon"), {
+        //     predict: (day) => ({ endingBody: closestBodyAtDay(bodies.earth, "moon", day) })
+        // });
+
+        updateLane("earthToMoon", bodies.moon);
 
 
         
