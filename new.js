@@ -59,31 +59,9 @@ const HTML_TEMPLATE =
     })
 
     await tw.load("./src/${nameNormalized}.st").then(() => {
+        tw.controls("all");
         tw.start();
     })
-
-    let speedOverride = false;
-
-    document.body.addEventListener("keydown", (e) => {
-        if(e.key === " ") {
-            tw.paused() ? tw.resume() : tw.pause();
-        }
-
-        if(e.key === "i"){
-            tw.header.instant = !tw.header.instant;
-        }
-
-        if(e.key === "ArrowRight") {
-            speedOverride = !speedOverride;
-            tw.state.userSpeedOverride = speedOverride ? 2 : null;
-        }
-
-        if(e.key === "r"){
-            tw.target.innerHTML = "";
-            tw.state.glitches = [];
-            tw.start(tw.state.page)
-        }
-    });
 </script>`
 
 const txt_TEMPLATE = 
@@ -98,6 +76,10 @@ typewriter: {
         ".": 600
     }
 }
+
+
+
+[sleep 700][function "end"]
 `
 
 fs.writeFileSync(path.join(`${nameNormalized}.html`), HTML_TEMPLATE.replaceAll("\n", "\r\n"));
