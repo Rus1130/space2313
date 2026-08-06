@@ -1,13 +1,13 @@
 {{# written 6 aug, 2026 #}}
 typewriter: {
-    charDelay: 48
+    charDelay: 46
     newlineDelay: 600
     textColor: #ffffff
     backgroundColor: #000000
     customDelays: {
         ",": 400
         ".": 600
-        ":": 400
+        ":": 350
     }
     wordWrap: 110
 }
@@ -18,40 +18,44 @@ typewriter: {
 
 [mixin "instant2"]
     [swap]
-    [instant][@use "menu-prefix"]\[<String>\][instant off][newline]
-    [instant][@use "menu-prefix"]\[<String>\][instant off]
+    [instant][@use "menu-prefix"]\[<String>\][tab 1 fill][instant off][newline]
+    [instant][@use "menu-prefix"]\[<String>\][tab 1 fill][instant off]
     [swap]
 [mixin end]
 
 [mixin "instant5"]
     [swap]
-    [instant][@use "menu-prefix"]\[<String>\][instant off][newline]
-    [instant][@use "menu-prefix"]\[<String>\][instant off][newline]
-    [instant][@use "menu-prefix"]\[<String>\][instant off][newline]
-    [instant][@use "menu-prefix"]\[<String>\][instant off][newline]
-    [instant][@use "menu-prefix"]\[<String>\][instant off]
+    [instant][@use "menu-prefix"]\[<String>\][tab 1 fill][instant off][newline]
+    [instant][@use "menu-prefix"]\[<String>\][tab 1 fill][instant off][newline]
+    [instant][@use "menu-prefix"]\[<String>\][tab 1 fill][instant off][newline]
+    [instant][@use "menu-prefix"]\[<String>\][tab 1 fill][instant off][newline]
+    [instant][@use "menu-prefix"]\[<String>\][tab 1 fill][instant off]
     [swap]
 [mixin end]
 
-He felt a finger jab the back of his head, twice. The second time stronger.[newline]
-“Hey, wake up.”[sleep 400][newline]
-After a moment of no reaction, he threw himself upright in a short\-lived, sleep\-deprived panic.[newline]
-“Right, right, sorry, sorry.”[newline]
+{{# He felt a finger jab the back of his head,[sleep 200] twice.[sleep 200] The second time stronger.[sleep 300][newline]
+“Hey, wake up.”[sleep 1380][newline]
+[speed 48]After a moment of no reaction, he threw himself upright in [sleep 80]short\-lived, sleep\-deprived panic.[sleep 150][newline]
+[custom "," 120][speed 42]
+“Right, right,[sleep 400] sorry, sorry.”
+[custom "," 400][sleep 400][speed 46][newline]
 He rubbed his head, the sting already fading.[newline]
-“Those reports won’t fill out themselves.”[newline]
-“Yeah, yeah, I know.”[newline]
-“You better, Mercury Boy.”[linebreak]
-
-As she turned and walked away, he heard her jacket rub against the tightly\-packed chairs that lined the narrow office. Her footsteps gradually became softer until they were swallowed by the hum of background noise.[linebreak]
+“Those reports won’t fill out themselves.”[sleep 150][newline]
+“Yeah, yeah, I know.”[newline] #}}
+“You better, Mercury Boy.”[sleep 700][linebreak]
+[custom "," 600][custom "." 750][speed 48]
+As she turned [sleep 50]and walked away, [speed 46]her outerwear rubbed against the tightly\-packed chairs that lined the narrow office. Her footsteps gradually became softer until they were swallowed by the hum of background noise.[linebreak]
 
 He rubbed his eyes and stared blankly at his screen, slowly remembering what task he was attempting to complete before he fell asleep. His gaze wandered for a moment before settling on the obvious rows and rows of reports that required manual attention. He clicked the first one at the top.[linebreak]
 
+[custom "," 200]
+
 [speed 20]
-[repeat "─" 110][newline]
+[repeat "─" 110 instant][newline]
 CARGO INCIDENT REPORT[linebreak]
 CASE ID : 76674539[newline]
 [tab 1]STATUS : PMR[newline]
-[repeat "─" 110][newline]
+[repeat "─" 110 instant][newline]
 [tab 5]VESSEL NAME : Summer Solstice[newline]
 VESSEL REGISTRAR : ERSK1[newline]
 [tab 6]VESSEL RID : 4011[newline]
@@ -63,7 +67,10 @@ ROUTE[newline]
 
 TIME SUBMITTED: [customremove ":"]2214\-08\-15 4:[linebreak instant]
 
-[speed 40]And right about now was when his brain went on autopilot. He used to take his job with utmost seriousness. His decisions decided if someone got fined, got warned, got visited by someone, or something else. He used to watch himself, making sure he scrutinized every single character\- every single pixel. But now, after a year or so–or two, or half–he didn’t care. If he was sad, or mad, or angry, it reflected in his reports. His mood swings and his temper tantrums caused someone something, probably. He barely saw a report. It was just pixels.[linebreak]
+[custom "," 300]
+[custom "." 650]
+
+[speed 60]And right about now was when his brain went on autopilot. He used to take his job with utmost seriousness. His decisions decided if someone got fined, got warned, got visited by someone, or something else. He used to watch himself, making sure he scrutinized every single character\- every single pixel. But now, after a year or so–or two, or half–he didn’t care. If he was sad, or mad, or angry, it reflected in his reports. His mood swings and his temper tantrums caused someone something, probably. He barely saw a report. It was just pixels.[linebreak]
 
 He only felt each key slam under his fingers, pushing back up as if to help it along to the next. He felt the hollow ring they produced through the memory of his fingertips, time and space blending with pixels and plastic. That’s all it was, pixels, pixels, pixels, and pixels. Click next. Type words. Dropdown. Close. Next. Type words. Dropdown. Request Clarification. Next. Type words. Dropdown. Escalate. Next. Type words. Dropdown. Close. It was all just pixels. All just pixels.[linebreak]
 
@@ -90,7 +97,7 @@ No results found.[linebreak]
 
 Fine. It was a filing error then.[linebreak]
 
-He clicked back to the report itself, and hit the [Actions] button. A small menu unfolded near his cursor. He read the options he was presented with.[linebreak]
+He clicked back to the report itself, and hit the actions button. A small menu unfolded near his cursor. He read the options he was presented with.[linebreak]
 
 [@use "instant2" "Close" "Archive"][linebreak]
 
@@ -106,7 +113,7 @@ He closed the program, just to reopen it a moment later. He selected the report 
 
 It was still there. He tried a different report.[linebreak]
 
-[@use "instant2" "Close" "Request Clarification" "Report Filing Error" "Escalate" "Archive"][linebreak]
+[@use "instant5" "Close" "Request Clarification" "Report Filing Error" "Escalate" "Archive"][linebreak]
 
 The option still existed. They hadn’t done away with it, at least. He clicked back to the original report.[linebreak]
 
