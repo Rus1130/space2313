@@ -208,7 +208,7 @@ a[newline]
 a[newline]
 
 [instant off]
-He closed the program, just to reopen it a moment later. He selected the report again and opened the actions m[forcescroll]enu.[linebreak]
+He closed the program, just to reopen it a moment later. He selected the report again and opened the act[function "fakeforcescroll"]ions menu.[linebreak instant][sleep 600]
 
 [@use "instant3"][linebreak]
 
@@ -216,7 +216,7 @@ It was still not there. Quite a few other options were missing too, actually. He
 
 [@use "instant6"][linebreak]
 
-The option still existed. They hadn’t done away with it, at least. He clicked back to the original report.[linebreak]
+The options still existed. They hadn’t done away with them, at least. He clicked back to the original report, and tried the actions button again.[linebreak]
 
 [@use "instant3"][linebreak]
 
