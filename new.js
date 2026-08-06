@@ -59,7 +59,7 @@ const HTML_TEMPLATE =
     })
 
     await tw.load("./src/${nameNormalized}.st").then(() => {
-        tw.controls("all");
+        tw.addControls("all");
         tw.start();
     })
 </script>`
