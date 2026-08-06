@@ -208,7 +208,7 @@ a[newline]
 a[newline]
 
 [instant off]
-He closed the program, just to reopen it a moment later. He selected the report again and opened the act[function "fakeforcescroll"]ions menu.[linebreak instant][sleep 600]
+He closed the program, just to reopen it a moment later. He selected the report again and opened the act[function "fakeforcescroll"]ions menu.[linebreak]
 
 [@use "instant3"][linebreak]
 
