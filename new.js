@@ -55,6 +55,9 @@ const HTML_TEMPLATE =
             tw.appendToTarget(returnButton);
             tw.target.style.overflowY = 'scroll';
             tw.target.classList.add('hide-scrollbar');
+        },
+        "hardinstant": function() {
+            tw.state.userInstantOverride = !tw.state.userInstantOverride;
         }
     })
 
@@ -79,7 +82,7 @@ typewriter: {
 
 
 
-[sleep 700][function "end"]
+[sleep 1700][linebreak instant][function "end"]
 `
 
 fs.writeFileSync(path.join(`${nameNormalized}.html`), HTML_TEMPLATE.replaceAll("\n", "\r\n"));

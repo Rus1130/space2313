@@ -40,7 +40,6 @@ typewriter: {
     [sleep 10]
 [mixin end]
 
-{{#
 He felt a finger jab the back of his head,[sleep 200] twice.[sleep 200] The second time stronger.[sleep 300][newline]
 “Hey, wake up.”[sleep 1380][newline]
 [speed 48]After a moment of no reaction, he threw himself upright in [sleep 80]short\-lived, sleep\-deprived panic.[sleep 150][newline]
@@ -124,91 +123,10 @@ He frowned, and read them again.[linebreak]
 
 [@use "instant3"][linebreak]
 
-Where was ‘report filing error’?[linebreak] #}}
-[instant]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
-a[newline]
 
-[instant off]
-He closed the program, just to reopen it a moment later. He selected the report again and opened the act[function "fakeforcescroll"]ions menu.[linebreak]
+Where was ‘report filing error’?[linebreak]
+
+He closed the program, just to reopen it a moment later. He selected the report again and opened the actions menu.[linebreak]
 
 [@use "instant3"][linebreak]
 
@@ -218,36 +136,82 @@ It was still not there. Quite a few other options were missing too, actually. He
 
 The options still existed. They hadn’t done away with them, at least. He clicked back to the original report, and tried the actions button again.[linebreak]
 
-[@use "instant3"][linebreak]
+[@use "instant3"][linebreak][sleep 450]
 
-“um... Amy?” He called out, turning his head slightly, but keeping his eyes locked to the screen.[newline]
-“What?”[newline]
-Her voice originated from somewhere down the row, softened by distance and carpet.[newline]
+He sighed.[newline]
+
+“um[custom "." 490]...[custom "." 575] [speed 78]Amy[ignore]?[ignore off][speed 46]”[sleep 900] He called out, turning his head slightly, keeping his eyes fixed on the menu.[newline]
+
+[custom "\n" 850]
+
+“What?”[sleep 500][newline]
+
+[speed 50]Her voice originated from somewhere down the row, softened by distance and carpet.[newline]
+
 “Could’ya come here for a sec, I got a problem.”[newline]
-She hesitated slightly. “Be right there.”[newline]
-He could hear her footsteps get louder and louder, before stopping right behind him. Her jacket once again rubbed against the office chairs.[newline]
-“What?”[newline]
+
+She hesitated slightly. [sleep 1500]“Be right there.”[newline]
+
+[speed 52]He could hear her footsteps get louder and louder, before stopping right behind him. Her jacket once again rubbed against the office chairs.[newline]
+
+[speed 48]“What?”[newline]
+
 He pointed at the screen.[newline]
+
 “The ‘report filing error’ button is missing.”[newline]
-She took control of his mouse somewhat forcefully. She closed the dropdown, just to click on the actions menu again. The same dropdown reappeared. She was silent for a few moments.[newline]
+
+She took control of his mouse somewhat forcefully. She closed the dropdown, just to click on the actions menu again. The same dropdown reappeared. She was silent for a few moments.[sleep 500][newline]
+
 “Did you reopen the report?”[newline]
+
 “Yes.”[newline]
+
 “Restart the program?”[newline]
+
 “Yeah.”[newline]
+
 “Did you check another report?”[newline]
+
 “Yeah. The button’s there.”[newline]
+
 She went quiet for a second.[newline]
-“So?”[newline]
-“So... it’s missing.”[newline]
+
+“So?”[sleep 1000][newline]
+
+“So[custom "." 490]...[custom "." 575] it’s missing.”[newline]
+
 She sighed.[newline]
-“What do you want me to do about it?[newline]
-“What?”[newline]
-“What do you want me to do about it, Mercury Boy?” She accented every consonant.[newline]
-“I don’t know, isn’t this like, your /thing/? Everyone asks you about computer problems.”[newline]
-“Not this one. Call IT.”[newline]
+
+“What do you want me to do about it?”[sleep 600][newline]
+
+
+
+“What?”[sleep 700][newline]
+
+
+
+“
+[instant]What [instant off][sleep 430]
+[instant]do [instant off][sleep 140]
+[instant]you [instant off][sleep 180]
+[instant]want [instant off][sleep 380]
+[instant]me [instant off][sleep 300]
+[instant]to [instant off][sleep 150]
+[instant]do [instant off][sleep 250]
+[instant]a[instant off][sleep 170]
+[instant]bout [instant off][sleep 250]
+[instant]it, [instant off][sleep 700]
+[speed 100]Mercury boy?”[sleep 800][newline]
+
+[custom "," 610]
+[custom "." 850]
+
+[speed 42]“I don’t know, isn’t this[sleep 150] like, your /thing/?[sleep 200] Everyone asks you about computer problems.”[newline]
+
+[speed 47]“Not this one. Call IT.”[newline]
+
 Before he could reply, she left, weaving through the chairs back to her desk at the far side of the office.[linebreak]
 
-He added the report to his watch list, closed it, and began working on the next one.[linebreak]
+He added the report to his watch list, closed it, and began working on the next one.
 
-
-[sleep 700][function "end"]
+[sleep 1700][linebreak instant][function "end"]
