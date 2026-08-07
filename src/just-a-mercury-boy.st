@@ -39,12 +39,13 @@ typewriter: {
 [mixin "newdelay"]
     [sleep 10]
 [mixin end]
-
+[function "hardinstant"]
 He felt a finger jab the back of his head,[sleep 200] twice.[sleep 200] The second time stronger.[sleep 300][newline]
 “Hey, wake up.”[sleep 1380][newline]
 [speed 48]After a moment of no reaction, he threw himself upright in [sleep 80]short\-lived, sleep\-deprived panic.[sleep 150][newline]
 [custom "," 120][speed 42]
-“Right, right,[sleep 400] sorry, sorry.”
+
+“Right,[sleep 150] right,[sleep 350] sorry,[sleep 150] sorry.”
 [custom "," 400][sleep 400][speed 46][newline]
 He rubbed his head, the sting already fading.[newline]
 “Those reports won’t fill out themselves.”[sleep 150][newline]
@@ -56,13 +57,13 @@ As she turned [sleep 50]and walked away, [speed 46]her outerwear rubbed against 
 He rubbed his eyes and stared blankly at his screen, slowly remembering what task he was attempting to complete before he fell asleep. His gaze wandered for a moment before settling on the obvious rows and rows of reports that required manual attention. He clicked the first one at the top.[linebreak]
 
 [custom "," 90]
-[speed 30]
 
-[repeat "─" 110 instant][newline instant][@use "newdelay"]
+[function "hardinstant"]
+[speed 3][repeat "─" 110][speed 30][newline instant][@use "newdelay"]
 CARGO INCIDENT REPORT[linebreak instant][@use "newdelay"]
 CASE ID : 76674539[newline instant][@use "newdelay"]
 [tab 1]STATUS : PMR[newline instant][@use "newdelay"]
-[repeat "─" 110 instant][newline instant][@use "newdelay"]
+[speed 3][repeat "─" 110][speed 30][newline instant][@use "newdelay"]
 [tab 5]VESSEL NAME : Summer Solstice[newline instant][@use "newdelay"]
 VESSEL REGISTRAR : ERSK1[newline instant][@use "newdelay"]
 [tab 6]VESSEL RID : 4011[newline instant][@use "newdelay"]
@@ -77,7 +78,7 @@ TIME SUBMITTED: [customremove ":"]2214\-08\-15 4:[linebreak instant]
 [custom "," 450]
 [custom "." 750]
 
-[speed 20]And right [speed 25]about now [speed 30]was when h[speed 35]is brain w[speed 40]ent on aut[speed 45]opilot.[sleep 400][linebreak]
+[speed 20]And right [speed 25]about now [speed 30]was when h[speed 35]is brain w[speed 40]ould go on[speed 45] autopilot.[sleep 400][linebreak]
 
 He[speed 46] used to take his job with utmost seriousness. His decisions decided if someone got fined, got warned, got visited by /someone/, or something else.[sleep 650] He used to watch himself, making sure he scrutinized every single character\-[sleep 210] [speed 44]every single [speed 39]/pixel/[speed 46].[sleep 550] But now, after a year or so–or two, or half–[sleep 200]he didn’t care. If he was sad, or mad, or angry, it reflected in his reports. His mood swings and his temper tantrums caused someone[sleep 145] [speed 49]/something/[speed 46], probably. He barely saw [sleep 120]/a/[sleep 110] report. It was [speed 50]just[speed 46][sleep 170] [speed 48]pixels[speed 46].[sleep 450][linebreak]
 
@@ -103,7 +104,7 @@ He read and reread the word multiple times. That word wasn’t supposed to be th
 
 [speed 42]Unknown station? Every station in the solar system was registered. It /had/ to be. You couldn’t dock with it, supply it, insure it, even acknowledge it without it being registered. The automated system should’ve rejected this report outright, he should’ve never even seen it. He looked at what came after.[linebreak]
 
-AR. Mars. The unknown station was on Mars. He looked at the line after.[linebreak]
+AR. Mars. The unknown station was on Mars. He looked at the line below.[linebreak]
 
 [speed 44]APPROXIMATE LOCATION :[sleep 300] 18°S 140°E[linebreak]
 
@@ -138,9 +139,9 @@ The options still existed. They hadn’t done away with them, at least. He click
 
 [@use "instant3"][linebreak][sleep 450]
 
-He sighed.[newline]
+He sighed.[linebreak]
 
-“um[custom "." 490]...[custom "." 575] [speed 78]Amy[ignore]?[ignore off][speed 46]”[sleep 900] He called out, turning his head slightly, keeping his eyes fixed on the menu.[newline]
+“Hey[custom "." 490]...[custom "." 575] [speed 78]Amy[ignore]?[ignore off][speed 46]”[sleep 900] He called out, turning his head slightly so his voice projected in her direction, but keeping his eyes fixed on the menu.[newline]
 
 [custom "\n" 850]
 
@@ -150,9 +151,9 @@ He sighed.[newline]
 
 “Could’ya come here for a sec, I got a problem.”[newline]
 
-She hesitated slightly. [sleep 1500]“Be right there.”[newline]
+There was no response for longer than he would've liked. [sleep 1500]“Be right there.”[newline]
 
-[speed 52]He could hear her footsteps get louder and louder, before stopping right behind him. Her jacket once again rubbed against the office chairs.[newline]
+[speed 52]He could hear her footsteps get louder, before stopping right behind him. Her jacket once again rubbed against the office chairs.[newline]
 
 [speed 48]“What?”[newline]
 
@@ -182,7 +183,7 @@ She went quiet for a second.[newline]
 
 She sighed.[newline]
 
-“What do you want me to do about it?”[sleep 600][newline]
+“What do you want me to do?”[sleep 600][newline]
 
 
 
