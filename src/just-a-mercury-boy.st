@@ -39,7 +39,7 @@ typewriter: {
 [mixin "newdelay"]
     [sleep 10]
 [mixin end]
-[function "hardinstant"]
+
 He felt a finger jab the back of his head,[sleep 200] twice.[sleep 200] The second time stronger.[sleep 300][newline]
 “Hey, wake up.”[sleep 1380][newline]
 [speed 48]After a moment of no reaction, he threw himself upright in [sleep 80]short\-lived, sleep\-deprived panic.[sleep 150][newline]
@@ -58,7 +58,6 @@ He rubbed his eyes and stared blankly at his screen, slowly remembering what tas
 
 [custom "," 90]
 
-[function "hardinstant"]
 [speed 3][repeat "─" 110][speed 30][newline instant][@use "newdelay"]
 CARGO INCIDENT REPORT[linebreak instant][@use "newdelay"]
 CASE ID : 76674539[newline instant][@use "newdelay"]
