@@ -18,7 +18,7 @@ Just two years later, in 2095, the colonization of Luna began. What initially be
 
 Between 2095 and 2125, advances in propulsion and orbital industry allowed humanity to expand throughout the space surrounding Earth and Luna. Orbital habitats, shipyards, research stations, and industrial facilities became increasingly common, with much of the infrastructure necessary for a permanent presence in space being established during this period. By 2125, humanity had developed an extensive network of settlements and infrastructure throughout cislunar space, with Luna serving as its primary center of population and industry.[linebreak]
 
-The anomalous properties of oganesson continued to attract scientific interest, though they had little practical application at first. On its own, oganesson was an inexpensive, but rather poor, propellant. Its extraordinarily low cost, however, more than made up for its inefficiency. Compared to previous propulsion methods, oganesson was cheap enough to make large\-scale spaceflight economically viable, and it soon become the most widely used propellant in the world, and eventually, the Solar System.[linebreak]
+The anomalous properties of oganesson continued to attract scientific interest, though they had little practical application at first. On its own, oganesson was an inexpensive, but rather poor\-performing, propellant. Its extraordinarily low cost, however, more than made up for its inefficiency. Compared to previous propulsion methods, oganesson was cheap enough to make large\-scale spaceflight economically viable, and it soon become the most widely used propellant in the world, and eventually, the Solar System.[linebreak]
 
 One of its anomalous properties was discovered early in its study. When compressed to a sufficiently high density and subjected to an electrical charge, it would continuously dampen inertia and acceleration within a spherical field surrounding it. This allowed the construction of spacecraft on a scale far larger than anything previously thought possible.[linebreak]
 
@@ -26,7 +26,7 @@ On March 18th, 2126, another one of its anomalous properties was discovered. Oga
 
 And so, humanity conquered the Solar System.[linebreak]
 
-Within the next five years, every planet in the Solar System was visited. A year later, Mercury became a penal planet, the final destination of Earth’s criminals. Two years later, airships began flying in the Venutian atmosphere. Another two years later, the asteroid belt became a permanent industrial hub, harvesting billions of kilograms of raw materials and further accelerating humanity’s expansion.linebreak]
+Within the next five years, every planet in the Solar System was visited. A year later, Mercury became a penal planet, the final destination of Earth’s criminals. Two years later, airships began flying in the Venutian atmosphere. Another two years later, the asteroid belt became a permanent industrial hub, harvesting billions of kilograms of raw materials and further accelerating humanity’s expansion.[linebreak]
 
 And, In 2138, humanity began their magnum opus: terraforming Mars.[linebreak]
 
