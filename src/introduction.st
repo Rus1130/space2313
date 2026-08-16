@@ -1,18 +1,18 @@
 {{# written 18 july, 2026 #}}
 typewriter: {
     charDelay: 50
-    newlineDelay: 100
+    newlineDelay: 1000
     textColor: #ffffff
     backgroundColor: #000000
     customDelays: {
-        ",": 350
+        ",": 500
         ".": 700
         "–": 700
     }
     wordWrap: 80
 }
 [sleep 800]
-In 2089, researchers discovered a relatively inexpensive method of mass\-producing oganesson. Previously extraordinarily rare, this discovery drastically reduced the cost of synthesis. Oganesson proved to be a remarkably effective fuel source for its price, exhibiting both conventional and, in the future, anomalous properties. This breakthrough dramatically reduced the cost of launching and operating spacecraft, making large\-scale expansion beyond Earth economically viable. By 2093, humanity had entered what would become known as the Permanent Space Age.[linebreak]
+In 2089, researchers discovered a relatively inexpensive method of mass\-producing oganesson. Previously extraordinarily rare, this discovery drastically reduced the cost of synthesis. Oganesson proved to be a remarkably effective fuel source for its price, exhibiting both conventional–and eventually, anomalous–properties. This breakthrough dramatically reduced the cost of launching and operating spacecraft, making large\-scale expansion beyond Earth economically viable. By 2093, humanity had entered what would become known as the Permanent Space Age.[linebreak]
 
 Just two years later, in 2095, the colonization of Luna began. What initially began as a small collection of research and industrial settlements soon developed into a vast center of education and technological development, housing hundreds of thousands of scientists, engineers, and educators. Over the following decades, Luna’s population would continue to expand until it became the most populous moon in the Solar System.[linebreak]
 
@@ -24,17 +24,17 @@ One of its anomalous properties was discovered early in its study. When compress
 
 On March 18th, 2126, another one of its anomalous properties was discovered. Oganessologists stationed in the Aitken Basin Research Complex–which would later become known as the Aitken University Center for Oganessonologics–found that, when combined with technetium, it would continuously compound any acceleration applied to it.[linebreak]
 
-And so, humanity conquered the Solar System.[linebreak]
+[custom " " 100][speed 80]And so,[sleep 600] humanity conquered the Solar System.[customremove " "][linebreak]
 
-Within the next five years, every planet in the Solar System was visited. A year later, Mercury became a penal planet, the final destination of Earth’s criminals. Two years later, airships began flying in the Venutian atmosphere. Another two years later, the asteroid belt became a permanent industrial hub, harvesting billions of kilograms of raw materials and further accelerating humanity’s expansion.[linebreak]
+[speed 53]Within the next five years, every planet in the Solar System was visited. A year later, Mercury became a penal planet, the final destination of Earth’s criminals. Two years later, airships began flying in the Venutian atmosphere. Another two years later, the asteroid belt became a permanent industrial hub, harvesting billions of kilograms of raw materials annually and further accelerating humanity’s expansion.[linebreak]
 
-And, In 2138, humanity began their magnum opus: terraforming Mars.[linebreak]
+[speed 90]And[instant],[instant off][sleep 1000] In 2138[instant],[instant off][sleep 1000] humanity began their magnum[sleep 150] opus: [sleep 1500][speed 120]terraforming [sleep 500]Mars.[sleep 890][linebreak]
 
-What followed was a project of immense scale and extraordinary difficulty. Generation after generation worked to reshape the planet, with progress measured not in years, but in decades. Vast quantities of materials moved, atmosphere altered, temperatures raised, lives lost. Entire industries were built around the effort, and countless lives were devoted to a project whos completion none of its original architects would live in flesh to ever see.[linebreak]
+[speed 60]What followed was a project of immense scale and extraordinary difficulty. Generation after generation worked to reshape the planet, with progress measured not in years, but in decades. Vast quantities of materials moved, atmosphere altered, temperatures raised, lives lost. Entire industries were built around the effort, and countless lives were devoted to a project whos completion none of its original architects would live in flesh to ever see.[linebreak]
 
 After nearly a century and a half, on May 23rd, 2279, at 18:50:47 Standard Sol Time, the terraforming of Mars was officially declared complete.[linebreak]
 
-For the first time in human history, a world other than Earth had been made fully habitable.[linebreak]
+For the first time in human history, a world other than Earth had been made fully habitable.[sleep 1240][linebreak]
 
-Thus, humanity turned elsewhere.[sleep 1000][linebreak]
+[speed 101]Thus, [speed 81][sleep 500]humanity [sleep 500]turned [sleep 500]elsewhere.[sleep 1000][linebreak]
 [sleep 700][function "end"]
