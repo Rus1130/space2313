@@ -30,7 +30,8 @@ Within the next five years, every planet in the Solar System was visited. A year
 
 And, In 2138, humanity began their magnum opus: terraforming Mars.[linebreak]
 
-What followed was a project of immense scale and extraordinary difficulty. Generation after generation worked to reshape the planet, with progress measured not in years, but in decades. Vast quantities of materials moved, atmosphere altered, temperatures raised, lives lost. Entire industries were built around the effort, and countless lives were devoted to a project whos completion none of its original architects would live in flesh to ever see.
+What followed was a project of immense scale and extraordinary difficulty. Generation after generation worked to reshape the planet, with progress measured not in years, but in decades. Vast quantities of materials moved, atmosphere altered, temperatures raised, lives lost. Entire industries were built around the effort, and countless lives were devoted to a project whos completion none of its original architects would live in flesh to ever see.[linebreak]
+
 After nearly a century and a half, on May 23rd, 2279, at 18:50:47 Standard Sol Time, the terraforming of Mars was officially declared complete.[linebreak]
 
 For the first time in human history, a world other than Earth had been made fully habitable.[linebreak]
