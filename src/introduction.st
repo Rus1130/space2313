@@ -26,7 +26,7 @@ On March 18th, 2126, another one of its anomalous properties was discovered. Oga
 
 [custom " " 100][speed 80]And so,[sleep 600] humanity conquered the Solar System.[customremove " "][linebreak]
 
-[speed 53]Within the next five years, every planet in the Solar System was visited. A year later, Mercury became a penal planet, the final destination of Earth’s criminals. Two years later, airships began flying in the Venutian atmosphere. Another two years later, the asteroid belt became a permanent industrial hub, harvesting billions of kilograms of raw materials annually and further accelerating humanity’s expansion.[linebreak]
+[speed 53]Within the next five years, every planet in the Solar System was visited by man. A year later, Mercury became a penal planet, the final destination of Earth’s criminals. Two years later, airships began flying in the Venutian atmosphere. Another two years later, the asteroid belt became a permanent industrial hub, harvesting billions of kilograms of raw materials annually and further accelerating humanity’s expansion.[linebreak]
 
 [speed 90]And[instant],[instant off][sleep 1000] In 2138[instant],[instant off][sleep 1000] humanity began their magnum[sleep 150] opus: [sleep 1500][speed 120]terraforming [sleep 500]Mars.[sleep 890][linebreak]
 
