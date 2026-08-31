@@ -20,7 +20,7 @@ Between 2095 and 2125, advances in propulsion and orbital industry allowed human
 
 The anomalous properties of oganesson continued to attract scientific interest, though they had little practical application at first. On its own, oganesson was an inexpensive, but rather poor\-performing, propellant. Its extraordinarily low cost, however, more than made up for its inefficiency. Compared to previous propulsion methods, oganesson was cheap enough to make large\-scale spaceflight economically viable, and it soon became the most widely used propellant in the world, and eventually, the Solar System.[linebreak]
 
-One of its anomalous properties was discovered early in its study. When compressed to a sufficiently high density and subjected to an electrical charge, it would continuously dampen inertia and acceleration within a spherical field surrounding it. This allowed the construction of spacecraft on a scale far larger than anything previously thought possible.[linebreak]
+One of its anomalous properties was discovered early in its study. When compressed to a sufficiently high density, and subjected to an electrical charge, it would continuously dampen inertia and acceleration within a spherical field surrounding it. This allowed the construction of spacecraft on a scale far larger than anything previously thought possible.[linebreak]
 
 On March 18th, 2126, another one of its anomalous properties was discovered. Oganessologists stationed in the Aitken Basin Research Complex–which would later become known as the Aitken University Center for Oganessonologics–found that, when combined with technetium, it would continuously compound any acceleration applied to it.[linebreak]
 
