@@ -36,5 +36,5 @@ After nearly a century and a half, on May 23rd, 2279, at 18:50:47 Standard Sol T
 
 For the first time in human history, a world other than Earth had been made fully habitable.[sleep 1240][linebreak]
 
-[speed 101]Thus, [speed 81][sleep 250]humanity [sleep 250]turned [sleep 250]elsewhere.[sleep 1000][linebreak]
+[speed 101]Thus, [speed 112][sleep 117]humanity turned elsewhere.[sleep 1000][linebreak]
 [sleep 700][function "end"]
