@@ -11,40 +11,26 @@
     <div id="out"></div>
     <div class="button" id="return" onclick="location.href = 'https://rus1130.github.io/space2313/'" style="display: none;">▌< Return</div>
 </body>
-<script>
-    fetch('./src/ship-transit-log.tw')
-    .then(response => response.text())
-    .then(text => {
-        let tw3 = new Typewriter3(text, document.getElementById("out"), {
-            charDelay: 25,
-            newlineDelay: 500,
-            customDelays: {
-                ",": 350,
-                ".": 600
-            },
-            newpageText: "▌Next >",
-            defaultTextColor: "#ffffff",
-            defaultBackgroundColor: "#000000",
-            onFunctionTag: () => {
-                document.getElementById('return').style.display = 'block';
-                window.scrollTo(0, document.body.scrollHeight);
-                document.body.style.overflowY = 'scroll';
-                document.documentElement.classList.add('hide-scrollbar');
-            },
-            instant: new URLSearchParams(window.location.search).get("i") === "",
-        });
+<script type="module">
+    import { SuperType } from 'https://rus1130.github.io/supertype/index.js';
 
-        let speedToggle = false;
+    const tw = new SuperType(document.body, {
+        "end": function() {
+            const returnButton = document.createElement("div");
+            returnButton.classList.add("button");
+            returnButton.id = "return";
+            returnButton.textContent = "▌< Return";
+            returnButton.onclick = () => {
+                location.href = 'https://rus1130.github.io/space2313/';
+            };
+            tw.appendToTarget(returnButton);
+            tw.target.style.overflowY = 'scroll';
+            tw.target.classList.add('hide-scrollbar');
+        }
+    })
 
-        document.body.addEventListener('keydown', (event) => {
-            if (event.code === 'Space') tw3.togglePause();
-            if (event.code === 'ArrowRight') {
-                speedToggle = !speedToggle;
-                if(speedToggle) tw3.speedOverride(1);
-                else tw3.speedOverride(null);
-            }
-        });
-
-        tw3.start();
-    });
+    await tw.load("./src/ship-transit-log.st").then(() => {
+        tw.allowControls("all");
+        tw.start();
+    })
 </script>

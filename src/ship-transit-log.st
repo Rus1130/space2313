@@ -1,38 +1,79 @@
 {{# written 7 july, 2026 #}}
-{{#timecalc
-    char: 100
-    newline: 500
-    custom: {
+typewriter: {
+    charDelay: 25
+    newlineDelay: 100
+    textColor: #ffffff
+    backgroundColor: #000000
+    customDelays: {
         ",": 350
         ".": 600
     }
-#}}
+}
 
 [sleep 1000]
-preflight diagnostics check[speed 10 1]...[speeddefault][newline]
-loading diagnostics program[speed 10 1].[sleep 400].[sleep 400].[sleep 1000][speeddefault][newline]
-diagnostics program loaded. running[speed 10 1][sleep 400].[sleep 400].[sleep 400].[sleep 1000][speeddefault][linebreak]
+preflight diagnostics check[speed 10 override]...[speeddefault][newline]
+loading diagnostics program[speed 10 override].[sleep 400].[sleep 400].[sleep 1000][speeddefault][newline]
+diagnostics program loaded. running[speed 10 override][sleep 400].[sleep 400].[sleep 400].[sleep 1000][speeddefault][linebreak]
 
-[speed 1 1]
+[mixin "green"]
+    [color #339900]<String>[color reset]
+[mixin end]
+[mixin "yellow"]
+    [color #FFCC00]<String>[color reset]
+[mixin end]
+
+[mixin "line ok"]
+    [tab <Number>]<String>.[sleep <Number>][repeat "." <Number>][@use "green" "OK"][newline]
+[mixin end]
+
+[mixin "line many ok"]
+    [tab <Number>]<String>.[sleep <Number>][repeat "." <Number>][@use "green" "OK"] [@use "green" "<Number>"][newline]
+[mixin end]
+
+[mixin "half line ok"]
+[tab <Number>]<String> [@use "green" "OK"][newline]
+[mixin end]
+
+[mixin "half line warning"]
+[tab <Number>]<String> [@use "yellow" "WARNING"][newline]
+[mixin end]
+
+[mixin "start"]
+    [$start][$instant][speed 3 override]
+[mixin end]
+
+{{# [$start][$instant] #}}
+[speed 3 override]
 
 v1.26.3 ==============================[linebreak]
-
-FLIGHT =========================[newline]
-[tab 7]DRIVE.[sleep 2000]...................[color #339900]OK[resetcolor][newline]
-[tab 7]MAIN ENGINE.[sleep 2000].............[color #339900]OK 4[resetcolor][newline]
-[tab 7]SECONDARY ENGINE.[sleep 2000]........[color #339900]OK 8[resetcolor][newline]
-[tab 7]INERTIAL DAMPENER.[sleep 150].......[color #339900]OK[resetcolor][newline]
-[tab 7]FUEL PRESSURE.[sleep 50]...........[color #339900]OK[resetcolor][newline]
-[tab 7]COOLANT PRESSURE.[sleep 50]........[color #339900]OK[resetcolor][newline]
-[tab 7]IGNITION SYSTEMS.[sleep 50]........[color #339900]OK[resetcolor][newline]
-[tab 7]TECHNETIUM INJECTOR.[sleep 750].....[color #339900]OK[resetcolor][newline]
-[tab 7]ENGINE TEMPERATURE.[sleep 10]......[color #339900]OK[resetcolor][newline]
-[tab 7]GYROSCOPE.[sleep 200]...............[color #339900]OK 4[resetcolor][newline]
+[@use "start"]
+FLIGHT =====================[newline]
+[@use "line ok" 7 "DRIVE" 2000 15]
+[@use "line many ok" 7 "MAIN ENGINE" 2000 9 4]
+[@use "line many ok" 7 "SECONDARY ENGINE" 2000 4 8]
+[@use "line ok" 7 "INERTIAL DAMPENER" 150 3]
+[@use "line ok" 7 "FUEL PRESSURE" 50 7]
+[@use "line ok" 7 "COOLANT PRESSURE" 50 4]
+[@use "line ok" 7 "IGNITION SYSTEMS" 50 4]
+[@use "line ok" 7 "TECHNETIUM INJECTOR" 750 1]
+[@use "line ok" 7 "ENGINE TEMPERATURE" 10 2]
+[@use "line many ok" 7 "GYROSCOPE" 200 11 4]
 [newline]
 FLIGHT 100%
 [linebreak]
 
+
+
 ELECTRICAL =========================[newline]
+[@use "line ok" 11 "PRIMARY REACTOR" 2000 9]
+[@use "line ok" 11 "SECONDARY REACTOR" 1000 7]
+[@use "line ok" 11 "BATTERY" 150 17]
+[@use "line ok" 11 "CURRENT DRAW" 10 12]
+[@use "half line ok" 32 "1\-4" 5]
+[@use "half line warning" 34 "5" 7]
+[@use "half line ok" 34 "6" 7]
+
+{{# 
 [tab 11]PRIMARY REACTOR.[sleep 2000].........[color #339900]OK[resetcolor][newline]
 [tab 11]SECONDARY REACTOR.[sleep 1000].......[color #339900]OK[resetcolor][newline]
 [tab 11]BATTERY.[sleep 150].................[newline]
@@ -43,6 +84,8 @@ ELECTRICAL =========================[newline]
 [newline]
 ELECTRICAL 88.89%
 [linebreak]
+
+[$instant off][sleep 10000000000000000000]
 
 NAVIGATION =========================[newline]
 [tab 11]IPN CONNECTION[sleep 250].[sleep 250].[sleep 250].[sleep 250].[sleep 250].[sleep 250].[sleep 137].[color #339900]OK[resetcolor][newline]
@@ -113,7 +156,5 @@ SUMMARY[linebreak]
 OVERALL..................[newline][sleep 500]
 SOME SYSTEMS OFFLINE.[sleep 900] WILL NOT MAJORLY IMPACT SHIP PERFORMANCE.[sleep 900] RECOMMENDED ACTION:[sleep 700] NO ACTION REQUIRED.[sleep 1500]
 [speeddefault]
-[linebreak]
-[speed 40 1]PROCEED TO LAUNCH.[speeddefault][sleep 2000][linebreak]
-[newpage]
-theres NOTHING here because i havent WRITTEN IT yet!
+[linebreak] #}}
+{{# [speed 40 1]PROCEED TO LAUNCH.[speeddefault][sleep 2000][linebreak] #}}
