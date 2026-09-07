@@ -21,9 +21,18 @@ diagnostics program loaded. running[speed 10 override][sleep 400].[sleep 400].[s
 [mixin "yellow"]
     [color #FFCC00]<String>[color reset]
 [mixin end]
+[mixin "red"]
+    [color #CC3300]<String>[color reset]
+[mixin end]
 
 [mixin "line ok"]
     [tab <Number>]<String>.[sleep <Number>][repeat "." <Number>][@use "green" "OK"][newline]
+[mixin end]
+[mixin "line many error"]
+    [tab <Number>]<String>.[sleep <Number>][repeat "." <Number>][@use "red" "ERROR"] [@use "red" "<Number>"][newline]
+[mixin end]
+[mixin "line nok"]
+    [tab <Number>]<String>.[sleep <Number>][repeat "." <Number>][newline]
 [mixin end]
 
 [mixin "line many ok"]
@@ -33,20 +42,22 @@ diagnostics program loaded. running[speed 10 override][sleep 400].[sleep 400].[s
 [mixin "half line ok"]
 [tab <Number>]<String> [@use "green" "OK"][newline]
 [mixin end]
-
 [mixin "half line warning"]
-[tab <Number>]<String> [@use "yellow" "WARNING"][newline]
+    [tab <Number>]<String> [@use "yellow" "WARNING"][newline]
+[mixin end]
+[mixin "half line error"]
+    [tab <Number>]<String> [@use "red" "ERROR"][newline]
 [mixin end]
 
 [mixin "start"]
-    [$start][$instant][speed 3 override]
+    [$start][$instant][speed 10 override]
 [mixin end]
 
-{{# [$start][$instant] #}}
-[speed 3 override]
+[speed 7 override]
+
+
 
 v1.26.3 ==============================[linebreak]
-[@use "start"]
 FLIGHT =====================[newline]
 [@use "line ok" 7 "DRIVE" 2000 15]
 [@use "line many ok" 7 "MAIN ENGINE" 2000 9 4]
@@ -64,31 +75,39 @@ FLIGHT 100%
 
 
 
-ELECTRICAL =========================[newline]
-[@use "line ok" 11 "PRIMARY REACTOR" 2000 9]
-[@use "line ok" 11 "SECONDARY REACTOR" 1000 7]
-[@use "line ok" 11 "BATTERY" 150 17]
-[@use "line ok" 11 "CURRENT DRAW" 10 12]
-[@use "half line ok" 32 "1\-4" 5]
-[@use "half line warning" 34 "5" 7]
-[@use "half line ok" 34 "6" 7]
-
-{{# 
-[tab 11]PRIMARY REACTOR.[sleep 2000].........[color #339900]OK[resetcolor][newline]
-[tab 11]SECONDARY REACTOR.[sleep 1000].......[color #339900]OK[resetcolor][newline]
-[tab 11]BATTERY.[sleep 150].................[newline]
-[tab 32]1\-4[color #339900] OK[resetcolor][newline]
-[tab 34]5[color #FFCC00] WARNING[resetcolor][newline]
-[tab 34]6[color #339900] OK[resetcolor][newline]
-[tab 11]CURRENT DRAW.[sleep 10]............[color #339900]OK[resetcolor][newline]
+ELECTRICAL ===================[newline]
+[@use "line ok" 11 "PRIMARY REACTOR" 2000 3]
+[@use "line ok" 11 "SECONDARY REACTOR" 1000 1]
+[@use "line ok" 11 "BATTERY" 150 11]
+[@use "line nok" 11 "CURRENT DRAW" 10 6]
+[@use "half line ok" 26 "1\-4" 5]
+[@use "half line warning" 28 "5" 7]
+[@use "half line ok" 28 "6" 7]
+[@use "line ok" 11 "CURRENT DRAW" 10 6]
 [newline]
 ELECTRICAL 88.89%
 [linebreak]
 
-[$instant off][sleep 10000000000000000000]
 
-NAVIGATION =========================[newline]
-[tab 11]IPN CONNECTION[sleep 250].[sleep 250].[sleep 250].[sleep 250].[sleep 250].[sleep 250].[sleep 137].[color #339900]OK[resetcolor][newline]
+
+NAVIGATION =======================[newline]
+[tab 11]IPN CONNECTION[sleep 250].[sleep 250].[sleep 250].[sleep 137].[@use "green" "OK"][newline]
+
+[@use "line many ok" 11 "NAVIGATIONAL COMPUTER" 1200 1 2]
+[@use "line ok" 11 "DOCKING COMPUTER" 600 6]
+[@use "line many ok" 11 "IMU" 1000 19 2]
+[@use "line many ok" 11 "OPTICAL SENSOR" 160 8 32]
+[@use "line nok" 11 "LIDAR SENSOR" 192 10 32]
+[@use "half line ok" 29 "1\-10" 5]
+[@use "half line error" 31 "11" 7]
+[@use "half line ok" 28 "12\-32" 5]
+[@use "line many ok" 11 "RADAR SENSOR" 192 10 32]
+[@use "line many error" 11 "RMC" 400 19 2]
+[newline]
+NAVIGATION 97.12%
+[linebreak]
+
+{{#
 [tab 11]NAVIGATIONAL COMPUTER.[sleep 1200]...[color #339900]OK 2[resetcolor][newline]
 [tab 11]DOCKING COMPUTER.[sleep 600]........[color #339900]OK[resetcolor][newline]
 [tab 11]IMU.[sleep 1000].....................[color #339900]OK 2[resetcolor][newline]
@@ -102,6 +121,7 @@ NAVIGATION =========================[newline]
 [newline]
 NAVIGATION 97.12%
 [linebreak]
+
 
 STRUCTURE =========================[newline]
 [tab 10]OGANESSON CONTAINMENT.[sleep 4000]...[color #339900]OK[resetcolor][newline]
