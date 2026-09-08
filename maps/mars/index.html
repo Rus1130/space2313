@@ -19,6 +19,18 @@
         return Array.from({length: count}, (_, i) => ({}));
     }
 
+    document.addEventListener("click", function(event) {
+        const el = two.renderer.domElement;
+        const rect = el.getBoundingClientRect();
+        const scaleX = WIDTH / rect.width;
+        const scaleY = HEIGHT / rect.height;
+
+        const x = (event.clientX - rect.left) * scaleX;
+        const y = (event.clientY - rect.top) * scaleY;
+
+        console.log(x + ", " + y);
+    });
+
     const sources = {
         base: "src/baseMap.png",
         cities: {
@@ -195,7 +207,7 @@
     ])
     addCities(sources.cities.meridia.terra, [
         ...blankLabel(13),
-        {name: "Meridian", type: "capital", size: 15, y: -7, x: -35}
+        {name: "Meridian", type: "capital", size: 22, y: -7, x: -46}
     ])
     addCities(sources.cities.meridia.thaumasia, [
         ...blankLabel(12),
@@ -204,9 +216,41 @@
     addCities(sources.cities.meridia.vinogradov, [
         ...blankLabel(4),
         {name: "Geos", type: "subcapital", contrast: true, size: 10, y: 2, x: -2}
-    ])
+    ])  
 
     two.update();
     two.play();
+
+    addToponymLabel("region", "Boralia", 1152, 47);
+    addToponymLabel("region", "New Scotland", 1435, 214);
+    addToponymLabel("region", "Daedalia", 1257, 584);
+    addToponymLabel("region", "Terra Gelida", 1069, 952);
+
+    addToponymLabel("small region", "Uzboy", 1863, 705);
+
+    addToponymLabel("country", "Meridia", 1759, 546);
+    addToponymLabel("country", "Northern Union", 566, 190);
+    addToponymLabel("country", "Northern Union", 1851, 170);
+    addToponymLabel("country", "East Scotland", 1638, 356);
+
+    addToponymLabel("body", "Lake Tharsis", 1431, 432);
+    addToponymLabel("body", "Solace Sea", 1610, 637);
+    addToponymLabel("body", "Argyre Sea", 1813, 781);
+
+    addToponymLabel("ocean", "Hellas Sea", 412, 721);
+    addToponymLabel("ocean", "Arcadian Ocean", 891, 473);
+    addToponymLabel("ocean", "Acidalian Ocean", 142, 385);
+    addToponymLabel("ocean", "Acidalian Ocean", 1892, 418);
+
+    addToponymLabel("label", "Deimos Island", 911, 319);
+    addToponymLabel("label", "Phobos Island", 911, 419);
+    addToponymLabel("label", "Mount Elysium", 779, 360);
+    addToponymLabel("label", "Marticulus Island", 749, 328);
+    addToponymLabel("label", "Mount Apollinaris", 925, 553);
+    addToponymLabel("label", "Mount Arsia", 1427, 565);
+    addToponymLabel("label", "Mount Pavonia", 1470, 512);
+    addToponymLabel("label", "Mount Ascra", 1508, 464);
+    addToponymLabel("label", "Mount Olympus Island", 1183, 381);
+    
         
 </script>

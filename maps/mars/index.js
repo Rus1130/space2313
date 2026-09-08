@@ -161,32 +161,44 @@ function findCityByTags(tags) {
 
 function addToponymLabel(type, label, x, y){
     const text = two.makeText(label, x, y);
+
     switch(type) {
         case "region": {
-            // size: large
-            // border: white
-            // text: black
+            text.size = 48;
+            text.stroke = "white";
+            text.fill = "black";
+        } break;
+        case "small region": {
+            text.size = 20;
+            text.fill = "black";
+            text.stroke = "white";
+            text.linewidth = 0.25;
         } break;
         case "country": {
-            // border: rgb(170, 170, 255)
-            // color: black
+            text.size = 32;
+            text.fill = "black";
+            text.stroke = "rgb(170, 170, 255)";
+            text.linewidth = 0.5;
         } break;
         // lake
         case "body": {
-            // small text
-            // color: black
-            // border: white
-            // italic
+            text.size = 22;
+            text.fill = "black";
+            text.stroke = "white";
+            text.linewidth = 0.25;
+            text.style = "italic";
         } break;
         // ocean/sea/whatever
         case "ocean": {
-            // large text
-            // color: black
-            // border: white
-            // italic
+            text.size = 32;
+            text.fill = "black";
+            text.stroke = "white";
+            text.linewidth = 0.4;
+            text.style = "italic";
         } break;
-        case "mountain": {
-            // color: rgb(170, 170, 255)
+        case "label": {
+            text.size = 16;
+            text.fill = "rgb(170, 170, 255)";
         } break;
     }
 }
