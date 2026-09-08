@@ -13,34 +13,31 @@ typewriter: {
     wordWrap: 72
 }
 
-[gopage "4" "a"]
-
 [sleep 1000]
 
-    [tab 6]From: [speed 70 override]tgardinier@lassel.um.orri[speeddefault][newline]
-    [tab 6]Sent: [speed 70 override]August 14th,[sleep 500] 2313[sleep 500] 18:40:25 SST[speeddefault][newline]
-    [tab 8]To: [speed 70 override]kdevine@falstaff.ob.orri[speeddefault][newline]
-    [tab 3]Subject: [speed 70 override]Strange Data[speeddefault][newline]
-    Attachment: [speed 70 override]data.fits[speeddefault][newline]
+[tab 6]From: [speed 70 override]tgardinier@lassel.um.orri[speeddefault][newline]
+[tab 6]Sent: [speed 70 override]August 14th,[sleep 500] 2313[sleep 500] 18:40:25 SST[speeddefault][newline]
+[tab 8]To: [speed 70 override]kdevine@falstaff.ob.orri[speeddefault][newline]
+[tab 3]Subject: [speed 70 override]Strange Data[speeddefault][newline]
+Attachment: [speed 70 override]data.fits[speeddefault][newline]
 
-    [newline]
+[newline]
 
-    Hey Kent,[linebreak instant][sleep 440]
+Hey Kent,[linebreak instant][sleep 440]
 
-    [speed 50]
-    I recently collected this data, but I ran into an issue trying to read it. It said the file’s corrupted, and I don’t have the tools over here to scrape the data out myself. Could you take a look at it ([sleep 380]when you [speed 40]have the[speed 50] time)[sleep 300]?[linebreak]
+[speed 50]
+I recently collected this data, but I ran into an issue trying to read it. It said the file’s corrupted, and I don’t have the tools over here to scrape the data out myself. Could you take a look at it ([sleep 380]when you [speed 40]have the[speed 50] time)[sleep 300]?[linebreak]
 
-    [sleep 50]
+[sleep 50]
 
-    \-Tom,[sleep 320] Lassel Outpost
+\-Tom,[sleep 320] Lassel Outpost
 
-    [linebreak instant]
-    [sleep 1080]
+[linebreak instant]
+[sleep 1080]
 
 [gopage "1" "Next >"]
 
 [page "1"]
-
     [sleep 1000]
 
     [tab 6]From: [speed 70 override]kdevine@falstaff.ob.orri[speeddefault][newline]
