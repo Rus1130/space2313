@@ -159,6 +159,38 @@ function findCityByTags(tags) {
     return matches;
 }
 
+function addToponymLabel(type, label, x, y){
+    const text = two.makeText(label, x, y);
+    switch(type) {
+        case "region": {
+            // size: large
+            // border: white
+            // text: black
+        } break;
+        case "country": {
+            // border: rgb(170, 170, 255)
+            // color: black
+        } break;
+        // lake
+        case "body": {
+            // small text
+            // color: black
+            // border: white
+            // italic
+        } break;
+        // ocean/sea/whatever
+        case "ocean": {
+            // large text
+            // color: black
+            // border: white
+            // italic
+        } break;
+        case "mountain": {
+            // color: rgb(170, 170, 255)
+        } break;
+    }
+}
+
 function addCities(path, cityLabels = []) {
     path = `src/${path}`;
     getImageData(path, (imgData) => {
