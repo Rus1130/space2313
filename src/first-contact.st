@@ -38,7 +38,6 @@ I recently collected this data, but I ran into an issue trying to read it. It sa
 [gopage "1" "Next >"]
 
 [page "1"]
-
     [sleep 1000]
 
     [tab 6]From: [speed 70 override]kdevine@falstaff.ob.orri[speeddefault][newline]
