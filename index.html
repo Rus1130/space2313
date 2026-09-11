@@ -31,6 +31,16 @@
         word-wrap: break-word;
         margin-bottom: 1em;
     }
+
+    .cover {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 10000;
+        background-color: black;
+    }
 </style>
 <head>
     <title>Space 2313</title>
@@ -39,6 +49,9 @@
     <meta property="og:description" content="Space 2313 is an idealistic alternate reality where the Solar System is explored not to pad the egos of billionaires, but to advance the collective knowledge of humanity.">
 </head>
 <body>
+    <div class="cover">
+
+    </div>
     <div class="description">
         Space 2313 is an idealistic alternate reality where the Solar System is explored not to pad the egos of billionaires, but to advance the collective knowledge of humanity.
         <br><br>
@@ -63,32 +76,55 @@
     <!-- <div class="button" data-onclick=./horizon'>▌Horizon</div> -->
     <!-- -- INSERT POINT -- -->
 </body>
-<script id="script">
+<script id="script" type="module">
+    import { SuperType } from 'https://rus1130.github.io/supertype/index.js';
     // location.href = x
-    (() => {
+    await (async () => {
+
         let clicks = 0;
         const divs = {};
+        const storyHashes = {};
 
-        const divsWithClassButton = Array.from(document.body.children).filter(div => div.classList.contains('button'));
+        const divsWithClassButton = Array.from(document.body.children)
+            .filter(div => div.classList.contains('button'));
 
-        let savedStories = {};
+        let savedStories = JSON.parse(
+            localStorage.getItem('savedStories-space2313') || '{}'
+        );
 
-        if(localStorage.getItem('savedStories-space2313') === null) {
-            localStorage.setItem('savedStories-space2313', JSON.stringify({
-                
-            }));
-        }
+        await Promise.all(divsWithClassButton.map(async (div, i) => {
+            const dummy = document.createElement('div');
+            const onclick = div.getAttribute('data-onclick');
+            const path = "./src/" + ((onclick + ".st").replaceAll("./", ""));
 
-        const savedStoriesLocalStorage = localStorage.getItem('savedStories-space2313');
+            const st = new SuperType(dummy);
+            await st.load(path);
 
-        // if its not there, save it, give it a [NEW] tag, and save it to localStorage
-        // if it is there, compare hashes, if they are different, give it a [!] tag, and save it to localStorage
+            const hash = st.hash();
+            storyHashes[onclick] = hash;
+
+            if(!(onclick in savedStories)) {
+                div.textContent += " [NEW]";
+            } else if(savedStories[onclick] !== hash) {
+                div.textContent += " [!]";
+            }
+        }));
+
+        document.querySelector('.cover').remove();
 
         divsWithClassButton.forEach((div, i) => {
             const onclick = div.getAttribute('data-onclick');
             if(!onclick) return;
 
             div.onclick = () => {
+                // Mark only this story as seen
+                savedStories[onclick] = storyHashes[onclick];
+
+                localStorage.setItem(
+                    'savedStories-space2313',
+                    JSON.stringify(savedStories)
+                );
+
                 location.href = onclick;
             };
         });
