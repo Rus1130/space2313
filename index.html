@@ -108,6 +108,8 @@
             } else if(savedStories[onclick] !== hash) {
                 div.textContent += " [!]";
             }
+
+            dummy.remove();
         }));
 
         document.querySelector('.cover').remove();
