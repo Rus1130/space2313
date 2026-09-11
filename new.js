@@ -55,14 +55,11 @@ const HTML_TEMPLATE =
             tw.appendToTarget(returnButton);
             tw.target.style.overflowY = 'scroll';
             tw.target.classList.add('hide-scrollbar');
-        },
-        "hardinstant": function() {
-            tw.state.userInstantOverride = !tw.state.userInstantOverride;
         }
     })
 
     await tw.load("./src/${nameNormalized}.st").then(() => {
-        tw.addControls("all");
+        tw.allowControls("all");
         tw.start();
     })
 </script>`
@@ -91,7 +88,7 @@ fs.writeFileSync(path.join('src', `${nameNormalized}.st`), txt_TEMPLATE.replaceA
 
 let homepage = fs.readFileSync(path.join('index.html'), 'utf8');
 let insertIndex = homepage.indexOf('<!-- -- INSERT POINT -- -->') - 4;
-let newLink = `    <!-- <div class="button" onclick="location.href = './${nameNormalized}'">▌${name}</div> -->`;
+let newLink = `    <!-- <div class="button" data-onclick='./${nameNormalized}'>▌${name}</div> -->`;
 
 homepage = homepage.slice(0, insertIndex) + newLink + '\r\n' + homepage.slice(insertIndex);
 fs.writeFileSync(path.join('index.html'), homepage);
