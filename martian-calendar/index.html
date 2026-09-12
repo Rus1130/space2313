@@ -13,10 +13,11 @@
         box-sizing: border-box;
     }
     html, body {
-        margin: 0; padding: 0;
+        margin: 0;
+        padding: 0;
         background: var(--white);
         color: var(--black);
-        font-family: 'Courier New', Courier, monospace;
+        font-family: monospace;
         font-size: 14px;
         line-height: 1.5;
     }
@@ -710,9 +711,10 @@
     function pad(n) { return String(n).padStart(2, '0'); }
     function pad4(n) { return String(n).padStart(4, '0'); }
 
+    const earthDateInput = document.getElementById('earthDateInput');
+    const earthTimeInput = document.getElementById('earthTimeInput');
+
     function wireConverter() {
-        const earthDateInput = document.getElementById('earthDateInput');
-        const earthTimeInput = document.getElementById('earthTimeInput');
         const toMarsBtn = document.getElementById('toMarsBtn');
         const toMarsResult = document.getElementById('toMarsResult');
 
@@ -795,5 +797,8 @@
     addHoliday("Ferrea", 27, "Terraforming Day")
 
     wireConverter();
+
+    earthDateInput.value = "2313-08-14"
+    earthTimeInput.value = "18:40:25"
 
 </script>
