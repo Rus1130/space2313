@@ -16,7 +16,7 @@ This report documents a series of events. Due to similarities between the follow
 Incident A[newline]
 Time: June 7, 2317 05:12:\-\- SST[newline]
 Approximately 142 hours in, /Lucky Toss,/ a Yargon\-class hauler, and her crew observed, what was described by witnesses, as a large “explosion” between approximately [ignore]10,000 to 50,000[ignore off] kilometers off of the port side of the hull. Approximately seven minutes later, all optical, radar, and lidar sensors simultaneously went offline.[linebreak]
-[$start]
+
 Incident B[newline]
 Time: August 12, 2317 14:\-\-:\-\- SST[newline]
 Approximately 2 hours in, /Marketman,/ a Mars\-class Starliner Cruiser, and her crew observed through a window an abnormal light flashing above the vessel. Upon review of optical recordings, the flashing was determined to be an Old Earth\-style method of long\-distance communication once known as “Morse Code.” The Morse Code was deciphered by ORRI researchers as follows:[linebreak]
