@@ -106,7 +106,15 @@
         justify-content: center;
         border: 1px solid var(--black);
         font-size: 0.75rem;
+        user-select: none;
     }
+
+    .day-cell.invert {
+        background-color: var(--accent);
+        color: var(--white);
+        border-color: var(--accent);
+    }
+
     /* .day-cell.partial { border: 1px solid var(--accent); color: var(--accent); } */
 
     .day-cell.blank {
@@ -282,7 +290,7 @@
     const MONTH_NAMES = {
         1: "January", // Jan
         2: "Febuary", // Feb
-        3: "Ferrum", // Fer
+        3: "Ferrea", // Fer
         4: "Four", 
         5: "Five",
         6: "Phobon", // Pho
@@ -523,6 +531,8 @@
                         } else {
                             cell.className = 'day-cell' + (isPartial ? ' partial' : '');
                             cell.textContent = dayNum;
+
+                            cell.id = `${month.name}-${dayNum}`;
                         }
                         col.appendChild(cell);
         
@@ -773,6 +783,16 @@
             toEarthResult.textContent = earth.toISOString().replace('T', ' ').replace('Z', ' UTC');
         });
     }
+
+    function addHoliday(month, day, name) {
+        const cell = document.getElementById(`${month}-${day}`);
+        if (cell) {
+            cell.classList.add('invert');
+            cell.title = name;
+        }
+    }
+
+    addHoliday("Ferrea", 27, "Terraforming Day")
 
     wireConverter();
 
