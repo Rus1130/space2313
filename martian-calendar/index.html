@@ -1,0 +1,784 @@
+<style>
+    button:focus, input:focus, select:focus, textarea:focus, [contenteditable]:focus {
+        outline:none;
+    }
+
+    :root {
+        --black: #000000;
+        --white: #ffffff;
+        --accent: #d7263d;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+    html, body {
+        margin: 0; padding: 0;
+        background: var(--white);
+        color: var(--black);
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .wrap {
+        /* max-width: 1100px; */
+        margin: 0 auto;
+        padding: 24px;
+    }
+ 
+    h1 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 0 0 20px;
+    }
+ 
+    .msg-box {
+        border: 2px solid var(--accent);
+        color: var(--accent);
+        padding: 12px 14px;
+        margin-bottom: 16px;
+    }
+    .msg-box ul {
+        margin: 0;
+        padding-left: 18px;
+    }
+    .msg-box li {
+        margin-bottom: 4px;
+    }
+ 
+    .year-block + .year-block {
+        margin-top: 30px;
+    }
+    .year-title {
+        font-weight: 700;
+        font-size: 1rem;
+        margin: 0 0 14px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid var(--black);
+    }
+ 
+    .months-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+    }
+ 
+    .month-card {
+        border: 2px solid var(--black);
+        padding: 14px;
+    }
+    .month-card h4 {
+        font-size: 0.95rem;
+        margin: 0 0 12px;
+        font-weight: 700;
+    }
+ 
+    .week-row {
+        display: flex;
+        gap: 4px;
+        flex-wrap: nowrap;
+        margin-bottom: 8px;
+    }
+    .header-row {
+        margin-bottom: 6px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--black);
+    }
+    .day-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        flex: 1 0 0;
+    }
+    .day-name { 
+        font-size: 0.6rem;
+        min-width: 30px;
+        text-align: center;
+        font-weight: 700;
+    }
+    .day-cell {
+        min-width: 30px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--black);
+        font-size: 0.75rem;
+    }
+    /* .day-cell.partial { border: 1px solid var(--accent); color: var(--accent); } */
+
+    .day-cell.blank {
+        min-width: 30px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--white);
+        font-size: 0.75rem;
+    }
+
+    /* ---- Converter ---- */
+    .converter-section {
+        border: 2px solid var(--black);
+        padding: 16px;
+        margin-bottom: 30px;
+    }
+    .converter-section h2 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0 0 6px;
+    }
+    .converter-note {
+        font-size: 0.75rem;
+        margin: 0 0 16px;
+        max-width: 70ch;
+    }
+    .converter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+    }
+    .converter-panel {
+        border: 2px solid var(--black);
+        padding: 14px;
+    }
+    .converter-panel h3 {
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin: 0 0 12px;
+    }
+    .field-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+        align-items: flex-end;
+    }
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .field label {
+        font-size: 0.65rem;
+        font-weight: 700;
+    }
+    .field input, .field select {
+        font-family: inherit;
+        font-size: 0.8rem;
+        border: 1px solid var(--black);
+        padding: 6px 8px;
+        background: var(--white);
+        color: var(--black);
+    }
+    .field input[type="number"] {
+        width: 80px;
+    }
+    .convert-btn {
+        font-family: inherit;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border: 2px solid var(--black);
+        background: var(--black);
+        color: var(--white);
+        padding: 8px 14px;
+        cursor: pointer;
+    }
+    .convert-btn:hover {
+        background: var(--accent);
+        border-color: var(--accent);
+    }
+    .result-box {
+        border: 1px solid var(--black);
+        padding: 10px 12px;
+        margin-top: 10px;
+        font-size: 0.8rem;
+        min-height: 1.5em;
+    }
+    .result-box .result-error {
+        color: var(--accent);
+    }
+</style>
+<head>
+    <meta property="og:title" content="Martian Calendar">
+    <meta property="og:description" content="Martian Calender">
+    <meta property="og:url" content="https://rus1130.github.io/space2313/martian-calendar/">
+</head>
+<body>
+    <div class="wrap">
+        <div class="converter-section" style="border: none;">
+            <h2>Earth &#8646; Mars Date Converter</h2>
+            <div class="converter-grid">
+                <div class="converter-panel">
+                    <h3>Earth &rarr; Mars</h3>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="earthDateInput">Earth date (UTC)</label>
+                            <input type="date" id="earthDateInput">
+                        </div>
+                        <div class="field">
+                            <label for="earthTimeInput">Time (UTC)</label>
+                            <input type="time" id="earthTimeInput" step="1" value="00:00:00">
+                        </div>
+                        <button class="convert-btn" id="toMarsBtn">Convert</button>
+                    </div>
+                    <div class="result-box" id="toMarsResult">&nbsp;</div>
+                </div>
+
+                <div class="converter-panel">
+                    <h3>Mars &rarr; Earth</h3>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="marsYearInput">Year</label>
+                            <input type="number" id="marsYearInput" value="1">
+                        </div>
+                        <div class="field">
+                            <label for="marsMonthInput">Month</label>
+                            <select id="marsMonthInput"></select>
+                        </div>
+                        <div class="field">
+                            <label for="marsDayInput">Sol (day)</label>
+                            <input type="number" id="marsDayInput" min="1" value="1">
+                        </div>
+                    </div>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="marsHourInput">Hour</label>
+                            <input type="number" id="marsHourInput" min="0" max="23" value="0">
+                        </div>
+                        <div class="field">
+                            <label for="marsMinInput">Minute</label>
+                            <input type="number" id="marsMinInput" min="0" max="59" value="0">
+                        </div>
+                        <div class="field">
+                            <label for="marsSecInput">Second</label>
+                            <input type="number" id="marsSecInput" min="0" max="59" value="0">
+                        </div>
+                        <button class="convert-btn" id="toEarthBtn">Convert</button>
+                    </div>
+                    <div class="result-box" id="toEarthResult">&nbsp;</div>
+                </div>
+            </div>
+        </div>
+
+        <h1>Martian Calendar</h1>
+        <div id="messages"></div>
+        <div id="output"></div>
+    </div>
+</body>
+<script>
+
+    // needs to add to 668
+
+    // 3 leap days every 5 years
+
+    // Martian second: 1.02749125 Earth seconds
+    // Martian minute: 60 martian seconds
+    // Martian hour: 60 martian minutes
+    // Martian day: 24 martian hours
+
+
+
+    // terraday: (2279 * 365) + 142 + 0.785266204
+    // terraday 831977.785266 days since year 0
+
+    const MONTH_NAMES = {
+        1: "January",
+        2: "Febuary",
+        3: "Ferrum",
+        4: "Four",
+        5: "Five",
+        6: "Phobon",
+        7: "Deimon",
+        8: "Meden",
+        9: "Nine",
+        10: "Aresum",
+        11: "Unonember",
+        12: "September",
+        13: "October",
+        14: "November",
+        15: "December",
+    }
+
+    const MONTH_LENGTHS = [
+        45, 44, 45, 44, 45,
+        44, 45 ,44, 45, 44,
+        45, 44, 45, 44, 45
+    ]
+
+    const CONFIG = {
+        yearName: "Meridian Calendar",
+        monthsPerYear: 15,
+        monthNames: Object.values(MONTH_NAMES),
+        daysPerMonth: MONTH_LENGTHS,
+        weekPattern: [7,7,8],
+        weekPatternResetsEachMonth: false,
+        strictWeekValidation: false,
+        dayNames: [
+            "Her", // Hermeday
+            "Ven", // Venesday
+            "Ter", // Terresdau
+            "Mar", // Marcesday
+            "Jov", // Jovisday
+            "Sat", // Saturday
+            "Cae", // Caeladay
+            "Nep",  // Nepusday
+        ]
+    };
+
+    const weekMap = {
+        "Her": "Hermeday",
+        "Ven": "Venesday",
+        "Ter": "Terresday",
+        "Mar": "Marcesday",
+        "Jov": "Jovisday",
+        "Sat": "Saturday",
+        "Cae": "Caeladay",
+        "Nep": "Nepusday",
+    }
+
+    
+    const output = document.getElementById('output');
+    const messages = document.getElementById('messages');
+    
+    function isPosInt(v) { return Number.isInteger(v) && v >= 1; }
+    
+    function validateAndBuild(config) {
+        const errors = [];
+        const warnings = [];
+        
+        if (!isPosInt(config.monthsPerYear)) {
+            errors.push('`monthsPerYear` must be a positive integer.');
+        }
+        
+        let daysPerMonth = [];
+        if (typeof config.daysPerMonth === 'number') {
+            if (!isPosInt(config.daysPerMonth)) {
+                errors.push('`daysPerMonth` must be a positive integer, or an array of positive integers.');
+            } else if (isPosInt(config.monthsPerYear)) {
+                daysPerMonth = Array(config.monthsPerYear).fill(config.daysPerMonth);
+            }
+        } else if (Array.isArray(config.daysPerMonth)) {
+            if (isPosInt(config.monthsPerYear) && config.daysPerMonth.length !== config.monthsPerYear) {
+                errors.push(`\`daysPerMonth\` has ${config.daysPerMonth.length} entries, but \`monthsPerYear\` is ${config.monthsPerYear}. These have to match.`);
+            }
+            config.daysPerMonth.forEach((d, i) => {
+                if (!isPosInt(d)) errors.push(`\`daysPerMonth[${i}]\` must be a positive integer (got ${JSON.stringify(d)}).`);
+            });
+            daysPerMonth = config.daysPerMonth;
+        } else {
+            errors.push('`daysPerMonth` must be a number or an array of numbers.');
+        }
+        
+        let monthNames = null;
+        if (config.monthNames !== undefined) {
+            if (!Array.isArray(config.monthNames)) {
+                errors.push('`monthNames` must be an array of strings.');
+            } else if (isPosInt(config.monthsPerYear) && config.monthNames.length !== config.monthsPerYear) {
+                errors.push(`\`monthNames\` has ${config.monthNames.length} entries, but \`monthsPerYear\` is ${config.monthsPerYear}.`);
+            } else {
+                monthNames = config.monthNames;
+            }
+        }
+        
+        // weekPattern: validated for shape only. It no longer needs to divide
+        // evenly into month/year lengths - the fixed-column layout below handles
+        // any remainder naturally by skewing the next month's start column,
+        // exactly like Earth's 7-day week skewing across 28/29/30/31-day months.
+        let weekPattern = null;
+        if (!Array.isArray(config.weekPattern) || config.weekPattern.length === 0) {
+            errors.push('`weekPattern` must be a non-empty array of positive integers, e.g. [8, 8, 6].');
+        } else {
+            let ok = true;
+            config.weekPattern.forEach((w, i) => {
+                if (!isPosInt(w)) { errors.push(`\`weekPattern[${i}]\` must be a positive integer (got ${JSON.stringify(w)}).`); ok = false; }
+            });
+            if (ok) weekPattern = config.weekPattern;
+        }
+        
+        const yearsToGenerate = config.yearsToGenerate !== undefined ? config.yearsToGenerate : 1;
+        if (!isPosInt(yearsToGenerate)) errors.push('`yearsToGenerate` must be a positive integer.');
+        
+        let dayNames = null;
+        if (config.dayNames !== undefined) {
+            if (!Array.isArray(config.dayNames) || config.dayNames.some(n => typeof n !== 'string')) {
+                errors.push('`dayNames` must be an array of strings.');
+            } else {
+                dayNames = config.dayNames;
+            }
+        }
+        
+        if (errors.length) return { errors, warnings };
+        
+        // Fixed number of weekday columns, exactly like Earth's 7 (S M T W T F S).
+        const numColumns = dayNames && dayNames.length ? dayNames.length : weekPattern[0];
+        
+        const years = [];
+        for (let y = 0; y < yearsToGenerate; y++) {
+            const months = [];
+            daysPerMonth.forEach((numDays, mi) => {
+                months.push({
+                    name: monthNames ? monthNames[mi] : `Month ${mi + 1}`,
+                    totalDays: numDays
+                });
+            });
+            years.push(months);
+        }
+        
+        return { errors: [], warnings, years, weekPattern, dayNames, numColumns, yearName: config.yearName || null };
+    }
+    
+    function escapeHtml(s) {
+        return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    
+    function renderMessages(errors, warnings) {
+        console.log(warnings)
+        messages.innerHTML = '';
+        if (errors.length) {
+            const box = document.createElement('div');
+            box.className = 'msg-box';
+            box.innerHTML = `<ul>${errors.map(e => `<li>${escapeHtml(e)}</li>`).join('')}</ul>`;
+            messages.appendChild(box);
+        }
+        if (warnings.length) {
+            const box = document.createElement('div');
+            box.className = 'msg-box';
+            box.innerHTML = `<ul>${warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul>`;
+            messages.appendChild(box);
+        }
+    }
+    
+    function buildMonthRows(totalDays, numColumns, startCol) {
+        const rows = [];
+        let row = new Array(startCol).fill(null);
+        for (let d = 1; d <= totalDays; d++) {
+            row.push(d);
+            if (row.length === numColumns) {
+                rows.push(row);
+                row = [];
+            }
+        }
+        if (row.length) rows.push(row);
+        return rows;
+    }
+    
+    function renderCalendar(result) {
+        output.innerHTML = '';
+        if (result.errors.length) return;
+        
+        const numColumns = result.numColumns;
+        let dayPointer = 0;
+        
+        result.years.forEach((months) => {
+            const yearBlock = document.createElement('div');
+            yearBlock.className = 'year-block';
+        
+            const grid = document.createElement('div');
+            grid.className = 'months-grid';
+        
+            months.forEach(month => {
+                const card = document.createElement('div');
+                card.className = 'month-card';
+        
+                const h4 = document.createElement('h4');
+                h4.textContent = month.name;
+                card.appendChild(h4);
+        
+                // Fixed weekday header, shown once per month - like S M T W T F S.
+                if (result.dayNames && result.dayNames.length) {
+                    const headerRow = document.createElement('div');
+                    headerRow.className = 'week-row header-row';
+                    for (let c = 0; c < numColumns; c++) {
+                        const col = document.createElement('div');
+                        col.className = 'day-col';
+                        const dn = document.createElement('div');
+                        dn.className = 'day-name';
+                        dn.textContent = result.dayNames[c];
+                        col.appendChild(dn);
+                        headerRow.appendChild(col);
+                    }
+                    card.appendChild(headerRow);
+                }
+        
+                const startCol = dayPointer % numColumns;
+                const rows = buildMonthRows(month.totalDays, numColumns, startCol);
+        
+                rows.forEach(row => {
+                    const isPartial = row.length < numColumns;
+                    const rowEl = document.createElement('div');
+                    rowEl.className = 'week-row';
+
+                    if(row.length < numColumns) {
+                        while(row.length < numColumns) {
+                            row.push(null);
+                        }
+                    }
+        
+                    row.forEach(dayNum => {
+                        const col = document.createElement('div');
+                        col.className = 'day-col';
+        
+                        const cell = document.createElement('div');
+                        if (dayNum === null) {
+                            cell.textContent = '\u00A0';
+                            cell.className = 'day-cell blank';
+                        } else {
+                            cell.className = 'day-cell' + (isPartial ? ' partial' : '');
+                            cell.textContent = dayNum;
+                        }
+                        col.appendChild(cell);
+        
+                        rowEl.appendChild(col);
+                    });
+        
+                    card.appendChild(rowEl);
+                });
+        
+                dayPointer += month.totalDays;
+        
+                grid.appendChild(card);
+            });
+        
+            yearBlock.appendChild(grid);
+            output.appendChild(yearBlock);
+        });
+    }
+    
+    function generate() {
+        const result = validateAndBuild(CONFIG);
+        renderMessages(result.errors, result.warnings);
+        if (!result.errors.length) renderCalendar(result);
+    }
+    
+    generate();
+
+    const MARS_EPOCH_MSD = 93846.53831606936;
+    const SOLS_PER_COMMON_YEAR = 668;
+    const LEAP_INTERCALARY_DAYS = 3;
+    const LEAP_CYCLE = 5;
+
+    function marsIsLeapYear(year) {
+        return ((year % LEAP_CYCLE) + LEAP_CYCLE) % LEAP_CYCLE === 0;
+    }
+
+    function marsYearLength(year) {
+        return SOLS_PER_COMMON_YEAR + (marsIsLeapYear(year) ? LEAP_INTERCALARY_DAYS : 0);
+    }
+
+    function monthLengthsForYear(year) {
+        let lengths = MONTH_LENGTHS.slice();
+
+        if (marsIsLeapYear(year)) {
+            lengths[lengths.length - 1] += LEAP_INTERCALARY_DAYS;
+        }
+
+        return lengths;
+    }
+
+    function solsBeforeYear(year) {
+        let n = year - 1;
+
+        if (n >= 0) {
+            return SOLS_PER_COMMON_YEAR * n +
+                LEAP_INTERCALARY_DAYS * Math.floor(n / LEAP_CYCLE);
+        }
+
+        return SOLS_PER_COMMON_YEAR * n +
+            LEAP_INTERCALARY_DAYS * Math.floor((n + 1) / LEAP_CYCLE);
+    }
+
+    function solIndexToCalendar(solIndex) {
+        let year = 1;
+
+        if (solIndex >= 0) {
+            let cycles = Math.floor(solIndex / (SOLS_PER_COMMON_YEAR * LEAP_CYCLE + LEAP_INTERCALARY_DAYS));
+            year = cycles * LEAP_CYCLE + 1;
+
+            while (solsBeforeYear(year + 1) <= solIndex) {
+                year++;
+            }
+        } else {
+            while (solsBeforeYear(year) > solIndex) {
+                year--;
+            }
+        }
+
+        let dayOfYear = solIndex - solsBeforeYear(year);
+        let lengths = monthLengthsForYear(year);
+
+        let acc = 0;
+
+        for (let m = 0; m < lengths.length; m++) {
+            if (dayOfYear < acc + lengths[m]) {
+                return {
+                    year,
+                    month: m + 1,
+                    day: dayOfYear - acc + 1
+                };
+            }
+
+            acc += lengths[m];
+        }
+
+        throw new Error(`Invalid sol index ${solIndex}`);
+    }
+
+    function calendarToSolIndex({ year, month, day }) {
+        let base = solsBeforeYear(year);
+        let lengths = monthLengthsForYear(year);
+
+        if (month < 1 || month > lengths.length) {
+            throw new Error(`Invalid Martian month ${month}`);
+        }
+
+        if (day < 1 || day > lengths[month - 1]) {
+            throw new Error(`Invalid Martian sol ${day}`);
+        }
+
+        let acc = 0;
+
+        for (let m = 0; m < month - 1; m++) {
+            acc += lengths[m];
+        }
+
+        return base + acc + day - 1;
+    }
+
+    function earthDateToMSD(date) {
+        const jd = date.getTime() / 86400000 + 2440587.5; // Julian Date (UTC)
+        return (jd - 2451549.5) / 1.0274912517 + 44796.0 - 0.0009626 - MARS_EPOCH_MSD;
+    }
+
+    function msdToEarthDate(msd) {
+        const shifted = msd + MARS_EPOCH_MSD;
+        const jd = (shifted - 44796.0 + 0.0009626) * 1.0274912517 + 2451549.5;
+        return new Date((jd - 2440587.5) * 86400000);
+    }
+
+    function earthToMars(date) {
+        let msd = earthDateToMSD(date);
+        let solIndex = Math.floor(msd);
+        let fraction = msd - solIndex;
+
+        let cal = solIndexToCalendar(solIndex);
+
+        let totalMartianSeconds = Math.floor(fraction * 86400);
+
+        let hour = Math.floor(totalMartianSeconds / 3600);
+        let minute = Math.floor((totalMartianSeconds % 3600) / 60);
+        let second = totalMartianSeconds % 60;
+
+        let weekday =
+            ((solIndex % CONFIG.dayNames.length) +
+            CONFIG.dayNames.length) %
+            CONFIG.dayNames.length;
+
+        return {
+            ...cal,
+            hour,
+            minute,
+            second,
+            weekday,
+            solIndex
+        };
+    }
+
+    function marsToEarth({ year, month, day, hour, minute, second }) {
+        const solIndex = calendarToSolIndex({ year, month, day });
+        const fraction = ((hour || 0) * 3600 + (minute || 0) * 60 + (second || 0)) / 86400;
+        return msdToEarthDate(solIndex + fraction);
+    }
+
+    const marsMonthSelect = document.getElementById('marsMonthInput');
+    if (marsMonthSelect) {
+        MONTH_LENGTHS.forEach((_, i) => {
+            const opt = document.createElement('option');
+            opt.value = i + 1;
+            opt.textContent = `${i + 1}. ${CONFIG.monthNames[i]}`;
+            marsMonthSelect.appendChild(opt);
+        });
+    }
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function pad4(n) { return String(n).padStart(4, '0'); }
+
+    function wireConverter() {
+        const earthDateInput = document.getElementById('earthDateInput');
+        const earthTimeInput = document.getElementById('earthTimeInput');
+        const toMarsBtn = document.getElementById('toMarsBtn');
+        const toMarsResult = document.getElementById('toMarsResult');
+
+        const now = new Date();
+        earthDateInput.value = now.toISOString().slice(0, 10);
+        earthTimeInput.value = now.toISOString().slice(11, 19);
+
+        toMarsBtn.addEventListener('click', () => {
+            if (!earthDateInput.value) {
+                toMarsResult.innerHTML = '<span class="result-error">Pick an Earth date first.</span>';
+                return;
+            }
+            const timeStr = earthTimeInput.value || '00:00:00';
+            const iso = `${earthDateInput.value}T${timeStr.length === 5 ? timeStr + ':00' : timeStr}Z`;
+            const date = new Date(iso);
+            if (isNaN(date.getTime())) {
+                toMarsResult.innerHTML = '<span class="result-error">That date/time could not be parsed.</span>';
+                return;
+            }
+            const mars = earthToMars(date);
+            const monthLabel = `${CONFIG.monthNames[mars.month - 1]} ${mars.day}`;
+
+            let formattedDate;
+
+            // YYYY/MM/DD format
+            formattedDate = `${pad4(mars.year.toString().replaceAll("-",""))}/${pad(mars.month)}/${pad(mars.day)}`;
+
+            if(mars.year < 0) {
+                formattedDate = `-${formattedDate}`;
+            }
+
+            toMarsResult.innerHTML =
+                `${weekMap[CONFIG.dayNames[mars.weekday]]}, ${monthLabel}, Year ${mars.year} <br>` +
+                `${pad(mars.hour)}:${pad(mars.minute)}:${pad(mars.second)} ArST <br>` +
+                `\n\n${formattedDate} (YYYY/MM/DD)`;
+        });
+
+        const marsYearInput = document.getElementById('marsYearInput');
+        const marsDayInput = document.getElementById('marsDayInput');
+        const marsHourInput = document.getElementById('marsHourInput');
+        const marsMinInput = document.getElementById('marsMinInput');
+        const marsSecInput = document.getElementById('marsSecInput');
+        const toEarthBtn = document.getElementById('toEarthBtn');
+        const toEarthResult = document.getElementById('toEarthResult');
+
+        toEarthBtn.addEventListener('click', () => {
+            const year = parseInt(marsYearInput.value, 10);
+            const month = parseInt(marsMonthSelect.value, 10);
+            const day = parseInt(marsDayInput.value, 10);
+
+            if (!Number.isInteger(year) || !Number.isInteger(day) || day < 1) {
+                toEarthResult.innerHTML = '<span class="result-error">Enter a valid year and sol.</span>';
+                return;
+            }
+            const maxDay = monthLengthsForYear(year)[month - 1];
+            if (day > maxDay) {
+                toEarthResult.innerHTML = `<span class="result-error">${CONFIG.monthNames[month - 1]} has ${maxDay} sols in year ${year}${marsIsLeapYear(year) ? ' (a leap year)' : ''}.</span>`;
+                return;
+            }
+
+            const earth = marsToEarth({
+                year, month, day,
+                hour: parseInt(marsHourInput.value, 10) || 0,
+                minute: parseInt(marsMinInput.value, 10) || 0,
+                second: parseInt(marsSecInput.value, 10) || 0
+            });
+
+            toEarthResult.textContent = earth.toISOString().replace('T', ' ').replace('Z', ' UTC');
+        });
+    }
+
+    wireConverter();
+
+</script>
