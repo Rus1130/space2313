@@ -41,7 +41,7 @@ const HTML_TEMPLATE =
 <body>
 </body>
 <script type="module">
-    import { SuperType } from 'https://rus1130.github.io/supertype/index.js';
+    import { SuperType, TagArgument } from 'https://rus1130.github.io/supertype/index.js';
 
     const tw = new SuperType(document.body, {
         "end": function() {

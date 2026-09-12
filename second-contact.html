@@ -1,0 +1,62 @@
+<!-- written 11 sept, 2026 -->
+<head>
+    <link rel="stylesheet" href="./src/css.css">
+    <meta property="og:title"       content="Second Contact"                                      />
+    <meta property="og:description" content="Rejoice."                                            />
+    <meta property="og:url"         content="https://rus1130.github.io/space2313/second-contact/" />
+    <title>Second Contact</title>
+</head>
+<body>
+</body>
+<script type="module">
+    import { SuperType, TagArgument } from 'https://rus1130.github.io/supertype/index.js';
+
+    const tw = new SuperType(document.body, {
+        "end": function() {
+            const returnButton = document.createElement("div");
+            returnButton.classList.add("button");
+            returnButton.id = "return";
+            returnButton.textContent = "▌< Return";
+            returnButton.onclick = () => {
+                location.href = 'https://rus1130.github.io/space2313/';
+            };
+            tw.appendToTarget(returnButton);
+            tw.target.style.overflowY = 'scroll';
+            tw.target.classList.add('hide-scrollbar');
+        },
+        "jitterlerp": function(engine, token){
+            const [name, text, leftValue, rightValue] = token.args;
+
+            text.check("string")
+            leftValue.check("number")
+            rightValue.check("number")
+
+            const tokens = [];
+
+            for(let i = 0; i < text.value.length; i++){
+                const character = text.value[i];
+
+                // interpolate
+                const strength = leftValue.value + (rightValue.value - leftValue.value) * (i / (text.value.length - 1));
+
+                tokens.push({
+                    type: "tag",
+                    name: "jitter",
+                    style: token.style,
+                    args: [
+                        new TagArgument("string", character),
+                        new TagArgument("number", strength),
+                    ]
+                })
+            }
+
+            engine.insertTokens(tokens);
+        },
+
+    })
+
+    await tw.load("./src/second-contact.st").then(() => {
+        tw.allowControls("all");
+        tw.start();
+    })
+</script>
