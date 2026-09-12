@@ -4,7 +4,7 @@ typewriter: {
     newlineDelay: 700
     textColor: #ffffff
     backgroundColor: #000000
-    wordWrap: 120
+    wordWrap: 110
     customDelays: {
         ",": 680
         ".": 700

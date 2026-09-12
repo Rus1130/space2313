@@ -11,7 +11,7 @@ typewriter: {
         ":": 400
         "—": 500
     }
-    wordWrap: 100
+    wordWrap: 110
 }
 [sleep 1000]
 Interviewer: My name is Alyssa Marsalee, and today I’ll be interviewing..[linebreak]
