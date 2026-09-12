@@ -88,7 +88,7 @@ fs.writeFileSync(path.join('src', `${nameNormalized}.st`), txt_TEMPLATE.replaceA
 
 let homepage = fs.readFileSync(path.join('index.html'), 'utf8');
 let insertIndex = homepage.indexOf('<!-- -- INSERT POINT -- -->') - 4;
-let newLink = `    <!-- <div class="button" data-onclick='./${nameNormalized}'>▌${name}</div> -->`;
+let newLink = `    <!-- <div class="button" data-onclick="./${nameNormalized}">▌${name}</div> -->`;
 
 homepage = homepage.slice(0, insertIndex) + newLink + '\r\n' + homepage.slice(insertIndex);
 fs.writeFileSync(path.join('index.html'), homepage);
