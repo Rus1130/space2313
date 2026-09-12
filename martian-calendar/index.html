@@ -68,6 +68,7 @@
     .month-card {
         border: 2px solid var(--black);
         padding: 14px;
+        user-select: none;
     }
     .month-card h4 {
         font-size: 0.95rem;
@@ -291,15 +292,15 @@
     const MONTH_NAMES = {
         1: "January", // Jan
         2: "Febuary", // Feb
-        3: "Ferrea", // Fer
-        4: "Four", 
+        3: "Ferrune", // Fer 
+        4: "Four",
         5: "Five",
         6: "Phobon", // Pho
         7: "Deimon", // Dei
         8: "Meden", // Med
         9: "Nine",
-        10: "Aresum", // Are
-        11: "Unonember", // Uno
+        10: "Aresune", // Are
+        11: "Undecember", // Und
         12: "September", // Sept
         13: "October", // Oct
         14: "November", // Nov
@@ -787,14 +788,15 @@
     }
 
     function addHoliday(month, day, name) {
-        const cell = document.getElementById(`${month}-${day}`);
+
+        const cell = document.getElementById(`${MONTH_NAMES[month]}-${day}`);
         if (cell) {
             cell.classList.add('invert');
             cell.title = name;
         }
     }
 
-    addHoliday("Ferrea", 27, "Terraforming Day")
+    addHoliday(3, 27, "Terraforming Day")
 
     wireConverter();
 
