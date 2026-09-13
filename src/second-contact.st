@@ -52,7 +52,7 @@ As the vessel had not yet fully left ITA Basilica space, ORRI field researchers 
 [page "d"]
     Incident D[newline]
     Time: January 7th, 2318 02:20:13 SST[newline]
-    \174 hours and 30 minutes into her journey, /Sunday’s Request,/ an Arecibo\-class Cruiser, received an audio message. After which her crew of two emergency hailed the nearest vessel, which was answered by /Texas Creamery,/ an Evergreen\-class Freighter. During questioning, the crew of /Sunday’s Request/ stated that they, quote, “did not want to be alone.”[linebreak]
+    \174 hours and 30 minutes into her journey, /Sunday’s Request,/ an Arecibo\-class Cruiser, received an audio message. After which her crew of two emergency hailed the nearest vessel, which was answered by /Texas Creamery,/ an Evergreen\-class freighter. During questioning, the crew of /Sunday’s Request/ stated that they, quote, “did not want to be alone.”[linebreak]
 
     ORRI researchers were unable to determine the message’s point of origin.[linebreak]
     
