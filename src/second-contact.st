@@ -17,7 +17,7 @@ This report documents a series of events. Due to similarities between the follow
 [page "a"]
     Incident A[newline]
     Time: June 7, 2317 05:12:\-\- SST[newline]
-    Approximately 142 hours into her journey, /Lucky Toss,/ a Yargon\-class hauler, and her crew observed, what was described by witnesses, as a large “explosion” between approximately [ignore]10,000 to 50,000[ignore off] kilometers off of the port side of the hull. Approximately seven minutes later, all optical, radar, and lidar sensors simultaneously went offline.[linebreak][gopage "b" "Incident B >"]
+    Approximately 142 hours into her journey, /Lucky Toss,/ a Yargon\-class hauler, and her crew observed, what was described by witnesses, as a large “explosion” between approximately [ignore]10,000 to 50,000[ignore off] kilometers off of the port side of the vessel. Approximately seven minutes later, all optical, radar, and lidar sensors simultaneously went offline.[linebreak][gopage "b" "Incident B >"]
 [page end]
 
 [page "b"]
