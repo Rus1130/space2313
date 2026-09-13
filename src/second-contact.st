@@ -11,6 +11,7 @@ typewriter: {
     }
     wordWrap: 100
 }
+[$page "d"]
 This report documents a series of events. Due to similarities between the following data, and to that from the Gardinier Message, ORRI has concluded that the data contained herein, and that of the former, share an origin. The events documented in this report have been consequently designated as “Second Contact,” or, in more general terms, the “Neptune Corridor Incidents.” All incidents occured along the Neptune Corridor, between ITA Basilica and ITA Actium Stations, endward.[linebreak][gopage "a" "Incident A >"]
 
 [page "a"]
@@ -67,11 +68,11 @@ As the vessel had not yet fully left ITA Basilica space, ORRI field researchers 
 
     \[low, dry screeching, followed by several wet, strained vocalizations, as though the speaker is attempting to clear its throat, lasting [ignore]8.22[ignore off] seconds\][linebreak]
 
-    \[pause lasting [ignore]1.7[ignore off] seconds\][sleep 1700][linebreak instant]
+    \[pause lasting [ignore]1.7[ignore off] seconds\][sleep 6028][linebreak instant]
 
     [speed 200][custom "\n" 3000]
     [speed 210][jitter "Our great he" 7][speed 290]li[speed 201][sleep 120][jitter "x h" 8][speed 190][jitter "as " 4][sleep 200][jitter "come to y" 6][speed 195]ou.[newline]
-    Rej[sleep 500]oice.[newline]
+    Rej[sleep 500]oice[jitter "." 10][newline]
     [jitter "B" 7][jitter "e" 5] [jitter "happ" 12][speed 50][repeat 10][removelast 1]p[repeat end][speed 200]y.[newline][sleep 899]
     We [sleep 39][jitter "have com" 6][jitter "e" 7].[newline]
     [jitter "Be ha" 4][jitter "p" 3]py.[newline]
