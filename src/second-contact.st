@@ -15,11 +15,11 @@ This report documents a series of events. Due to similarities between the follow
 
 Incident A[newline]
 Time: June 7, 2317 05:12:\-\- SST[newline]
-Approximately 142 hours in, /Lucky Toss,/ a Yargon\-class hauler, and her crew observed, what was described by witnesses, as a large “explosion” between approximately [ignore]10,000 to 50,000[ignore off] kilometers off of the port side of the hull. Approximately seven minutes later, all optical, radar, and lidar sensors simultaneously went offline.[linebreak]
+Approximately 142 hours into her journey, /Lucky Toss,/ a Yargon\-class hauler, and her crew observed, what was described by witnesses, as a large “explosion” between approximately [ignore]10,000 to 50,000[ignore off] kilometers off of the port side of the hull. Approximately seven minutes later, all optical, radar, and lidar sensors simultaneously went offline.[linebreak]
 
 Incident B[newline]
 Time: August 12, 2317 14:\-\-:\-\- SST[newline]
-Approximately 2 hours in, /Marketman,/ a Mars\-class Starliner Cruiser, and her crew observed through a window an abnormal light flashing above the vessel. Upon review of optical recordings, the flashing was determined to be an Old Earth\-style method of long\-distance communication once known as “Morse Code.” The Morse Code was deciphered by ORRI researchers as follows:[linebreak]
+Approximately 2 hours into her journey, /Marketman,/ a Mars\-class Starliner Cruiser, and her crew observed through a window an abnormal light flashing above the vessel. Upon review of optical recordings, the flashing was determined to be an Old Earth\-style method of long\-distance communication once known as “Morse Code.” The Morse Code was deciphered by ORRI researchers as follows:[linebreak]
 
 [speed 35 override]Hello.Hello.Hello.Hello.Hello.[speeddefault][linebreak]
 
@@ -27,7 +27,7 @@ As the vessel had not yet fully left ITA Basilica space, ORRI field researchers 
 
 Incident C[newline]
 Time: December 10, 2317 09:12:28 SST[newline]
-270 hours, 16 minutes, and 30 seconds in, /High Pitch,/ a Pioneer\-class Helium Mining Barge, experienced a momentary total loss of pilot\-controlled flight navigation, during which its navigational functions were temporarily taken over. The computer received a signal, from an unknown source, to deviate 86° yaw, [ignore]47.5[ignore off]° pitch, and continue for [ignore]33,587.771[ignore off] kilometers.[linebreak]
+270 hours, 16 minutes, and 30 seconds into her journey, /High Pitch,/ a Pioneer\-class Helium Mining Barge, experienced a momentary total loss of pilot\-controlled flight navigation, during which its navigational functions were temporarily taken over. The computer received a signal, from an unknown source, to deviate 86° yaw, [ignore]47.5[ignore off]° pitch, and continue for [ignore]33,587.771[ignore off] kilometers.[linebreak]
 
 After 2 minutes and 1 second, the pilot noticed the overridden destination, and attempted to regain control of the navigational computer. After several unsuccessful attempts to do so lasting 4 minutes and 12 seconds, the pilot determined that were unable to regain control of the navigational computer, and elected to follow protocol.[linebreak]
 
@@ -43,7 +43,7 @@ Of particular note, the transmitted course correction contained no identifying i
 
 Incident D[newline]
 Time: January 7th, 2318 02:20:13 SST[newline]
-Approximately 174 hours and 30 minutes in, /Sunday’s Request,/ an Arecibo\-class Cruiser, received an audio message. After which her crew of two emergency hailed the nearest vessel, which was answered by /Zirconium Star,/ a Neptune\-class Starliner Supercruiser. During questioning, the crew of /Sunday’s Request/ stated that they, quote, “did not want to be alone.”[linebreak]
+\174 hours and 30 minutes into her journey, /Sunday’s Request,/ an Arecibo\-class Cruiser, received an audio message. After which her crew of two emergency hailed the nearest vessel, which was answered by /Zirconium Star,/ a Neptune\-class Starliner Supercruiser. During questioning, the crew of /Sunday’s Request/ stated that they, quote, “did not want to be alone.”[linebreak]
 
 ORRI researchers were unable to determine the message’s point of origin.[linebreak]
 
