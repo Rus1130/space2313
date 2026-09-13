@@ -12,8 +12,6 @@ typewriter: {
     }
     wordWrap: 72
 }
-[$page "4"]
-
 [sleep 1000]
 
 [tab 6]From: [speed 70 override]tgardinier@lassel.um.orri[speeddefault][newline]
