@@ -12,7 +12,7 @@ typewriter: {
     wordWrap: 100
 }
 
-This report documents a series of events. Due to similarities between the following data, and to that from the Gardinier Message, ORRI has concluded that the data contained herein, and that of the former, share an origin. The events documented in this report have been consequently designated as “Second Contact,” or, in more general terms, the “Neptune Corridor Incidents.” All incidents occured along the Neptune Corridor, between ITA Basilica and ITA Actium Stations, endward.[linebreak][gopage "a" "Incident A >"]
+This report documents a series of events. Due to similarities between the following data, and to that from the Gardinier Message, ORRI has concluded that the data contained herein, and that of the former, share an origin. The events documented in this report have been consequently designated as “Second Contact,” or, in more general terms, the “Neptune Corridor Incidents.” All incidents occured along the Neptune Corridor, between ITA Basilica and ITA Actium Stations, endward, but at multiple points throughout.[linebreak][gopage "a" "Incident A >"]
 
 [page "a"]
     Incident A[newline]
@@ -21,11 +21,12 @@ This report documents a series of events. Due to similarities between the follow
 [page end]
 
 [page "b"]
+
 Incident B[newline]
 Time: August 12, 2317 14:\-\-:\-\- SST[newline]
 Approximately 10 minutes into her journey, /Marketman,/ a Mars\-class Starliner Cruiser, and her crew observed through a window an abnormal light flashing above the vessel. Upon review of optical recordings, the flashing was determined to be an Old Earth\-style method of long\-distance communication once known as “Morse Code.” The Morse Code was deciphered by ORRI researchers as follows:[linebreak]
 
-[speed 35 override]Hello.Hello.Hello.Hello.Hello.[speeddefault][linebreak]
+[speed 179 override]Hello.Hello.Hello.Hello.Hello.[speeddefault][linebreak]
 
 As the vessel had not yet fully left ITA Basilica space, ORRI field researchers interviewed many civilians who were inside of the station, and were proven to be standing near windows facing the message. However, none reported finding any witnesses. Review of external station cameras proved futile.[linebreak][gopage "c" "Incident C >"]
 [page end]
@@ -56,7 +57,7 @@ As the vessel had not yet fully left ITA Basilica space, ORRI field researchers 
     ORRI researchers were unable to determine the message’s point of origin.[linebreak]
     
     A transcript of the message is as follows:[sleep 1430][linebreak]
-    [custom "\n" 2100][speed 70]
+    [custom "\n" 2100][speed 40]
 
     \[indistinct noise for [ignore]5.37[ignore off] seconds\][linebreak]
 
@@ -88,8 +89,8 @@ As the vessel had not yet fully left ITA Basilica space, ORRI field researchers 
     [jitter "What we k" 55][sleep 544][jitter "now." 55][newline]
     [jitter "To you." 45][custom "\n" 500][linebreak]
 
-    [speed 35]
-    \[At this point, the speech becomes unintelligible, whether through vocal straining or audio signal corruption\][sleep 500]
+    [speed 40]
+    [sleep 2820]\[At this point, the speech becomes unintelligible, whether through vocal straining or audio signal corruption\][sleep 500]
     [speed 200]
 
     [linebreak][newline][custom "\n" 3000] 
@@ -97,7 +98,7 @@ As the vessel had not yet fully left ITA Basilica space, ORRI field researchers 
     [function "jitterlerp" "OůrĚpśnũpŮiŝoŨ." 50 200][newline]
     [function "jitterlerp" "ɨeɆhʇpʖyɔ" 250 500][linebreak][newline instant][linebreak instant]
 
-    [speed 35]
+    [speed 40]
     [sleep 4550]\[The speaker coughs, and cries in pain. A wet, splattering sound can be heard\][sleep 2400]
 
 
