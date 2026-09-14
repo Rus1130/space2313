@@ -72,7 +72,7 @@ ROUTE[linebreak instant][@use "newdelay"]
 [tab 6]DEPARTURE : Ome Spaceport, Japan, ER[newline instant][@use "newdelay"]
 [tab 4]DESTINATION : Conamara Station, EP, ZU[linebreak instant][@use "newdelay"]
 
-TIME SUBMITTED: [customremove ":"]2214\-08\-15 4:[linebreak instant]
+TIME SUBMITTED: [customremove ":"]2318\-01\-26 4:[linebreak instant]
 
 [custom "," 450]
 [custom "." 750]
