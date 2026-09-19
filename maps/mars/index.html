@@ -124,6 +124,12 @@
     addOverlay(sources.subdivisions.meridia.thaumasia);
     addOverlay(sources.subdivisions.meridia.vinogradov);
 
+    for(let [type, source] of Object.entries(sources.subdivisions.meridia)){
+        getFirstNonTransparentColor("src/"+source).then(color => {
+            console.log(type, "color: ", color);
+        });
+    }
+
     //boralia
     addCities(sources.cities.boralia.district1, [
         {name: "Spit",   type: "default", pos: "r", y: 0},

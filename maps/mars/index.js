@@ -40,6 +40,42 @@ function getLabelOffset(radius, size, pos = "tr") {
     return { dx, dy, alignment };
 }
 
+async function getFirstNonTransparentColor(imagePath) {
+    const image = new Image();
+    image.src = imagePath;
+
+    await image.decode();
+
+    const canvas = document.createElement("canvas");
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(image, 0, 0);
+
+    const pixels = ctx.getImageData(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    ).data;
+
+    for (let i = 0; i < pixels.length; i += 4) {
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
+        const a = pixels[i + 3];
+
+        if (a > 0) {
+            return "#" + [r, g, b]
+                .map(value => value.toString(16).padStart(2, "0"))
+                .join("");
+        }
+    }
+
+    return null;
+}
+
 // cache decoded image data so re-running addCities on the same path is free
 const IMAGE_DATA_CACHE = new Map();
 
