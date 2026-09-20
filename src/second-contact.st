@@ -36,7 +36,7 @@ As the vessel had not yet fully left ITA Basilica space, ORRI field researchers 
     Time: December 10, 2317 09:12:28 SST[newline]
     270 hours, 16 minutes, and 30 seconds into her journey, /High Pitch,/ a Pioneer\-class Helium Mining Barge, experienced a momentary total loss of pilot\-controlled flight navigation, during which its navigational functions were temporarily taken over. The computer received a signal, from an unknown source, to deviate 86° yaw, [ignore]47.5[ignore off]° pitch, and continue for [ignore]33,587.771[ignore off] kilometers.[linebreak]
 
-    After 2 minutes and 1 second, the pilot noticed the overridden destination, and attempted to regain control of the navigational computer. After several unsuccessful attempts to do so lasting 4 minutes and 12 seconds, the pilot determined that were unable to regain control of the navigational computer, and elected to follow protocol.[linebreak]
+    After 2 minutes and 1 second, the pilot noticed the overridden destination, and attempted to regain control of the navigational computer. After several unsuccessful attempts to do so lasting 4 minutes and 12 seconds, the pilot determined that they were unable to regain control of the navigational computer, and elected to follow protocol.[linebreak]
 
     In the event that the pilot is unable to control the navigational computer, they are to retrieve all non\-tampered pertinent information, and destroy the navigational computer in a controlled environment.[linebreak]
 
