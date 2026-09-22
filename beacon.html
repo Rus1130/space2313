@@ -1,0 +1,33 @@
+<!-- written 22 sept, 2026 -->
+<head>
+    <link rel="stylesheet" href="./src/css.css">
+    <meta property="og:title"       content="BEACON"                                      />
+    <meta property="og:description" content=""                                            />
+    <meta property="og:url"         content="https://rus1130.github.io/space2313/beacon/" />
+    <title>BEACON</title>
+</head>
+<body>
+</body>
+<script type="module">
+    import { SuperType, TagArgument } from 'https://rus1130.github.io/supertype/index.js';
+
+    const tw = new SuperType(document.body, {
+        "end": function() {
+            const returnButton = document.createElement("div");
+            returnButton.classList.add("button");
+            returnButton.id = "return";
+            returnButton.textContent = "▌< Return";
+            returnButton.onclick = () => {
+                location.href = 'https://rus1130.github.io/space2313/';
+            };
+            tw.appendToTarget(returnButton);
+            tw.target.style.overflowY = 'scroll';
+            tw.target.classList.add('hide-scrollbar');
+        }
+    })
+
+    await tw.load("./src/beacon.st").then(() => {
+        tw.allowControls("all");
+        tw.start();
+    })
+</script>
