@@ -132,13 +132,11 @@
     /* ---- Converter ---- */
     .converter-section {
         border: 2px solid var(--black);
-        padding: 16px;
         margin-bottom: 30px;
     }
     .converter-section h2 {
         font-size: 1rem;
         font-weight: 700;
-        margin: 0 0 6px;
     }
     .converter-note {
         font-size: 0.75rem;
@@ -236,7 +234,6 @@
                     </div>
                     <div class="result-box" id="toMarsResult">&nbsp;</div>
                 </div>
-
                 <div class="converter-panel">
                     <h3>Mars &rarr; Earth</h3>
                     <div class="field-row">
@@ -271,11 +268,17 @@
                     <div class="result-box" id="toEarthResult">&nbsp;</div>
                 </div>
             </div>
+            <br>
+            <div class="converter-panel">
+                Scroll down for list of holidays
+            </div>
         </div>
 
         <h1>Martian Calendar</h1>
         <div id="messages"></div>
-        <div id="output"></div>
+        <div id="output"></div><br>
+        <div class="converter-panel" id="holidays">
+        </div>
     </div>
 </body>
 <script>
@@ -288,6 +291,14 @@
     // Martian minute: 60 martian seconds
     // Martian hour: 60 martian minutes
     // Martian day: 24 martian hours
+
+    function getOrdinal(number){
+        const suffixes = ["th", "st", "nd", "rd"];
+        const value = number % 100;
+        return number + (suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0]);
+    }
+
+    const holidayContainer = document.getElementById('holidays');
 
     const MONTH_NAMES = {
         1: "January", // Jan
@@ -787,25 +798,37 @@
         });
     }
 
-    function addHoliday(month, day, name) {
+    function addHoliday(month, day, name, endMonth = -1, endDay = -1) {
 
         const cell = document.getElementById(`${MONTH_NAMES[month]}-${day}`);
         if (cell) {
             cell.classList.add('invert');
             cell.title = name;
+
+            let holidayText = `${MONTH_NAMES[month]} ${getOrdinal(day)}`;
+
+            if (endMonth !== -1 && endDay !== -1) {
+                holidayText += ` to ${MONTH_NAMES[endMonth]} ${getOrdinal(endDay)}`;
+            }
+
+            holidayText +=  ` - ${name.replaceAll("\n", ", ")}`;
+
+            const holidayEl = document.createElement('div');
+            holidayEl.innerHTML = holidayText;
+            holidayContainer.appendChild(holidayEl);
         }
     }
 
     const term = "Semester"; // Quinester
 
     addHoliday(3, 27, "Terraforming Day")
-    addHoliday(3, 24, "Terraforming Week")
-    addHoliday(1, 1, `New Year's Day\nStart of First ${term}`)
-    addHoliday(3, 44, `End of First ${term}`)
-    addHoliday(6, 2, `Start of Second ${term}`)
-    addHoliday(9, 1, `End of Second ${term}`)
-    addHoliday(11, 44, `Start of Third ${term}`)
-    addHoliday(14, 2, `End of Third ${term}`)
+    addHoliday(3, 24, "Terraforming Week", 3, 31)
+    addHoliday(1, 1, `New Year's Day\nStart of First School ${term}`)
+    addHoliday(3, 44, `End of First School ${term}`)
+    addHoliday(6, 2, `Start of Second School ${term}`)
+    addHoliday(9, 1, `End of Second School ${term}`)
+    addHoliday(11, 44, `Start of Third School ${term}`)
+    addHoliday(14, 2, `End of Third School ${term}`)
 
 
     wireConverter();
