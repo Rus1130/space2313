@@ -79,8 +79,8 @@ typewriter: {
 
 
 
-[sleep 1000][linebreak]
-[sleep 700][function "end"]
+[sleep 1700][linebreak]
+[function "end"]
 `
 
 fs.writeFileSync(path.join(`${nameNormalized}.html`), HTML_TEMPLATE.replaceAll("\n", "\r\n"));
