@@ -273,12 +273,29 @@ function addCities(path, cityLabels = []) {
             } else {
                 city = two.makeCircle(x, y, radius);
             }
-        
-
-            city.id = `${path}-${type === "default" ? "city" : type}-${i}`;
+            
+            const id = `${path.split(".")[0]}/${i}`;
+            
+            city.id = id
             city.stroke = "black";
             city.fill = "white";
             city.scale = CITY_SCALE;
+
+            if(CITY_NAMES[id] != undefined) {
+
+                const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+                title.textContent = CITY_NAMES[id];
+                
+                requestAnimationFrame(() => {
+                    city._renderer.elem.appendChild(title);
+                })
+            }
+
+            requestAnimationFrame(() => {
+                city._renderer.elem.addEventListener("click", () => {
+                    console.log(id);
+                });
+            });
 
             city.tags = type === "default" ? getTagsFromPath(path) : getTagsFromPath(path).concat([type]);
 
