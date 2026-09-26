@@ -798,24 +798,23 @@
         });
     }
 
-    function addHoliday(month, day, name, endMonth = -1, endDay = -1) {
+    let holidayList = [];
 
+    function addHoliday(month, day, name, endMonth = -1, endDay = -1) {
         const cell = document.getElementById(`${MONTH_NAMES[month]}-${day}`);
         if (cell) {
             cell.classList.add('invert');
             cell.title = name;
 
-            let holidayText = `${MONTH_NAMES[month]} ${getOrdinal(day)}`;
-
-            if (endMonth !== -1 && endDay !== -1) {
-                holidayText += ` to ${MONTH_NAMES[endMonth]} ${getOrdinal(endDay)}`;
-            }
-
-            holidayText +=  ` - ${name.replaceAll("\n", ", ")}`;
-
-            const holidayEl = document.createElement('div');
-            holidayEl.innerHTML = holidayText;
-            holidayContainer.appendChild(holidayEl);
+            if(endMonth !== -1 && endDay !== -1)holidayList.push({
+                start: [month, day],
+                end: [endMonth, endDay],
+                text: name
+            }) //holidayList.push(`${month}/${day} to ${endMonth}/${endDay} - ${name}`);
+            else holidayList.push({
+                start: [month, day],
+                text: name
+            })//holidayList.push(`${month}/${day} - ${name}`);
         }
     }
 
@@ -827,9 +826,42 @@
     addHoliday(3, 44, `End of First School ${term}`)
     addHoliday(6, 2, `Start of Second School ${term}`)
     addHoliday(9, 1, `End of Second School ${term}`)
+    addHoliday(12, 1, `Science Day`)
     addHoliday(11, 44, `Start of Third School ${term}`)
     addHoliday(14, 2, `End of Third School ${term}`)
 
+    function getHolidays() {
+
+        console.log(holidayList)
+
+        // order them by start date
+
+        holidayList.sort((a, b) => {
+            if (a.start[0] !== b.start[0]) {
+                return a.start[0] - b.start[0];
+            }
+            return a.start[1] - b.start[1];
+        });
+
+
+        let holidayString = holidayList.map(h => {
+            let holidayText = `${MONTH_NAMES[h.start[0]]} ${getOrdinal(h.start[1])}`;
+
+            if (h.end) {
+                holidayText += ` to ${MONTH_NAMES[h.end[0]]} ${getOrdinal(h.end[1])}`;
+            }
+
+            holidayText +=  ` - ${h.text.replaceAll("\n", ", ")}`;
+
+            return holidayText;
+        }).join("\n");
+
+
+        holidayContainer.innerText = holidayString;
+
+    }
+
+    getHolidays();
 
     wireConverter();
 
