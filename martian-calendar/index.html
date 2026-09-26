@@ -831,11 +831,6 @@
     addHoliday(14, 2, `End of Third School ${term}`)
 
     function getHolidays() {
-
-        console.log(holidayList)
-
-        // order them by start date
-
         holidayList.sort((a, b) => {
             if (a.start[0] !== b.start[0]) {
                 return a.start[0] - b.start[0];
