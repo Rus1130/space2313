@@ -8,52 +8,51 @@ typewriter: {
         ",": 350
         ".": 600
     }
+    instant: true
 }
+
+
 [page "normal"]
-    [$instant]
+    Normal posters[newline]
     [function "image" "src/images/s23_slash.png" 248 350 1][tab 1]
     [function "image" "src/images/s23_accel.png" 248 350 1][tab 1]
     [function "image" "src/images/s23_slash_accel.png" 248 350 1]
-    [$instant off]
     [gopage "chromatic" "next"]
     [$page "leave" keep]
 [page end]
 
 [page "chromatic"]
-    [$instant]
+    Chromatic shift[newline]
     [function "set image channel shift" "r" 100]
     [function "image" "src/images/s23_slash.png" 248 350 1][tab 1]
     [function "set image channel shift" "g" 10]
     [function "image" "src/images/s23_accel.png" 248 350 1][tab 1]
     [function "set image channel shift" "b" 10]
     [function "image" "src/images/s23_slash_accel.png" 248 350 1]
-    [$instant off]
     [gopage "hue rotate" "next"]
     [$page "leave" keep]
 [page end]
 
 [page "hue rotate"]
-    [$instant]
+    Hue rotation in blocks; cant control the exact colors but i can control the random seed[newline]
     [function "set image hue rotate" 90 10]
     [function "image" "src/images/s23_slash.png" 248 350 1][tab 1]
     [function "set image hue rotate" 180 10]
     [function "image" "src/images/s23_accel.png" 248 350 1][tab 1]
     [function "set image hue rotate" 270 10]
     [function "image" "src/images/s23_slash_accel.png" 248 350 1]
-    [$instant off]
     [gopage "wave" "next"]
     [$page "leave" keep]
 [page end]
 
 [page "wave"]
-    [$instant]
+    Wave distortion[newline]
     [function "set image wave distort" 10 0.1]
     [function "image" "src/images/s23_slash.png" 248 350 1][tab 1]
     [function "set image wave distort" 1 10]
     [function "image" "src/images/s23_accel.png" 248 350 1][tab 1]
     [function "set image wave distort" 10 1]
     [function "image" "src/images/s23_slash_accel.png" 248 350 1]
-    [$instant off]
     [$page "leave" keep]
 [page end]
 
