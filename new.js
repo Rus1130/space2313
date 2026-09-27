@@ -21,7 +21,7 @@ const date = `${day} ${months[month]}, ${year}`;
 let metaTitle = `<meta property="og:title"       content="${name}"`
 let metaDesc  = `<meta property="og:description" content=""`
 let metaURL   = `<meta property="og:url"         content="https://rus1130.github.io/space2313/${nameNormalized}/"`
-let metaColor = `<meta name="theme-color" content=""`
+let metaColor = `<meta name="theme-color"        content=""`
 
 // find the longest of the three strings, and pad the others with spaces to match
 let maxLength = Math.max(metaTitle.length, metaDesc.length, metaURL.length);
