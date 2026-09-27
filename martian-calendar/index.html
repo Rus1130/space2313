@@ -230,6 +230,7 @@
                             <label for="earthTimeInput">Time (UTC)</label>
                             <input type="time" id="earthTimeInput" step="1" value="00:00:00">
                         </div>
+                        <button class="convert-btn" id="nowBtn">Now</button>
                         <button class="convert-btn" id="toMarsBtn">Convert</button>
                     </div>
                     <div class="result-box" id="toMarsResult">&nbsp;</div>
@@ -747,7 +748,7 @@
                 return;
             }
             const mars = earthToMars(date);
-            const monthLabel = `${CONFIG.monthNames[mars.month - 1]} ${mars.day}`;
+            const monthLabel = `${CONFIG.monthNames[mars.month - 1]} ${getOrdinal(mars.day)}`;
 
             let formattedDate;
 
@@ -818,7 +819,7 @@
         }
     }
 
-    const term = "Semester"; // Quinester
+    const term = "Pentamester"; // Quinester
 
     addHoliday(3, 27, "Terraforming Day")
     addHoliday(3, 24, "Terraforming Week", 3, 31)
@@ -829,6 +830,13 @@
     addHoliday(12, 1, `Discovery Day`)
     addHoliday(11, 44, `Start of Third School ${term}`)
     addHoliday(14, 2, `End of Third School ${term}`)
+
+    const nowBtn = document.getElementById('nowBtn');
+    nowBtn.addEventListener('click', () => {
+        const now = new Date();
+        earthDateInput.value = now.toISOString().slice(0, 10);
+        earthTimeInput.value = now.toISOString().slice(11, 19);
+    });
 
     function getHolidays() {
         holidayList.sort((a, b) => {
