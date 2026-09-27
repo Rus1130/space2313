@@ -265,15 +265,16 @@ function addCities(path, cityLabels = []) {
 
             let city;
 
-
             if(type === "capital") {
                 city = two.makeStar(x, y, radius * 1.5, radius * 3, 5);
             } else if(type === "subcapital") {
                 city = two.makeStar(x, y, radius * 1.3, radius * 2.5, 3);
+                city.linewidth = 0.5;
             } else {
                 city = two.makeCircle(x, y, radius);
+                city.linewidth = 0.5;
             }
-            
+        
             const id = `${path.split(".")[0]}/${i}`;
             
             city.id = id
@@ -281,21 +282,19 @@ function addCities(path, cityLabels = []) {
             city.fill = "white";
             city.scale = CITY_SCALE;
 
-            if(CITY_NAMES[id] != undefined) {
+            
 
+            if(CITY_NAMES[id] != undefined) {
                 const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
                 title.textContent = CITY_NAMES[id];
+
+                city.fill = "yellow";
+                console.log(city)
                 
                 requestAnimationFrame(() => {
                     city._renderer.elem.appendChild(title);
                 })
             }
-
-            requestAnimationFrame(() => {
-                city._renderer.elem.addEventListener("click", () => {
-                    console.log(id);
-                });
-            });
 
             city.tags = type === "default" ? getTagsFromPath(path) : getTagsFromPath(path).concat([type]);
 
