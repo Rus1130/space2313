@@ -34,7 +34,7 @@ typewriter: {
 [page end]
 
 [page "hue rotate"]
-    Hue rotation in blocks; cant control the exact colors but i can control the random seed[newline]
+    Hue rotation in blocks; cant control the exact colors but i can control the seed that the rng uses[newline]
     [function "set image hue rotate" 90 10]
     [function "image" "src/images/s23_slash.png" 248 350 1][tab 1]
     [function "set image hue rotate" 180 10]
