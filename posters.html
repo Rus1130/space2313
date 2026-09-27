@@ -10,9 +10,9 @@
 <body>
 </body>
 <script type="module">
-    import { SuperType, TagArgument } from 'https://rus1130.github.io/supertype/index.js';
+    import { SuperType, TagArgument, SuperTypeError } from 'https://rus1130.github.io/supertype/index.js';
 
-        function rgbToHsl(r, g, b) {
+    function rgbToHsl(r, g, b) {
         r /= 255; g /= 255; b /= 255;
         const max = Math.max(r, g, b), min = Math.min(r, g, b);
         let h, s, l = (max + min) / 2;
