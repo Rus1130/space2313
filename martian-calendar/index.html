@@ -325,6 +325,17 @@
         45, 44, 45, 44, 45
     ]
 
+    const weekMap = {
+        "Her": "Hermesday",
+        "Ven": "Venesday",
+        "Ter": "Terresday",
+        "Are": "Aresday",
+        "Jov": "Jovisday",
+        "Sat": "Saturday",
+        "Ura": "Ouraday",
+        "Nep": "Neptusday",
+    }
+
     const CONFIG = {
         yearName: "Meridian Calendar",
         monthsPerYear: 15,
@@ -333,28 +344,8 @@
         weekPattern: [7,7,8],
         weekPatternResetsEachMonth: false,
         strictWeekValidation: false,
-        dayNames: [
-            "Her", // Hermeday
-            "Ven", // Venesday
-            "Ter", // Terresdau
-            "Mar", // Marcesday
-            "Jov", // Jovisday
-            "Sat", // Saturday
-            "Cae", // Caelusday
-            "Nep",  // Neptusday
-        ]
+        dayNames: Object.keys(weekMap)
     };
-
-    const weekMap = {
-        "Her": "Hermesday",
-        "Ven": "Venesday",
-        "Ter": "Terresday",
-        "Mar": "Marcesday",
-        "Jov": "Jovisday",
-        "Sat": "Saturday",
-        "Cae": "Caelusday",
-        "Nep": "Neptusday",
-    }
 
     
     const output = document.getElementById('output');
