@@ -47,11 +47,14 @@
     <meta content="Space 2313" property="og:title" />
     <meta content="https://rus1130.github.io/space2313" property="og:url" />
     <meta property="og:description" content="Space 2313 is an idealistic alternate reality where the Solar System is explored not to pad the egos of billionaires, but to advance the collective knowledge of humanity.">
+    <meta name="theme-color" content="#fe0275" />
+    <meta name="og:image" content="https://rus1130.github.io/space2313/images/s23_slash.png" />
 </head>
 <body>
     <div class="cover">
 
     </div>
+    <!-- <img id="poster" style="position: fixed;" /> -->
     <div class="description">
         Space 2313 is an idealistic alternate reality where the Solar System is explored not to pad the egos of billionaires, but to advance the collective knowledge of humanity.
         <br><br>
@@ -84,6 +87,29 @@
     import { SuperType } from 'https://rus1130.github.io/supertype/index.js';
     // location.href = x
     await (async () => {
+
+        // const poster = document.getElementById("poster");
+        // const possiblePosters = ["s23_accel", "s23_slash", "s23_slash_accel"];
+        // const divDescription = document.querySelector(".description");
+
+        // const posterWidth = 2480;
+        // const posterHeight = 3508;
+        // const scaleFactor = 0.15;
+
+        // // random number between 1 and 3
+        // const chosen = possiblePosters[Math.floor(Math.random() * possiblePosters.length)];
+        // poster.src = `images/${chosen}.png`;
+
+        // poster.style.width = `${posterWidth * scaleFactor}px`;
+        // poster.style.height = `${posterHeight * scaleFactor}px`;
+        
+        // // get the width of divDescription and set it to the left of the poster
+
+        // const divDescriptionWidth = divDescription.offsetWidth;
+        // poster.style.top = `8px`;
+        // poster.style.right = `8px`
+
+
 
         let clicks = 0;
         const divs = {};
