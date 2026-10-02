@@ -27,7 +27,7 @@
     }
 
     .description {
-        width: 750px;
+        width: 900px;
         word-wrap: break-word;
         margin-bottom: 1em;
     }
@@ -40,6 +40,27 @@
         left: 0;
         z-index: 10000;
         background-color: black;
+        color: black;
+    }
+
+    .table {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .container {
+        flex: 1;
+    }
+
+    .container.full {
+        flex-basis: 100%;
+    }
+
+    .center {
+        text-align: center;
+        width: 100%;
     }
 </style>
 <head>
@@ -52,21 +73,27 @@
 </head>
 <body>
     <div class="cover">
-
+        If ur reading this ur a jackass
     </div>
-    <!-- <img id="poster" style="position: fixed;" /> -->
     <div class="description">
-        Space 2313 is an idealistic alternate reality where the Solar System is explored not to pad the egos of billionaires, but to advance the collective knowledge of humanity.
-        <br><br>
-        Controls:<br>
-        <span>- [SPACE] to toggle pause.</span><br>
-        <span>- [RIGHT ARROW] to toggle fast forward.</span><br>
-        <span>- [R] to restart the current page.</span><br>
-        <span>- When paused, you may [SCROLL]. Hold [SHIFT] to [SCROLL] faster.</span><br>
-        <br>
-        Some notes:<br>
-        <span>- These stories are best viewed on &lt;DESKTOP&gt; in &lt;CHROME&gt;</span><br>
-        <span>- They are not necessarily in chronological order. Please refer to dates mentioned inside them.</span><br>
+        Space 2313 is an idealistic alternate reality where the Solar System is explored not to pad the egos of billionaires, but to advance the collective knowledge of humanity.<br><br>
+        <div class="table">
+            <div class="container full center" style="margin-bottom: 3px;">
+                <span style="color: red;">WARNING: This content contains jittering text, and may contain flashing lights and patterns. These may potentially trigger seizures for people with photosensitive epilepsy. Viewer discretion is advised.</span>
+            </div>
+            <div class="container">
+                <div class="center">Controls</div>
+                <span>- [SPACE] to toggle pause.</span><br>
+                <span>- [RIGHT ARROW] to toggle fast forward.</span><br>
+                <span>- [R] to restart the current page.</span><br>
+                <span>- When paused, you may [SCROLL]. Hold [SHIFT] to [SCROLL] faster.</span><br>
+            </div>
+            <div class="container">
+                <div class="center">Notes</div>
+                <span>- These stories are best viewed on &lt;DESKTOP&gt; in &lt;CHROME&gt;</span><br>
+                <span>- They are not necessarily in chronological order. Please refer to dates mentioned inside them.</span>
+            </div>
+        </div>
     </div>
     <div class="button" data-onclick="./introduction">▌Introduction</div>
     <div class="button" data-onclick="./first-contact">▌First Contact</div>
@@ -87,30 +114,6 @@
     import { SuperType } from 'https://rus1130.github.io/supertype/index.js';
     // location.href = x
     await (async () => {
-
-        // const poster = document.getElementById("poster");
-        // const possiblePosters = ["s23_accel", "s23_slash", "s23_slash_accel"];
-        // const divDescription = document.querySelector(".description");
-
-        // const posterWidth = 2480;
-        // const posterHeight = 3508;
-        // const scaleFactor = 0.15;
-
-        // // random number between 1 and 3
-        // const chosen = possiblePosters[Math.floor(Math.random() * possiblePosters.length)];
-        // poster.src = `images/${chosen}.png`;
-
-        // poster.style.width = `${posterWidth * scaleFactor}px`;
-        // poster.style.height = `${posterHeight * scaleFactor}px`;
-        
-        // // get the width of divDescription and set it to the left of the poster
-
-        // const divDescriptionWidth = divDescription.offsetWidth;
-        // poster.style.top = `8px`;
-        // poster.style.right = `8px`
-
-
-
         let clicks = 0;
         const divs = {};
         const storyHashes = {};
