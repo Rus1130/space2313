@@ -95,7 +95,6 @@ I recently collected this data, but I ran into an issue trying to read it. It sa
 [page end]
 
 [page "4"]
-    [$start]
     [speed 115 override]Attachment:[sleep 800] data.[sleep 150]txt[speeddefault][newline]
     [newline]
     [speed 180]
