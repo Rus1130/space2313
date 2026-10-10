@@ -62,6 +62,10 @@
         text-align: center;
         width: 100%;
     }
+
+    .warning::after {
+        content: " <!>"
+    }
 </style>
 <head>
     <title>Space 2313</title>
@@ -104,8 +108,8 @@
     <!-- <div class="button" data-onclick="./a-war-for">▌A War For</div> -->
     <div class="button" data-onclick="./just-a-mercury-boy">▌Just a Mercury Boy</div>
     <div class="button" data-onclick="./horizon">▌Horizon</div>
-    <div class="button" data-onclick="./second-contact">▌&lt;!&gt; Second Contact</div>
-    <!-- <div class="button" data-onclick="./beacon">▌BEACON</div> -->
+    <div class="button warning" data-onclick="./second-contact">▌Second Contact</div>
+    <div class="button hidden" data-onclick="./beacon">▌BEACON</div>
     <div class="button" data-onclick="./the-fall-of-man">▌The Fall of Man</div>
     <div class="button hidden" data-onclick="./posters">▌Posters</div>
     <!-- -- INSERT POINT -- -->
