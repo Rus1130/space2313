@@ -13,15 +13,15 @@ typewriter: {
 }
 
 [mixin "red"]
-[gradient <String> "to top right, #bb2e15, #f83232"]
+    [gradient <String> "to top right, #bb2e15, #f83232"]
 [mixin end]
 
 [mixin "green"]
-[gradient <String> "to top right, #24b500, #2df82d"]
+    [gradient <String> "to top right, #24b500, #2df82d"]
 [mixin end]
 
 [mixin "blue"]
-[gradient <String> "to top right, #7c7cff, #9f9fff"]
+    [gradient <String> "to top right, #7c7cff, #9f9fff"]
 [mixin end]
 
 The [@use "red" "red"] sands of Mars were quite profound, really.[newline]
