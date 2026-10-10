@@ -46,7 +46,7 @@ I: (getting uncomfortable, trying to find a nugget of joy): The pay?[linebreak]
 
 S: Shite too, he’d say. Ye’d be workin’ fer the whole day ‘nd make a few bucks. They we’re trapped on the planet, ye see, due to contracts ‘nd whatnot, ‘nd even if the contract ran out, they wouldn’t even be able to afford a ticket home. Though most of the men that signed up didn’t have much back on Earth anyway.[linebreak]
 
-I: So... what where the benefits of being a terraformer, then?[linebreak]
+I: So... what were the benefits of being a terraformer, then?[linebreak]
 
 S: For a man? Oh, nothing. Ye were just doin’ it for the betterment of human kind, he said they’d say. He’d say there wouldn’t be much thought about the benefits, because they’d not be lookin t’ go home, they’d think they’d be useless over there, so why not be guaranteed useful, ye know?[linebreak]
 
