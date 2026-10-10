@@ -143,7 +143,7 @@
             if(!(onclick in savedStories)) {
                 div.textContent += " [NEW]";
             } else if(savedStories[onclick] !== hash) {
-                div.textContent += " [!]";
+                div.textContent += "*";
             }
 
             dummy.remove();
