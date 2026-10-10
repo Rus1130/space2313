@@ -91,7 +91,7 @@ I recently collected this data, but I ran into an issue trying to read it. It sa
 
     [sleep 1200]
 
-    [gopage "4" "Next >"]
+    [gopage "4" "Open data.txt >"]
 [page end]
 
 [page "4"]
