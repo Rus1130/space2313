@@ -37,6 +37,7 @@ const HTML_TEMPLATE =
 `<!-- written ${date} -->
 <head>
     <link rel="stylesheet" href="./src/css.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
     ${metaTitle}
     ${metaDesc}
     ${metaURL}
