@@ -43,6 +43,10 @@
         color: black;
     }
 
+    .gold {
+        color: rgb(255, 230, 88);
+    }
+
     .table {
         display: flex;
         flex-direction: row;
@@ -184,6 +188,7 @@
                 Object.values(divs).forEach(div => {
                     document.body.insertBefore(div, document.body.children[div.getAttribute('data-i')]);
                     div.classList.remove('hidden');
+                    div.classList.add("gold");
                 });
             }
         });
