@@ -1,0 +1,46 @@
+<style>
+    button:focus, input:focus, select:focus, textarea:focus, [contenteditable]:focus {
+        outline:none;
+    }
+
+    body {
+        user-select: none;
+    }
+
+    div {
+        font-size: 48pt;
+        display: inline-block;
+    }
+
+    button {
+        font-size: 12pt;
+    }
+</style>
+<head>
+    <meta property="og:title" content="">
+    <meta property="og:description" content="">
+    <meta property="og:url" content="">
+</head>
+<body>
+    <div id="time"></div>
+    <button id="button">Copy</button>
+</body>
+<script>
+    function generate(){
+        const hr = Math.floor(Math.random() * 24).toString().padStart(2, "0");
+        const mn = Math.floor(Math.random() * 60).toString().padStart(2, "0");
+        const sc = Math.floor(Math.random() * 60).toString().padStart(2, "0");
+
+        document.getElementById("time").innerText = `${hr}:${mn}:${sc}`
+    }
+
+    generate();
+
+    document.body.addEventListener("click", generate)
+
+    document.getElementById("button").addEventListener("click", function(e){
+        e.stopPropagation();
+        navigator.clipboard.writeText(document.getElementById("time").innerText)
+    })
+    
+</script>
