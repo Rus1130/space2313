@@ -12,7 +12,7 @@ typewriter: {
 }
 
 [mixin "slash"]
-    [function "image" "https://rus1130.github.io/space2313/images/s23_slash.png" 248 350 1]
+    [function "image" "https://rus1130.github.io/space2313/images/s23_slash_hat.png" 248 350 1]
 [mixin end]
 [mixin "accel"]
     [function "image" "https://rus1130.github.io/space2313/images/s23_accel.png" 248 350 1]
