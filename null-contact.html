@@ -1,0 +1,36 @@
+<!-- written 29 oct, 2026 -->
+<head>
+    <link rel="stylesheet" href="./src/css.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <meta property="og:title"       content="Null Contact"                                      />
+    <meta property="og:description" content="Oh. and"                                           />
+    <meta property="og:url"         content="https://rus1130.github.io/space2313/null-contact/" />
+    <!-- <meta name="theme-color"        content=""                                             /> -->
+    <!-- <meta property="og:image"       content=""                                             /> -->
+    <title>Null Contact</title>
+</head>
+<body>
+</body>
+<script type="module">
+    import { SuperType, SuperTypeError, TagArgument } from 'https://rus1130.github.io/supertype/index.js';
+
+    const tw = new SuperType(document.body, {
+        "end": function() {
+            const returnButton = document.createElement("div");
+            returnButton.classList.add("button");
+            returnButton.id = "return";
+            returnButton.textContent = "▌< Return";
+            returnButton.onclick = () => {
+                location.href = 'https://rus1130.github.io/space2313/';
+            };
+            tw.appendToTarget(returnButton);
+            tw.target.style.overflowY = 'scroll';
+            tw.target.classList.add('hide-scrollbar');
+        }
+    })
+
+    await tw.load("./src/null-contact.st").then(() => {
+        tw.allowControls("all");
+        tw.start();
+    })
+</script>
