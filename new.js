@@ -20,17 +20,13 @@ const date = `${day} ${months[month]}, ${year}`;
 
 let metaTitle = `<meta property="og:title"       content="${name}"`
 let metaDesc  = `<meta property="og:description" content=""`
-let metaURL   = `<meta property="og:url"         content="https://rus1130.github.io/space2313/${nameNormalized}/"`
-let metaColor = `<!-- <meta name="theme-color"        content=""`
-let metaImage = `<!-- <meta property="og:image"       content=""`
+let metaURL   = `<meta property="og:url"         content="https://rus1130.github.io/space2313/${nameNormalized}"`
 
 // find the longest of the three strings, and pad the others with spaces to match
 let maxLength = Math.max(metaTitle.length, metaDesc.length, metaURL.length);
 metaTitle = metaTitle.padEnd(maxLength, ' ') + " />";
 metaDesc  = metaDesc.padEnd(maxLength, ' ') + " />";
 metaURL   = metaURL.padEnd(maxLength, ' ') + " />";
-metaColor = metaColor.padEnd(maxLength, ' ') + " /> -->";
-metaImage = metaImage.padEnd(maxLength, ' ') + " /> -->";
 
 
 const HTML_TEMPLATE = 
@@ -41,8 +37,7 @@ const HTML_TEMPLATE =
     ${metaTitle}
     ${metaDesc}
     ${metaURL}
-    ${metaColor}
-    ${metaImage}
+    <meta name="theme-color" content="#fe0275" />
     <title>${name}</title>
 </head>
 <body>
